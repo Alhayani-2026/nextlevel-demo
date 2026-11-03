@@ -882,7 +882,7 @@ class Component extends DCLogic {
       const by = st.settled[c[0]];
       const can = has('settle');
       return {
-        name: c[1], status: by ? 'تمت المحاسبة' : 'الوردية مفتوحة',
+        name: c[1], status: by ? 'تمت المحاسبة' : 'الشفت مفتوح',
         badgeStyle: 'font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 12px; ' + (by ? 'background: #14532D; color: #4ADE80;' : 'background: #78350F; color: #FCD34D;'),
         diff: by ? '[الفرق]' : 'يظهر بعد العدّ', by: by ? 'حاسبها: ' + by : '',
         btnText: by ? 'تمت المحاسبة' : (can ? 'محاسبة الكاشير' : 'ما عندك صلاحية المحاسبة'),
@@ -914,7 +914,7 @@ class Component extends DCLogic {
     const reports = REPS.map((r) => ({ icon: r[1], name: r[2], desc: r[3], pick: () => this.setState({ rep: r[0], sortCol: 0, sortDir: 1 }),
       style: 'min-height: 92px; border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; cursor: pointer; font-family: inherit; color: #FFFFFF; text-align: right; transition: all .15s; ' + (st.rep === r[0] ? 'background: linear-gradient(135deg, ' + accent + '33, #151821); border: 1px solid ' + accent + '; box-shadow: 0 0 18px ' + accent + '44;' : 'background: #151821; border: 1px solid #232838;') }));
     const curRep = REPS.find((r) => r[0] === st.rep);
-    const ranges = [['today', 'اليوم'], ['shift', 'الوردية'], ['week', 'هذا الأسبوع'], ['month', 'هذا الشهر']].map((r) => ({ name: r[1], style: pill(st.range === r[0], '#3A4058'), pick: () => this.setState({ range: r[0] }) }));
+    const ranges = [['today', 'اليوم'], ['shift', 'الشفت'], ['week', 'هذا الأسبوع'], ['month', 'هذا الشهر']].map((r) => ({ name: r[1], style: pill(st.range === r[0], '#3A4058'), pick: () => this.setState({ range: r[0] }) }));
     const unitsOf = (k) => { const s = SEC.nl1.find((x) => x[0] === k); const n = s ? s[3] : 0; const pre = { play: 'PS', elite: 'إليت ', hall: 'طاولة ', pool: 'بلياردو ', master: 'ماستر ', cinema: 'سينما ', uhall: 'طاولة ع' }[k]; const out = []; for (let i = 1; i <= n; i++) out.push(k === 'play' && i === 21 ? 'دركسون 21' : pre + i); return out; };
     const TB = {
       dev: { cols: ['الجهاز', 'القسم', 'ساعات اللعب', 'مرات الفتح', 'فلوس الوقت', 'فلوس الطلبات', 'الإجمالي'], rows: unitsOf('play').slice(0, 6).map((u) => [u, 'بلاي ستيشن']).concat(unitsOf('elite').slice(0, 3).map((u) => [u, 'حاسبات إليت'])), fill: 5 },
