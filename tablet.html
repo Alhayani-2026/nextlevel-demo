@@ -69,16 +69,17 @@ window.NLDemo = (function () {
       , sales: [] }; }
   var ACTIVE = function (d) { return d && d.status !== 'booked' && d.status !== 'oos'; };
   function toCap(s) {
-    var open = {}, modes = {}, timers = {};
+    var open = {}, modes = {}, timers = {}, segs = {};
     Object.keys(s.units || {}).forEach(function (u) {
       var d = s.units[u]; if (!ACTIVE(d)) return;
       var g = {}, order = [];
       (d.orders || []).forEach(function (o) { var k = o[0] + '|' + (o[2] || ''); if (!g[k]) { g[k] = { name: o[0], qty: 0, price: o[1], extra: '' }; if (o[2]) g[k].src = o[2]; order.push(k); } g[k].qty++; });
       open[u] = order.map(function (k) { return g[k]; });
       if (d.mode === 'فردي' || d.mode === 'زوجي') modes[u] = d.mode;
+      if (d.segs && d.segs.length > 1) segs[u] = d.segs;
       if (s.timers && s.timers[u]) timers[u] = s.timers[u];
     });
-    return { open: open, modes: modes, timers: timers };
+    return { open: open, modes: modes, timers: timers, segs: segs };
   }
   function fromCap(c, s) {
     s = s || seed(); var now = Date.now();
@@ -92,7 +93,8 @@ window.NLDemo = (function () {
       var mode = c.modes[u] || (prev && prev.mode);
       var nu = Object.assign({}, ACTIVE(prev) ? prev : { status: 'run', start: 'الآن', time: '' }, { orders: orders });
       if (mode) nu.mode = mode;
-      if (ACTIVE(prev) && prev.mode && c.modes[u] && c.modes[u] !== prev.mode) { var t0 = (s.timers[u] || {}).start || now; nu.segs = (prev.segs || [{ mode: prev.mode, start: t0 }]).concat([{ mode: c.modes[u], start: now }]); }
+      if (c.segs && c.segs[u] && c.segs[u].length > 1) nu.segs = c.segs[u];
+      else       if (ACTIVE(prev) && prev.mode && c.modes[u] && c.modes[u] !== prev.mode) { var t0 = (s.timers[u] || {}).start || now; nu.segs = (prev.segs || [{ mode: prev.mode, start: t0 }]).concat([{ mode: c.modes[u], start: now }]); }
       units[u] = nu;
       if (c.timers[u]) timers[u] = c.timers[u]; else delete timers[u];
     });
@@ -134,7 +136,7 @@ window.NLDemo = (function () {
   };
   if (window.NL_NO_NOTE_BTN) return;
   var css = document.createElement('style');
-  css.textContent = '#nlnb{position:fixed;left:18px;bottom:18px;z-index:99999;height:52px;padding:0 20px;border-radius:26px;border:0;background:#FA2949;color:#fff;font:800 17px Cairo,system-ui,sans-serif;box-shadow:0 0 24px rgba(250,41,73,.6);cursor:pointer}' +
+  css.textContent = '#nlnb{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:99999;width:32px;padding:14px 0;border-radius:10px 0 0 10px;border:0;background:#FA2949;color:#fff;font:800 14px Cairo,system-ui,sans-serif;box-shadow:0 0 18px rgba(250,41,73,.55);cursor:pointer;writing-mode:vertical-rl;letter-spacing:.5px;opacity:.92}#nlnb:hover{opacity:1}' +
     '#nlnm{position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;font-family:Cairo,system-ui,sans-serif;direction:rtl}' +
     '#nlnm .b{background:#151821;border:1px solid #FA294966;border-radius:20px;padding:22px;width:min(520px,92vw);display:flex;flex-direction:column;gap:12px;color:#F2F3F7}' +
     '#nlnm h3{margin:0;font-size:21px}#nlnm small{color:#9AA0B4;font-size:14px}#nlnm label{font-size:14px;color:#C3C8D6;font-weight:700}' +
@@ -143,7 +145,7 @@ window.NLDemo = (function () {
     '#nlnm button{flex:1;height:50px;border-radius:12px;border:0;font:800 17px Cairo,system-ui,sans-serif;cursor:pointer}#nlnm .s{background:#FA2949;color:#fff}#nlnm .c{background:#232838;color:#C3C8D6}' +
     '#nlnm .m{font-size:15px;font-weight:700;min-height:20px}';
   document.head.appendChild(css);
-  var btn = document.createElement('button'); btn.id = 'nlnb'; btn.textContent = '✍ اكتب ملاحظة';
+  var btn = document.createElement('button'); btn.id = 'nlnb'; btn.textContent = 'اكتب ملاحظة ✍';
   var m = document.createElement('div'); m.id = 'nlnm';
   m.innerHTML = '<div class="b"><h3>ملاحظة على: ' + SCREEN + '</h3><small>اكتب أي شي ما عجبك، أو شي تريده يتغيّر، أو فكرة جديدة. تنحفظ وتوصل مباشرة.</small>' +
     '<label>اسمك</label><input id="nlnn" placeholder="اكتب اسمك">' +
@@ -585,7 +587,7 @@ class Component extends DCLogic {
       modes: { 'PS2': 'زوجي', 'PS5': 'فردي' }, dept: 'bar', cat: 'mojito', qty: {}, lineNotes: {}, sheet: null, move: null, moveTab: null, toast: ''
     };
     this._tick = setInterval(() => this.setState({ now: Date.now() }), 1000);
-    if (window.NLDemo) { const D = window.NLDemo; const C = ['open', 'timers', 'modes']; Object.assign(this.state, D.toCap(D.init())); const base = this.setState.bind(this); this.setState = (o) => { base(o); if (o && C.some((k) => k in o)) { const m = { ...this.state, ...o }; D.patch(D.fromCap({ open: m.open, timers: m.timers, modes: m.modes }, D.get())); } }; D.sub((s2) => base(D.toCap(s2))); }
+    if (window.NLDemo) { const D = window.NLDemo; const C = ['open', 'timers', 'modes', 'segs']; Object.assign(this.state, D.toCap(D.init())); const base = this.setState.bind(this); this.setState = (o) => { base(o); if (o && C.some((k) => k in o)) { const m = { ...this.state, ...o }; D.patch(D.fromCap({ open: m.open, timers: m.timers, modes: m.modes, segs: m.segs || {} }, D.get())); } }; D.sub((s2) => base(D.toCap(s2))); }
   }
   renderVals() {
     const accent = this.props.accent ?? '#C8102E';
@@ -761,7 +763,8 @@ const FLAV = { 'تفاحتين': '#2E9E4F', 'انكليزي': '#8D5524', 'ليم
       if (!cartNames.length) { this.setState({ toast: 'الطلب فارغ، لا يُرسل.' }); return; }
       if ((st.forKey || 'cust') !== 'cust' && !st.person) { this.setState({ toast: 'اختر الاسم قبل الإرسال.' }); return; }
       if (cartNames.some((n) => printerOf[n] === 'النراجيل' && n !== 'تغيير رأس') && !st.hookType) return;
-      const lines = cartNames.map((n) => ({ name: n, qty: st.qty[n], price: priceOf[n], extra: [printerOf[n] === 'النراجيل' && n !== 'تغيير رأس' ? st.hookType: '', noteText(n)].filter(Boolean).join(' · ') }));
+      const forTag = (st.forKey || 'cust') !== 'cust' ? forDefs[st.forKey][0] + ': ' + st.person : '';
+      const lines = cartNames.map((n) => ({ name: n, qty: st.qty[n], price: priceOf[n], extra: [printerOf[n] === 'النراجيل' && n !== 'تغيير رأس' ? st.hookType: '', noteText(n), forTag].filter(Boolean).join(' · ') }));
       const counts = {};
       cartNames.forEach((n) => { counts[printerOf[n]] = (counts[printerOf[n]] || 0) + st.qty[n]; });
       const parts = Object.keys(counts).map((p) => 'طابعة ' + p + ' (' + counts[p] + (counts[p] === 1 ? ' صنف' : ' أصناف') + ')');
@@ -771,7 +774,7 @@ const FLAV = { 'تفاحتين': '#2E9E4F', 'انكليزي': '#8D5524', 'ليم
     let move = null;
     if (st.move && sec) {
       const tabs = Object.keys(S).filter((k) => S[k].floor === sec.floor);
-      const tabKey = st.moveTab && tabs.indexOf(st.moveTab) >= 0 ? st.moveTab: tabs.find((k) => k !== st.sec) || st.sec;
+      const tabKey = st.moveTab && tabs.indexOf(st.moveTab) >= 0 ? st.moveTab: st.sec;
       move = {
         floorNote: sec.floor === 'g' ? 'تظهر أقسام الطابق الأرضي فقط.' : 'داخل الطابق العلوي فقط.',
         tabs: tabs.map((k) => ({ name: S[k].name, style: chip(tabKey === k), pick: () => this.setState({ moveTab: k }) })),
@@ -782,9 +785,14 @@ const FLAV = { 'تفاحتين': '#2E9E4F', 'انكليزي': '#8D5524', 'ليم
             style: 'height: 64px; border-radius: 12px; font-size: 16px; font-weight: 700; font-family: inherit; ' + (busy ? 'background: #0B0D12; color: #8A90A4; border: 1px solid #262B3B; cursor: not-allowed;' : 'background: #151821; color: #F2F3F7; border: 1px solid #343A50; cursor: pointer;'),
             pick: () => {
               if (busy) return;
-              const nx = { ...st.open }; nx[u] = nx[st.unit]; delete nx[st.unit];
-              const tx = { ...st.timers }; if (tx[st.unit]) { tx[u] = tx[st.unit]; delete tx[st.unit]; }
-              this.setState({ open: nx, timers: tx, move: null, moveTab: null, screen: 'units', unit: null, toast: 'نُقل الزبون من ' + st.unit + ' إلى ' + u + ' مع طلباته. صار بذمة كابتن ' + S[tabKey].name + '.' });
+              const nx = { ...st.open }; nx[u] = (nx[st.unit] || []).slice(); delete nx[st.unit];
+              const toTimed = ['play', 'pc', 'pool', 'room'].indexOf(S[tabKey].kind) >= 0;
+              const tx = { ...st.timers }; const mx = { ...st.modes }; const sx = { ...(st.segs || {}) };
+              if (tx[st.unit]) { if (toTimed) { tx[u] = tx[st.unit]; } else { const tcm = timeCost(st.unit); if (tcm.has && tcm.cost) nx[u].push({ name: 'وقت ' + st.unit + ' (' + tcm.text + ')', qty: 1, price: tcm.cost, extra: '' }); } delete tx[st.unit]; }
+              else if (toTimed) tx[u] = { start: Date.now(), limit: null };
+              if (toTimed && S[tabKey].kind === 'play' && u.indexOf('دركسون') !== 0) { mx[u] = mx[st.unit] || 'فردي'; if (sx[st.unit]) sx[u] = sx[st.unit]; }
+              delete mx[st.unit]; delete sx[st.unit];
+              this.setState({ open: nx, timers: tx, modes: mx, segs: sx, move: null, moveTab: null, screen: 'units', unit: null, toast: 'نُقل الزبون من ' + st.unit + ' إلى ' + u + ' مع طلباته. صار بذمة كابتن ' + S[tabKey].name + '.' });
             }
           };
         })
@@ -822,11 +830,11 @@ const FLAV = { 'تفاحتين': '#2E9E4F', 'انكليزي': '#8D5524', 'ليم
       groupTitle: st.dept === 'hookah' ? 'النراجيل' : 'البارستا / ' + bar[st.cat].name,
       groupPrinter: st.dept === 'hookah' ? 'النراجيل' : 'البارستا',
       groupBar: 'display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-radius: 12px; background: ' + (st.dept === 'hookah' ? '#5B4FB5' : catColor[st.cat]) + '22; border-right: 8px solid ' + (st.dept === 'hookah' ? '#5B4FB5' : catColor[st.cat]) + ';',
-      cartEmpty: cart.length === 0, cartTotal: fmt(net),
+      cartEmpty: cart.length === 0, cartTotal: fmt(gross),
       forOpts, people, needName: forKey !== 'cust',
       forBar: 'display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 8px 12px; border-radius: 12px; border: 1px solid #2E3448; background: ' + forDefs[forKey][2] + ';',
       hasDisc: disc > 0 && cart.length > 0,
-      discLine: 'قبل الخصم ' + fmt(gross) + ' · خصم ' + forDefs[forKey][0] + ' ' + disc + '%',
+      discLine: 'خصم ' + forDefs[forKey][0] + ' ' + disc + '% يُطبَّق عند المحاسبة بالكاشير (يصير ' + fmt(net) + ')',
       chargeLine: 'يُسجَّل على حساب: ' + (st.person || 'اختر الاسم'),
       openSingle: () => this.setState({ open: { ...st.open, [st.unit]: [] }, toast: 'فُتح ' + st.unit + '.' }),
       pickSingle: () => this.setState({ pendingMode: 'فردي' }),

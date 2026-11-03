@@ -31,7 +31,7 @@ button,a.k{font:800 16px Cairo,system-ui,sans-serif;height:48px;padding:0 20px;b
   };
   if (window.NL_NO_NOTE_BTN) return;
   var css = document.createElement('style');
-  css.textContent = '#nlnb{position:fixed;left:18px;bottom:18px;z-index:99999;height:52px;padding:0 20px;border-radius:26px;border:0;background:#FA2949;color:#fff;font:800 17px Cairo,system-ui,sans-serif;box-shadow:0 0 24px rgba(250,41,73,.6);cursor:pointer}' +
+  css.textContent = '#nlnb{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:99999;width:32px;padding:14px 0;border-radius:10px 0 0 10px;border:0;background:#FA2949;color:#fff;font:800 14px Cairo,system-ui,sans-serif;box-shadow:0 0 18px rgba(250,41,73,.55);cursor:pointer;writing-mode:vertical-rl;letter-spacing:.5px;opacity:.92}#nlnb:hover{opacity:1}' +
     '#nlnm{position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;font-family:Cairo,system-ui,sans-serif;direction:rtl}' +
     '#nlnm .b{background:#151821;border:1px solid #FA294966;border-radius:20px;padding:22px;width:min(520px,92vw);display:flex;flex-direction:column;gap:12px;color:#F2F3F7}' +
     '#nlnm h3{margin:0;font-size:21px}#nlnm small{color:#9AA0B4;font-size:14px}#nlnm label{font-size:14px;color:#C3C8D6;font-weight:700}' +
@@ -40,7 +40,7 @@ button,a.k{font:800 16px Cairo,system-ui,sans-serif;height:48px;padding:0 20px;b
     '#nlnm button{flex:1;height:50px;border-radius:12px;border:0;font:800 17px Cairo,system-ui,sans-serif;cursor:pointer}#nlnm .s{background:#FA2949;color:#fff}#nlnm .c{background:#232838;color:#C3C8D6}' +
     '#nlnm .m{font-size:15px;font-weight:700;min-height:20px}';
   document.head.appendChild(css);
-  var btn = document.createElement('button'); btn.id = 'nlnb'; btn.textContent = '✍ اكتب ملاحظة';
+  var btn = document.createElement('button'); btn.id = 'nlnb'; btn.textContent = 'اكتب ملاحظة ✍';
   var m = document.createElement('div'); m.id = 'nlnm';
   m.innerHTML = '<div class="b"><h3>ملاحظة على: ' + SCREEN + '</h3><small>اكتب أي شي ما عجبك، أو شي تريده يتغيّر، أو فكرة جديدة. تنحفظ وتوصل مباشرة.</small>' +
     '<label>اسمك</label><input id="nlnn" placeholder="اكتب اسمك">' +
