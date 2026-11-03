@@ -486,6 +486,40 @@ button{font-family:inherit}
     <sc-if value="{{isAcc}}" hint-placeholder-val="{{false}}">
       <div style="display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: 18px; align-items: start; animation: nlin .35s ease">
         <div style="display: flex; flex-direction: column; gap: 14px; min-width: 0">
+          <sc-if value="{{isGM}}" hint-placeholder-val="{{true}}">
+            <section style="background: linear-gradient(135deg, #1A0B10, #151821 55%); border: 1px solid #FA294955; border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap">
+                <h2 style="margin: 0; font-size: 18px; font-weight: 900">أرصدة القاصات · للمدير العام فقط</h2>
+                <span style="font-size: 12px; color: #9AA0B4">مدير الفرع يرى قاصة فرعه فقط</span>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+                <sc-for list="{{safes}}" as="sf" hint-placeholder-count="3">
+                  <div style="{{sf.style}}">
+                    <span style="font-size: 16px; font-weight: 900">{{sf.name}}</span>
+                    <span style="font-size: 20px; font-weight: 900">{{sf.val}}</span>
+                    <span style="{{sf.tagStyle}}">{{sf.tag}}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="background: #0B0D12; border: 1px solid #2A2F40; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 10px">
+                <span style="font-size: 15px; font-weight: 900">⇄ تحويل من قاصة إلى قاصة</span>
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
+                  <span style="font-size: 13px; color: #9AA0B4; font-weight: 800; min-width: 34px">من</span>
+                  <sc-for list="{{tFrom}}" as="tf" hint-placeholder-count="3"><button onClick="{{tf.pick}}" style="{{tf.style}}">{{tf.name}}</button></sc-for>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
+                  <span style="font-size: 13px; color: #9AA0B4; font-weight: 800; min-width: 34px">إلى</span>
+                  <sc-for list="{{tTo}}" as="tt" hint-placeholder-count="3"><button onClick="{{tt.pick}}" style="{{tt.style}}">{{tt.name}}</button></sc-for>
+                </div>
+                <div style="display: grid; grid-template-columns: 180px minmax(0, 1fr) 150px; gap: 8px">
+                  <input type="text" inputmode="numeric" value="{{tAmt}}" onChange="{{setTAmt}}" placeholder="المبلغ" style="height: 44px; border-radius: 10px; border: 1px solid #343A50; background: #151821; color: #F2F3F7; padding: 0 12px; font-family: inherit; font-size: 15px"/>
+                  <input type="text" value="{{tNote}}" onChange="{{setTNote}}" placeholder="السبب، مثال: دفع نسبة الشركة" style="height: 44px; border-radius: 10px; border: 1px solid #343A50; background: #151821; color: #F2F3F7; padding: 0 12px; font-family: inherit; font-size: 15px"/>
+                  <button onClick="{{doTransfer}}" style="{{tBtnStyle}}">تحويل باسمي</button>
+                </div>
+                <span style="font-size: 12px; color: #9AA0B4">يُسجَّل سندان بنفس الرقم: صرف من القاصة الأولى وقبض في الثانية، فيظهر المبلغ في كشف القاصتين.</span>
+              </div>
+            </section>
+          </sc-if>
           <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
             <sc-for list="{{accList}}" as="al" hint-placeholder-count="6">
               <div style="{{al.style}}">
@@ -869,7 +903,7 @@ class Component extends DCLogic {
     const BOXES = ['صندوق كاشير الأرضي', 'صندوق كاشير العلوي', 'صندوق الإدارة'];
     const vBoxes = BOXES.map((a) => ({ name: a, style: chip(st.vBox === a), pick: () => this.setState({ vBox: a }) }));
     const FORS = isOut
-      ? [['exp', 'مصروف تشغيل', 'ما نوع المصروف؟', ['كاز', 'مواد نراجيل', 'مواد بارستا', 'مواد تنظيف', 'كهرباء', 'مصروفات عامة', 'أخرى'], false],
+      ? [['exp', 'مصروف تشغيل', 'ما نوع المصروف؟', ['كاز', 'مواد نراجيل', 'مواد بارستا', 'مواد تنظيف', 'كهرباء', 'مصروفات عامة'].concat(branchKey === 'nl2' ? ['دفع نسبة الشركة'] : []).concat(['أخرى']), false],
          ['home', 'صرف للبيت', 'ما نوع الصرف؟', ['طبيب', 'شراء مواد للبيت', 'أخرى'], false],
          ['mgmt', 'سلفة للإدارة', 'من استلمها؟', ['الوالد', '[اسم أحد الشباب 1]', '[اسم أحد الشباب 2]', '[اسم أحد الشباب 3]'], false],
          ['xfer', 'حوالة', '', [], true],
@@ -882,6 +916,15 @@ class Component extends DCLogic {
     const vSubs = vHasQ3 ? curFor[3].map((a) => ({ name: a, style: chip(st.vSub === a), pick: () => this.setState({ vSub: a }) })) : [];
     const detNeed = !!(curFor && (curFor[4] || st.vSub === 'أخرى'));
     const vReady = !!(curFor && (!vHasQ3 || st.vSub) && st.vAmt && (!detNeed || (st.vDet || '').trim()));
+    const SAFES = [['nl1', 'قاصة نيكست لفل 1', '#FA2949', true], ['nl2', 'قاصة نيكست لفل 2', '#3D7BFF', true], ['kyan', 'قاصة كيان (الرمادي والفلوجة)', '#9AA0B4', false]];
+    const safes = SAFES.map((x) => ({ name: x[1], val: x[3] ? '[الرصيد]' : '—', tag: x[3] ? 'مربوطة' : 'تُربط لاحقًا (مرحلة الدمج)',
+      tagStyle: 'align-self: flex-start; font-size: 11px; font-weight: 800; border-radius: 8px; padding: 2px 8px; ' + (x[3] ? 'background: #22C55E22; color: #4ADE80' : 'background: #2A2F40; color: #C9CEDC'),
+      style: 'border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; ' + (x[3] ? 'background: linear-gradient(160deg, ' + x[2] + '33, #151821 70%); border: 1px solid ' + x[2] + '66' : 'background: #10131A; border: 1px dashed #343A50; opacity: .8') }));
+    const tChip = (on, ok) => chip(on) + (ok ? '' : ' opacity: .45; cursor: not-allowed;');
+    const tFrom = SAFES.map((x) => ({ name: x[1].replace('قاصة ', '') + (x[3] ? '' : ' (لاحقًا)'), style: tChip(st.tFrom === x[0], x[3]), pick: () => (x[3] ? this.setState({ tFrom: x[0], tTo: st.tTo === x[0] ? null : st.tTo }) : this._toast('قاصة كيان تُربط لاحقًا في مرحلة الدمج.')) }));
+    const tTo = SAFES.filter((x) => x[0] !== st.tFrom).map((x) => ({ name: x[1].replace('قاصة ', '') + (x[3] ? '' : ' (لاحقًا)'), style: tChip(st.tTo === x[0], x[3]), pick: () => (x[3] ? this.setState({ tTo: x[0] }) : this._toast('قاصة كيان تُربط لاحقًا في مرحلة الدمج.')) }));
+    const tAmtN = parseInt(String(st.tAmt || '').replace(/[^0-9]/g, ''), 10) || 0;
+    const tReady = !!(st.tFrom && st.tTo && tAmtN && (st.tNote || '').trim());
     const vouchers = st.vouchers.map((v) => ({ ...v, typeStyle: 'padding: 10px 12px; font-weight: 800; color: ' + (v.type === 'صرف' ? '#FF8FA1' : '#4ADE80') }));
 
     // الموظفون والصلاحيات
@@ -902,7 +945,18 @@ class Component extends DCLogic {
 
     return {
       live, accent, tabs, accounts, branches, cashiers, alerts, statCards, secCards, bars, ch, money, reports, ranges, cols, rows, gridHead, tableNote, fullBlocks,
-      accList, vTypes, vBoxes, vFors, vSubs, vHasQ3, vouchers, vHasFor: !!curFor,
+      accList, safes, tFrom, tTo, tAmt: st.tAmt || '', tNote: st.tNote || '',
+      setTAmt: (e) => this.setState({ tAmt: e.target.value }), setTNote: (e) => this.setState({ tNote: e.target.value }),
+      tBtnStyle: 'height: 44px; border-radius: 10px; border: none; font-size: 14px; font-weight: 900; cursor: pointer; font-family: inherit; ' + (tReady ? 'background: ' + accent + '; color: #FFFFFF;' : 'background: #232838; color: #6E7489;'),
+      doTransfer: () => {
+        if (!tReady) { this._toast('اختر القاصة المحوَّل منها وإليها، واكتب المبلغ والسبب.'); return; }
+        const nm = (k) => SAFES.find((x) => x[0] === k)[1]; const no = 'ت-' + String(st.vNo).padStart(4, '0');
+        const a1 = { no: no, type: 'صرف', box: nm(st.tFrom), purpose: 'تحويل إلى ' + nm(st.tTo), amt: fmtN(String(tAmtN)), note: st.tNote.trim(), by: me.name, when: 'الآن' };
+        const a2 = { no: no, type: 'قبض', box: nm(st.tTo), purpose: 'تحويل من ' + nm(st.tFrom), amt: fmtN(String(tAmtN)), note: st.tNote.trim(), by: me.name, when: 'الآن' };
+        this.setState({ vouchers: [a2, a1].concat(st.vouchers), vNo: st.vNo + 1, tAmt: '', tNote: '' });
+        this._toast('تم التحويل ' + no + ': صرف من ' + nm(st.tFrom) + ' وقبض في ' + nm(st.tTo) + ' ✓');
+      },
+      vTypes, vBoxes, vFors, vSubs, vHasQ3, vouchers, vHasFor: !!curFor,
       vHint: isOut ? 'مبلغ يخرج من قاصة ' + BR[branchKey] + '.' : 'مبلغ يدخل إلى قاصة ' + BR[branchKey] + '.',
       vQ1: isOut ? 'من أي صندوق يخرج المبلغ؟' : 'إلى أي صندوق يدخل المبلغ؟',
       vQ2: isOut ? 'لأي غرض؟' : 'من أين جاء المبلغ؟', vQ3: curFor ? curFor[2] : '', vQAmt: (vHasQ3 ? '4' : '3') + '. المبلغ', vQDet: (vHasQ3 ? '3' : '2') + '. التفاصيل' + (detNeed ? ' (مطلوبة)' : ' (اختيارية)'),
