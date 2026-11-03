@@ -562,7 +562,7 @@ class Component extends DCLogic {
 
     const floorBtns = [['g', 'الطابق الأرضي', '↓'], ['u', 'الطابق العلوي', '↑']].map(([f, n, ic]) => ({ name: n, icon: ic, list: Object.keys(S).filter((k) => S[k].floor === f).map((k) => S[k].name).join(' · '), pick: () => this.setState({ floor: f, loginSec: null, pin: '' }) }));
     const logins = st.floor ? Object.keys(S).filter((k) => S[k].floor === st.floor).map((k) => {
-      const busy = k === 'hall';
+      const busy = false;
       return { name: 'كابتن ' + S[k].name, initial: S[k].name.charAt(0), status: busy ? 'مفتوح على تاب آخر' : 'متاح',
         avatarStyle: 'width: 76px; height: 76px; border-radius: 38px; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 800; ' + (busy ? 'background: #262B3B; color: #8A90A4;' : 'background: linear-gradient(145deg, #E0193A, #A80D24); color: #FFFFFF;'),
         style: 'height: 210px; border-radius: 20px; cursor: pointer; font-family: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; ' + (busy ? 'background: #0B0D12; color: #8A90A4; border: 2px dashed #343A50;' : 'background: #151821; color: #F2F3F7; border: 2px solid #6A2436; border-top: 8px solid #C8102E; box-shadow: 0 6px 16px rgba(168,13,36,0.10);'),
