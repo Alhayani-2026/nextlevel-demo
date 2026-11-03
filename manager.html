@@ -541,6 +541,10 @@ button{font-family:inherit}
                 </sc-for>
               </div>
             </sc-if>
+            <sc-if value="{{vHasFor}}" hint-placeholder-val="{{true}}">
+              <span style="font-size: 14px; color: #F2F3F7; font-weight: 800">{{vQDet}}</span>
+              <input type="text" value="{{vDet}}" onChange="{{setVDet}}" placeholder="{{vDetPh}}" style="height: 46px; border-radius: 12px; border: 1px solid #343A50; background: #0B0D12; color: #F2F3F7; padding: 0 12px; font-family: inherit; font-size: 15px"/>
+            </sc-if>
             <span style="font-size: 14px; color: #F2F3F7; font-weight: 800">{{vQAmt}}</span>
             <div style="height: 50px; border-radius: 12px; background: #0B0D12; border: 1px solid #FA2949; display: flex; align-items: center; justify-content: flex-end; padding: 0 14px; font-size: 24px; font-weight: 900; font-variant-numeric: tabular-nums">{{vAmtShow}}</div>
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; direction: ltr">
@@ -865,13 +869,19 @@ class Component extends DCLogic {
     const BOXES = ['صندوق كاشير الأرضي', 'صندوق كاشير العلوي', 'صندوق الإدارة'];
     const vBoxes = BOXES.map((a) => ({ name: a, style: chip(st.vBox === a), pick: () => this.setState({ vBox: a }) }));
     const FORS = isOut
-      ? [['exp', 'مصروف', 'ما نوع المصروف؟', ['كاز', 'مواد نراجيل', 'مواد بارستا', 'مواد تنظيف', 'كهرباء', 'مصروفات عامة', 'أخرى']], ['sup', 'تسديد مورد', 'أي مورد؟', ['أقداح', 'مونين', '[مورد آخر]']], ['adv', 'سلفة موظف', 'أي موظف؟', ['[اسم الموظف 1]', '[اسم الموظف 2]', '[اسم الموظف 3]']]]
-      : [['own', 'إيداع من المالك', '', []], ['debt', 'زبون سدّد دينه', 'أي زبون؟', ['[اسم الزبون 1]', '[اسم الزبون 2]']], ['oth', 'إيراد آخر', '', []]];
+      ? [['exp', 'مصروف تشغيل', 'ما نوع المصروف؟', ['كاز', 'مواد نراجيل', 'مواد بارستا', 'مواد تنظيف', 'كهرباء', 'مصروفات عامة', 'أخرى'], false],
+         ['home', 'صرف للبيت', 'ما نوع الصرف؟', ['طبيب', 'شراء مواد للبيت', 'أخرى'], false],
+         ['mgmt', 'سلفة للإدارة', 'من استلمها؟', ['الوالد', '[اسم أحد الشباب 1]', '[اسم أحد الشباب 2]', '[اسم أحد الشباب 3]'], false],
+         ['xfer', 'حوالة', '', [], true],
+         ['sup', 'تسديد مورد', 'أي مورد؟', ['أقداح', 'مونين', '[مورد آخر]'], false],
+         ['adv', 'سلفة موظف', 'أي موظف؟', ['[اسم الموظف 1]', '[اسم الموظف 2]', '[اسم الموظف 3]'], false]]
+      : [['own', 'إيداع من المالك', '', [], false], ['debt', 'زبون سدّد دينه', 'أي زبون؟', ['[اسم الزبون 1]', '[اسم الزبون 2]'], false], ['oth', 'إيراد آخر', '', [], true]];
     const curFor = FORS.find((f) => f[0] === st.vFor) || null;
-    const vFors = FORS.map((f) => ({ name: f[1], style: chip(st.vFor === f[0]), pick: () => this.setState({ vFor: f[0], vSub: null }) }));
+    const vFors = FORS.map((f) => ({ name: f[1], style: chip(st.vFor === f[0]), pick: () => this.setState({ vFor: f[0], vSub: null, vDet: '' }) }));
     const vHasQ3 = !!(curFor && curFor[3].length);
     const vSubs = vHasQ3 ? curFor[3].map((a) => ({ name: a, style: chip(st.vSub === a), pick: () => this.setState({ vSub: a }) })) : [];
-    const vReady = !!(curFor && (!vHasQ3 || st.vSub) && st.vAmt);
+    const detNeed = !!(curFor && (curFor[4] || st.vSub === 'أخرى'));
+    const vReady = !!(curFor && (!vHasQ3 || st.vSub) && st.vAmt && (!detNeed || (st.vDet || '').trim()));
     const vouchers = st.vouchers.map((v) => ({ ...v, typeStyle: 'padding: 10px 12px; font-weight: 800; color: ' + (v.type === 'صرف' ? '#FF8FA1' : '#4ADE80') }));
 
     // الموظفون والصلاحيات
@@ -892,10 +902,11 @@ class Component extends DCLogic {
 
     return {
       live, accent, tabs, accounts, branches, cashiers, alerts, statCards, secCards, bars, ch, money, reports, ranges, cols, rows, gridHead, tableNote, fullBlocks,
-      accList, vTypes, vBoxes, vFors, vSubs, vHasQ3, vouchers,
+      accList, vTypes, vBoxes, vFors, vSubs, vHasQ3, vouchers, vHasFor: !!curFor,
       vHint: isOut ? 'مبلغ يخرج من قاصة ' + BR[branchKey] + '.' : 'مبلغ يدخل إلى قاصة ' + BR[branchKey] + '.',
       vQ1: isOut ? 'من أي صندوق يخرج المبلغ؟' : 'إلى أي صندوق يدخل المبلغ؟',
-      vQ2: isOut ? 'لأي غرض؟' : 'من أين جاء المبلغ؟', vQ3: curFor ? curFor[2] : '', vQAmt: (vHasQ3 ? '3' : '2') + '. المبلغ', users, roleOpts, branchOpts, perms,
+      vQ2: isOut ? 'لأي غرض؟' : 'من أين جاء المبلغ؟', vQ3: curFor ? curFor[2] : '', vQAmt: (vHasQ3 ? '4' : '3') + '. المبلغ', vQDet: (vHasQ3 ? '3' : '2') + '. التفاصيل' + (detNeed ? ' (مطلوبة)' : ' (اختيارية)'),
+      vDet: st.vDet || '', vDetPh: curFor && curFor[0] === 'xfer' ? 'مثال: حوالة إلى فلان، والسبب' : curFor && curFor[0] === 'home' ? 'مثال: مراجعة طبيب أطفال' : 'اكتب التفاصيل هنا', setVDet: (e) => this.setState({ vDet: e.target.value }), users, roleOpts, branchOpts, perms,
       isDash: st.tab === 'dash', isCash: st.tab === 'cash', isRep: st.tab === 'rep', isAcc: st.tab === 'acc', isStaff: st.tab === 'staff',
       isGM, canSwitchBranch: me.br === 'both', lockedBranch: me.br !== 'both',
       branchName: BR[branchKey], scopeText: 'تشوف: ' + BR[branchKey],
@@ -915,9 +926,9 @@ class Component extends DCLogic {
       vKeys: keysFor('vAmt'), vAmtShow: fmtN(st.vAmt),
       saveVStyle: 'height: 52px; border-radius: 12px; border: none; font-size: 16px; font-weight: 900; cursor: pointer; font-family: inherit; ' + (vReady ? 'background: linear-gradient(135deg, ' + accent + ', #B3122F); color: #FFFFFF; box-shadow: 0 0 18px ' + accent + '66;' : 'background: #232838; color: #6E7489;'),
       saveVoucher: () => {
-        if (!vReady) { this._toast('أكمل الخطوات: الغرض' + (vHasQ3 ? '، ثم التفاصيل' : '') + '، ثم المبلغ.'); return; }
-        const v = { no: 'س-' + String(st.vNo).padStart(4, '0'), type: st.vType, box: 'قاصة ' + BR[branchKey], purpose: curFor[1], amt: fmtN(st.vAmt), note: st.vSub || '—', by: me.name, when: 'الآن' };
-        this.setState({ vouchers: [v].concat(st.vouchers), vNo: st.vNo + 1, vAmt: '', vFor: null, vSub: null });
+        if (!vReady) { this._toast('أكمل الخطوات: الغرض' + (vHasQ3 ? '، ثم النوع' : '') + (detNeed ? '، ثم اكتب التفاصيل' : '') + '، ثم المبلغ.'); return; }
+        const v = { no: 'س-' + String(st.vNo).padStart(4, '0'), type: st.vType, box: 'قاصة ' + BR[branchKey], purpose: curFor[1], amt: fmtN(st.vAmt), note: [st.vSub, (st.vDet || '').trim()].filter(Boolean).join(' · ') || '—', by: me.name, when: 'الآن' };
+        this.setState({ vouchers: [v].concat(st.vouchers), vNo: st.vNo + 1, vAmt: '', vFor: null, vSub: null, vDet: '' });
         this._toast('تم تسجيل السند ' + v.no + ' باسمك ✓');
       },
       su: { name: S.name, role: ROLES[S.role] + ' · ' + BR[S.br], initial: S.name.replace(/[\[\]]/g, '').replace('اسم ', '').charAt(0) || '؟', avatar: 'width: 60px; height: 60px; border-radius: 50%; background: ' + S.color + '; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 24px; color: #FFFFFF; box-shadow: 0 0 20px ' + S.color + '88' },
