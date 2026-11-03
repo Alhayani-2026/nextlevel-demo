@@ -219,27 +219,46 @@ button{font-family:inherit}
           <div style="display: flex; flex-direction: column; gap: 18px; min-width: 0">
             <section style="background: #151821; border: 1px solid #232838; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
               <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap">
-                <h2 style="margin: 0; font-size: 19px; font-weight: 900">مبيعات كل يوم بالشهر</h2>
-                <div style="display: flex; gap: 6px; align-items: center">
-                  <button onClick="{{monthPrev}}" style="width: 40px; height: 40px; border-radius: 10px; border: 1px solid #343A4E; background: #1C2030; color: #FFFFFF; font-size: 18px; cursor: pointer">›</button>
-                  <span style="min-width: 150px; text-align: center; font-weight: 800; font-size: 15px">{{monthName}}</span>
-                  <button onClick="{{monthNext}}" style="width: 40px; height: 40px; border-radius: 10px; border: 1px solid #343A4E; background: #1C2030; color: #FFFFFF; font-size: 18px; cursor: pointer">‹</button>
-                </div>
+                <h2 style="margin: 0; font-size: 19px; font-weight: 900">المبيعات · {{ch.title}}</h2>
+                <span style="background: #2A2F40; border-radius: 8px; padding: 2px 10px; font-size: 12px; font-weight: 700; color: #C9CEDC">شكل توضيحي · الأرقام الحقيقية تطلع من النظام</span>
               </div>
-              <div style="display: flex; gap: 14px; font-size: 13px; color: #9AA0B4; align-items: center; flex-wrap: wrap">
-                <span style="display: flex; align-items: center; gap: 6px"><span style="width: 12px; height: 12px; border-radius: 3px; background: #FA2949"></span>الوقت (الأجهزة)</span>
-                <span style="display: flex; align-items: center; gap: 6px"><span style="width: 12px; height: 12px; border-radius: 3px; background: #F59E0B"></span>الطلبات (بارستا ونراجيل)</span>
-                <span style="margin-inline-start: auto; background: #2A2F40; border-radius: 8px; padding: 2px 10px; font-size: 12px; font-weight: 700; color: #C9CEDC">شكل توضيحي · الأرقام الحقيقية تطلع من النظام</span>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                <sc-for list="{{ch.presets}}" as="p" hint-placeholder-count="5"><button onClick="{{p.pick}}" style="{{p.style}}">{{p.name}}</button></sc-for>
               </div>
-              <div style="height: 200px; display: flex; align-items: flex-end; gap: 5px; padding: 8px 4px 0; border-bottom: 1px solid #2A2F40; background: repeating-linear-gradient(0deg, transparent 0 49px, rgba(255,255,255,0.04) 49px 50px)">
-                <sc-for list="{{bars}}" as="br" hint-placeholder-count="30">
-                  <div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end; height: 100%; gap: 2px" title="{{br.tip}}">
-                    <div style="{{br.ordStyle}}"></div>
-                    <div style="{{br.timeStyle}}"></div>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; background: #0B0D12; border: 1px solid #2A2F40; border-radius: 14px; padding: 10px 12px">
+                <span style="font-weight: 800; color: #9AA0B4">من</span>
+                <input type="date" value="{{ch.fromD}}" onChange="{{ch.setFromD}}" style="{{ch.inStyle}}"/>
+                <input type="time" value="{{ch.fromT}}" onChange="{{ch.setFromT}}" style="{{ch.inStyle}}"/>
+                <span style="font-weight: 800; color: #9AA0B4; margin-inline-start: 8px">إلى</span>
+                <input type="date" value="{{ch.toD}}" onChange="{{ch.setToD}}" style="{{ch.inStyle}}"/>
+                <input type="time" value="{{ch.toT}}" onChange="{{ch.setToT}}" style="{{ch.inStyle}}"/>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+                <div style="background: #0B0D12; border-radius: 12px; padding: 10px 12px"><div style="font-size: 12px; color: #9AA0B4">مجموع الفترة</div><div style="font-size: 20px; font-weight: 900; color: #FF5A72">{{ch.total}}</div></div>
+                <div style="background: #0B0D12; border-radius: 12px; padding: 10px 12px"><div style="font-size: 12px; color: #9AA0B4">{{ch.bestLbl}}</div><div style="font-size: 18px; font-weight: 800">{{ch.best}}</div></div>
+                <div style="background: #0B0D12; border-radius: 12px; padding: 10px 12px"><div style="font-size: 12px; color: #9AA0B4">{{ch.avgLbl}}</div><div style="font-size: 18px; font-weight: 800">{{ch.avg}}</div></div>
+              </div>
+              <div style="font-size: 12px; color: #9AA0B4">{{ch.unit}} · اضغط على أي عمود حتى يطلعلك تفصيله</div>
+              <div style="height: 230px; display: flex; align-items: flex-end; gap: 4px; padding: 22px 4px 0; border-bottom: 1px solid #2A2F40; direction: ltr; background: repeating-linear-gradient(0deg, transparent 0 51px, rgba(255,255,255,0.04) 51px 52px)">
+                <sc-for list="{{ch.bars}}" as="br" hint-placeholder-count="30">
+                  <div onClick="{{br.pick}}" style="flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; cursor: pointer; gap: 3px">
+                    <span style="{{br.numStyle}}">{{br.num}}</span>
+                    <div style="{{br.style}}"></div>
                   </div>
                 </sc-for>
               </div>
-              <div style="display: flex; justify-content: space-between; font-size: 11px; color: #6E7489; padding: 0 4px"><span>1</span><span>5</span><span>10</span><span>15</span><span>20</span><span>25</span><span>30</span></div>
+              <div style="display: flex; gap: 4px; padding: 0 4px; direction: ltr">
+                <sc-for list="{{ch.bars}}" as="br" hint-placeholder-count="30"><span style="flex: 1; min-width: 0; text-align: center; font-size: 11px; color: #6E7489; direction: rtl; white-space: nowrap">{{br.ax}}</span></sc-for>
+              </div>
+              <sc-if value="{{ch.hasSel}}" hint-placeholder-val="{{false}}">
+                <div style="display: flex; gap: 14px; flex-wrap: wrap; align-items: center; background: #0B0D12; border: 1px solid #3D7BFF66; border-radius: 12px; padding: 10px 14px; font-size: 14px">
+                  <strong style="font-size: 15px">{{ch.sel.name}}</strong>
+                  <span><span style="color: #FA2949">●</span> وقت الأجهزة: <b>{{ch.sel.time}}</b></span>
+                  <span><span style="color: #F59E0B">●</span> البارستا: <b>{{ch.sel.bar}}</b></span>
+                  <span><span style="color: #22C55E">●</span> النراجيل: <b>{{ch.sel.hook}}</b></span>
+                  <span style="margin-inline-start: auto">المجموع: <b style="color: #FF5A72">{{ch.sel.total}}</b></span>
+                </div>
+              </sc-if>
             </section>
 
             <section style="background: #151821; border: 1px solid #232838; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
@@ -701,6 +720,63 @@ class Component extends DCLogic {
       const b = 12 + 18 * Math.abs(Math.cos((i + st.month) * 0.7));
       return { tip: 'يوم ' + (i + 1) + ' (توضيحي)', timeStyle: 'height: ' + a.toFixed(0) + '%; background: linear-gradient(180deg, #FF5A75, #FA2949); border-radius: 4px 4px 0 0; transform-origin: bottom; animation: nlrise .6s ease ' + (i * 0.015).toFixed(3) + 's both', ordStyle: 'height: ' + b.toFixed(0) + '%; background: linear-gradient(180deg, #FCD34D, #F59E0B); border-radius: 4px; transform-origin: bottom; animation: nlrise .6s ease ' + (i * 0.015).toFixed(3) + 's both; opacity: .9' };
     });
+    const CH_M = ['كانون الثاني', 'شباط', 'آذار', 'نيسان', 'أيار', 'حزيران', 'تموز', 'آب', 'أيلول', 'تشرين الأول', 'تشرين الثاني', 'كانون الأول'];
+    const p2 = (n) => String(n).padStart(2, '0');
+    const iso = (d) => d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
+    const now0 = new Date(); const todayIso = iso(now0);
+    const addD = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+    const presetRange = (k) => { const t = new Date(now0.getFullYear(), now0.getMonth(), now0.getDate());
+      if (k === 'today') return [t, t]; if (k === 'yday') { const y = addD(t, -1); return [y, y]; }
+      if (k === 'week') { const back = (t.getDay() + 1) % 7; return [addD(t, -back), t]; }
+      if (k === 'month') return [new Date(t.getFullYear(), t.getMonth(), 1), new Date(t.getFullYear(), t.getMonth() + 1, 0)];
+      return [new Date(t.getFullYear(), t.getMonth() - 1, 1), new Date(t.getFullYear(), t.getMonth(), 0)]; };
+    const chP = st.chP || 'month'; const pr = presetRange(chP === 'custom' ? 'month' : chP);
+    const fromD = st.chFromD || iso(pr[0]), toD0 = st.chToD || iso(pr[1]);
+    const fromT = st.chFromT || '00:00', toT = st.chToT || '23:59';
+    const toD = toD0 < fromD ? fromD : toD0;
+    const dayVal = (d) => { const n = Math.floor(d.getTime() / 86400000); const wk = d.getDay(); const v = 380 + 330 * Math.abs(Math.sin(n * 0.55)) + 120 * Math.abs(Math.cos(n * 0.23)) + (wk === 4 || wk === 5 ? 170 : 0); return Math.round(v / 10) * 10; };
+    const split = (v, n) => { const a = 0.55 + 0.08 * Math.sin(n), b = 0.3 + 0.05 * Math.cos(n); const t = Math.round(v * a), br = Math.round(v * b); return [t, br, v - t - br]; };
+    const fK = (v) => (Math.round(v) * 1000).toLocaleString('en-US') + ' د.ع';
+    const HW = [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 4, 5, 6, 7, 9, 11, 13, 14, 12, 8]; const HWS = HW.reduce((a, x) => a + x, 0);
+    const hourV = (d, h) => { const s3 = iso(d); if (s3 > todayIso || (s3 === todayIso && h > now0.getHours())) return 0; return Math.round(dayVal(d) * HW[h] / HWS); };
+    const dayTot = (d) => { const s3 = iso(d); if (s3 > todayIso) return 0; if (s3 < todayIso) return dayVal(d); let t = 0; for (let h = 0; h <= now0.getHours(); h++) t += hourV(d, h); return t; };
+    const single = fromD === toD;
+    let items = [];
+    if (single) {
+      const d = new Date(fromD + 'T00:00:00');
+      const h1 = parseInt(fromT, 10), h2 = parseInt(toT, 10);
+      for (let h = 0; h < 24; h++) { if (h < h1 || h > h2) continue; const v = hourV(d, h); const hh = h % 12 || 12; items.push({ key: 'h' + h, ax: (h % 3 === 0 ? hh + ' ' + (h < 12 ? 'ص' : 'م') : ''), name: 'الساعة ' + hh + ':00 ' + (h < 12 ? 'ص' : 'م'), v: v, n: h, now: iso(d) === todayIso && h === now0.getHours() }); }
+    } else {
+      let d = new Date(fromD + 'T00:00:00'); const end = new Date(toD + 'T00:00:00'); let i = 0;
+      while (d <= end && i < 92) { const v = dayTot(d); items.push({ key: iso(d), ax: '', name: d.getDate() + ' ' + CH_M[d.getMonth()], v: v, n: Math.floor(d.getTime() / 86400000), now: iso(d) === todayIso, day: d.getDate() }); d = addD(d, 1); i++; }
+      const step = items.length <= 16 ? 1 : items.length <= 35 ? 3 : 7; items.forEach((it, j) => { if (j % step === 0 || j === items.length - 1) it.ax = String(it.day); });
+    }
+    const mxV = Math.max(1, ...items.map((x) => x.v)); const many = items.length > 35;
+    const totV = items.reduce((a, x) => a + x.v, 0); const withV = items.filter((x) => x.v > 0);
+    const bestI = withV.reduce((a, x) => (!a || x.v > a.v ? x : a), null);
+    const selI = items.find((x) => x.key === st.chSel) || null;
+    const chBars = items.map((it) => ({ num: it.v ? String(it.v) : '', ax: it.ax,
+      numStyle: 'font-size: ' + (many ? '0' : items.length > 24 ? '9' : '11') + 'px; color: ' + (it.now ? '#FF5A72' : '#C9CEDC') + '; font-weight: 700; white-space: nowrap',
+      style: 'width: 100%; max-width: 34px; border-radius: 5px 5px 0 0; height: ' + Math.max(it.v ? 2 : 0, Math.round(78 * it.v / mxV)) + '%; background: ' + (st.chSel === it.key ? '#FFFFFF' : it.now ? 'linear-gradient(180deg, #FF5A75, #FA2949)' : 'linear-gradient(180deg, #5B8EFF, #3D7BFF)') + '; box-shadow: ' + (it.now ? '0 0 12px #FA294988' : 'none') + '; transform-origin: bottom; animation: nlrise .5s ease both',
+      pick: () => { if (it.v) this.setState({ chSel: st.chSel === it.key ? null : it.key }); } }));
+    const sp = selI ? split(selI.v, selI.n) : [0, 0, 0];
+    const fmtDate = (s2) => { const d = new Date(s2 + 'T00:00:00'); return d.getDate() + ' ' + CH_M[d.getMonth()]; };
+    const PRE = [['today', 'اليوم'], ['yday', 'أمس'], ['week', 'هذا الأسبوع'], ['month', 'هذا الشهر'], ['last', 'الشهر الماضي']];
+    const ch = {
+      title: single ? fmtDate(fromD) + ' · بالساعات' : 'من ' + fmtDate(fromD) + ' إلى ' + fmtDate(toD),
+      presets: PRE.map((p) => ({ name: p[1], style: pill(chP === p[0], '#3D7BFF'), pick: () => this.setState({ chP: p[0], chFromD: null, chToD: null, chFromT: null, chToT: null, chSel: null }) })),
+      fromD: fromD, toD: toD, fromT: fromT, toT: toT,
+      inStyle: 'height: 40px; border-radius: 10px; border: 1px solid #343A50; background: #151821; color: #F2F3F7; padding: 0 10px; font-family: inherit; font-size: 14px; color-scheme: dark',
+      setFromD: (e) => this.setState({ chP: 'custom', chFromD: e.target.value || fromD, chToD: toD, chSel: null }),
+      setToD: (e) => this.setState({ chP: 'custom', chToD: e.target.value || toD, chFromD: fromD, chSel: null }),
+      setFromT: (e) => this.setState({ chP: 'custom', chFromT: e.target.value || '00:00', chFromD: fromD, chToD: toD }),
+      setToT: (e) => this.setState({ chP: 'custom', chToT: e.target.value || '23:59', chFromD: fromD, chToD: toD }),
+      total: fK(totV), bestLbl: single ? 'أعلى ساعة' : 'أعلى يوم', best: bestI ? bestI.name + ' · ' + fK(bestI.v) : '—',
+      avgLbl: single ? 'معدل الساعة' : 'معدل اليوم', avg: withV.length ? fK(totV / withV.length) : '—',
+      unit: 'الأرقام فوگ الأعمدة بالألف دينار' + (many ? ' (تظهر بالضغط لأن الفترة طويلة)' : ''),
+      bars: chBars, hasSel: !!selI,
+      sel: selI ? { name: selI.name, time: fK(sp[0]), bar: fK(sp[1]), hook: fK(sp[2]), total: fK(selI.v) } : { name: '', time: '', bar: '', hook: '', total: '' }
+    };
     const money = [['وقت الأجهزة', '#FA2949'], ['طلبات البارستا', '#F59E0B'], ['طلبات النراجيل', '#22C55E'], ['المطبخ (فرع 2)', '#F97316'], ['الخصومات', '#8B5CF6'], ['الصافي', '#FFFFFF']].filter((m) => branchKey !== 'nl1' || m[0].indexOf('فرع 2') < 0).map((m) => ({ name: m[0], dot: 'width: 10px; height: 10px; border-radius: 50%; background: ' + m[1] + '; box-shadow: 0 0 8px ' + m[1] }));
 
     // لوحة أرقام
@@ -811,7 +887,7 @@ class Component extends DCLogic {
       toggle: () => upd({ perms: on ? S.perms.filter((x) => x !== p[0]) : S.perms.concat([p[0]]) }) }; });
 
     return {
-      live, accent, tabs, accounts, branches, cashiers, alerts, statCards, secCards, bars, money, reports, ranges, cols, rows, gridHead, tableNote, fullBlocks,
+      live, accent, tabs, accounts, branches, cashiers, alerts, statCards, secCards, bars, ch, money, reports, ranges, cols, rows, gridHead, tableNote, fullBlocks,
       accList, vTypes, vFrom, vTo, vNotes, vouchers, users, roleOpts, branchOpts, perms,
       isDash: st.tab === 'dash', isCash: st.tab === 'cash', isRep: st.tab === 'rep', isAcc: st.tab === 'acc', isStaff: st.tab === 'staff',
       isGM, canSwitchBranch: me.br === 'both', lockedBranch: me.br !== 'both',
