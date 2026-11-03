@@ -907,6 +907,7 @@ class Component extends DCLogic {
          ['home', 'صرف للبيت', 'ما نوع الصرف؟', ['طبيب', 'شراء مواد للبيت', 'أخرى'], false],
          ['mgmt', 'سلفة للإدارة', 'من استلمها؟', ['الوالد', '[اسم أحد الشباب 1]', '[اسم أحد الشباب 2]', '[اسم أحد الشباب 3]'], false],
          ['xfer', 'حوالة', '', [], true],
+         ['proj', 'دفع مشروع', '', [], true],
          ['sup', 'تسديد مورد', 'أي مورد؟', ['أقداح', 'مونين', '[مورد آخر]'], false],
          ['sal', 'رواتب الموظفين', 'لمن؟', ['رواتب كل موظفي الفرع', '[اسم الموظف 1]', '[اسم الموظف 2]', '[اسم الموظف 3]'], false],
          ['adv', 'سلفة موظف', 'أي موظف؟', ['[اسم الموظف 1]', '[اسم الموظف 2]', '[اسم الموظف 3]'], false]]
@@ -961,7 +962,7 @@ class Component extends DCLogic {
       vHint: isOut ? 'مبلغ يخرج من قاصة ' + BR[branchKey] + '.' : 'مبلغ يدخل إلى قاصة ' + BR[branchKey] + '.',
       vQ1: isOut ? 'من أي صندوق يخرج المبلغ؟' : 'إلى أي صندوق يدخل المبلغ؟',
       vQ2: isOut ? 'لأي غرض؟' : 'من أين جاء المبلغ؟', vQ3: curFor ? curFor[2] : '', vQAmt: (vHasQ3 ? '4' : '3') + '. المبلغ', vQDet: (vHasQ3 ? '3' : '2') + '. التفاصيل' + (detNeed ? ' (مطلوبة)' : ' (اختيارية)'),
-      vDet: st.vDet || '', vDetPh: curFor && curFor[0] === 'xfer' ? 'مثال: حوالة إلى فلان، والسبب' : curFor && curFor[0] === 'home' ? 'مثال: مراجعة طبيب أطفال' : 'اكتب التفاصيل هنا', setVDet: (e) => this.setState({ vDet: e.target.value }), users, roleOpts, branchOpts, perms,
+      vDet: st.vDet || '', vDetPh: curFor && curFor[0] === 'xfer' ? 'مثال: حوالة إلى فلان، والسبب' : curFor && curFor[0] === 'proj' ? 'اسم المشروع، وعلى ماذا صُرف المبلغ' : curFor && curFor[0] === 'home' ? 'مثال: مراجعة طبيب أطفال' : 'اكتب التفاصيل هنا', setVDet: (e) => this.setState({ vDet: e.target.value }), users, roleOpts, branchOpts, perms,
       isDash: st.tab === 'dash', isCash: st.tab === 'cash', isRep: st.tab === 'rep', isAcc: st.tab === 'acc', isStaff: st.tab === 'staff',
       isGM, canSwitchBranch: me.br === 'both', lockedBranch: me.br !== 'both',
       branchName: BR[branchKey], scopeText: 'تشوف: ' + BR[branchKey],
