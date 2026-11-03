@@ -491,24 +491,25 @@ button{font-family:inherit}
               <div style="{{al.style}}">
                 <span style="font-size: 12px; color: #9AA0B4">{{al.kind}}</span>
                 <span style="font-size: 16px; font-weight: 900">{{al.name}}</span>
-                <span style="font-size: 20px; font-weight: 900">[الرصيد]</span>
+                <span style="font-size: 20px; font-weight: 900">{{al.val}}</span>
+                <span style="font-size: 12px; color: #9AA0B4">{{al.sub}}</span>
               </div>
             </sc-for>
           </div>
           <section style="background: #151821; border: 1px solid #232838; border-radius: 18px; overflow: hidden">
             <div style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center">
               <h2 style="margin: 0; font-size: 18px; font-weight: 900">آخر السندات</h2>
-              <span style="font-size: 12px; color: #9AA0B4">كل سند باسم من سجّله، وما ينحذف. الغلط يتصحح بسند عكسي.</span>
+              <span style="font-size: 12px; color: #9AA0B4">كل سند يُسجَّل باسم من سجّله ولا يُحذف. الخطأ يُصحَّح بسند معاكس.</span>
             </div>
             <div style="display: grid; grid-template-columns: 90px 80px 1fr 1fr 110px 1.4fr 1fr; background: #10131A; font-size: 12px; color: #9AA0B4; font-weight: 800">
-              <span style="padding: 8px 12px">الرقم</span><span style="padding: 8px 12px">النوع</span><span style="padding: 8px 12px">من</span><span style="padding: 8px 12px">إلى</span><span style="padding: 8px 12px">المبلغ</span><span style="padding: 8px 12px">البيان</span><span style="padding: 8px 12px">سجّله</span>
+              <span style="padding: 8px 12px">الرقم</span><span style="padding: 8px 12px">النوع</span><span style="padding: 8px 12px">القاصة</span><span style="padding: 8px 12px">الغرض</span><span style="padding: 8px 12px">المبلغ</span><span style="padding: 8px 12px">التفاصيل</span><span style="padding: 8px 12px">سجّله</span>
             </div>
             <sc-if value="{{noVouchers}}" hint-placeholder-val="{{false}}">
-              <div style="padding: 18px 16px; font-size: 14px; color: #9AA0B4">ما اكو سندات بعد. سجّل أول سند من اليسار.</div>
+              <div style="padding: 18px 16px; font-size: 14px; color: #9AA0B4">لا توجد سندات بعد. سجّل أول سند من النموذج.</div>
             </sc-if>
             <sc-for list="{{vouchers}}" as="v" hint-placeholder-count="2">
               <div style="display: grid; grid-template-columns: 90px 80px 1fr 1fr 110px 1.4fr 1fr; border-top: 1px solid #232838; font-size: 14px; animation: nlin .3s ease">
-                <span style="padding: 10px 12px; font-weight: 800">{{v.no}}</span><span style="{{v.typeStyle}}">{{v.type}}</span><span style="padding: 10px 12px">{{v.from}}</span><span style="padding: 10px 12px">{{v.to}}</span><span style="padding: 10px 12px; font-weight: 900">{{v.amt}}</span><span style="padding: 10px 12px; color: #C9CEDC">{{v.note}}</span><span style="padding: 10px 12px; color: #C9CEDC">{{v.by}} · {{v.when}}</span>
+                <span style="padding: 10px 12px; font-weight: 800">{{v.no}}</span><span style="{{v.typeStyle}}">{{v.type}}</span><span style="padding: 10px 12px">{{v.box}}</span><span style="padding: 10px 12px">{{v.purpose}}</span><span style="padding: 10px 12px; font-weight: 900">{{v.amt}}</span><span style="padding: 10px 12px; color: #C9CEDC">{{v.note}}</span><span style="padding: 10px 12px; color: #C9CEDC">{{v.by}} · {{v.when}}</span>
               </div>
             </sc-for>
           </section>
@@ -517,7 +518,7 @@ button{font-family:inherit}
         <section style="background: #151821; border: 1px solid #232838; border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 10px">
           <h2 style="margin: 0; font-size: 18px; font-weight: 900">سند جديد</h2>
           <sc-if value="{{noVouchPerm}}" hint-placeholder-val="{{false}}">
-            <span style="font-size: 14px; color: #FF8FA1; font-weight: 700">هذا الحساب ما عنده صلاحية تسجيل سندات.</span>
+            <span style="font-size: 14px; color: #FF8FA1; font-weight: 700">هذا الحساب لا يملك صلاحية تسجيل السندات.</span>
           </sc-if>
           <sc-if value="{{vouchPerm}}" hint-placeholder-val="{{true}}">
             <div style="display: flex; gap: 6px">
@@ -525,25 +526,22 @@ button{font-family:inherit}
                 <button onClick="{{vt.pick}}" style="{{vt.style}}">{{vt.name}}</button>
               </sc-for>
             </div>
-            <span style="font-size: 13px; color: #9AA0B4; font-weight: 700">من حساب</span>
+            <span style="font-size: 13px; color: #9AA0B4">{{vHint}}</span>
+            <span style="font-size: 14px; color: #F2F3F7; font-weight: 800">1. {{vQ2}}</span>
             <div style="display: flex; gap: 6px; flex-wrap: wrap">
-              <sc-for list="{{vFrom}}" as="vf" hint-placeholder-count="5">
-                <button onClick="{{vf.pick}}" style="{{vf.style}}">{{vf.name}}</button>
-              </sc-for>
-            </div>
-            <span style="font-size: 13px; color: #9AA0B4; font-weight: 700">إلى حساب</span>
-            <div style="display: flex; gap: 6px; flex-wrap: wrap">
-              <sc-for list="{{vTo}}" as="vo" hint-placeholder-count="5">
+              <sc-for list="{{vFors}}" as="vo" hint-placeholder-count="3">
                 <button onClick="{{vo.pick}}" style="{{vo.style}}">{{vo.name}}</button>
               </sc-for>
             </div>
-            <span style="font-size: 13px; color: #9AA0B4; font-weight: 700">البيان</span>
-            <div style="display: flex; gap: 6px; flex-wrap: wrap">
-              <sc-for list="{{vNotes}}" as="vn" hint-placeholder-count="4">
-                <button onClick="{{vn.pick}}" style="{{vn.style}}">{{vn.name}}</button>
-              </sc-for>
-            </div>
-            <span style="font-size: 13px; color: #9AA0B4; font-weight: 700">المبلغ</span>
+            <sc-if value="{{vHasQ3}}" hint-placeholder-val="{{true}}">
+              <span style="font-size: 14px; color: #F2F3F7; font-weight: 800">2. {{vQ3}}</span>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap">
+                <sc-for list="{{vSubs}}" as="vn" hint-placeholder-count="4">
+                  <button onClick="{{vn.pick}}" style="{{vn.style}}">{{vn.name}}</button>
+                </sc-for>
+              </div>
+            </sc-if>
+            <span style="font-size: 14px; color: #F2F3F7; font-weight: 800">{{vQAmt}}</span>
             <div style="height: 50px; border-radius: 12px; background: #0B0D12; border: 1px solid #FA2949; display: flex; align-items: center; justify-content: flex-end; padding: 0 14px; font-size: 24px; font-weight: 900; font-variant-numeric: tabular-nums">{{vAmtShow}}</div>
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; direction: ltr">
               <sc-for list="{{vKeys}}" as="k" hint-placeholder-count="12">
@@ -633,7 +631,7 @@ class Component extends DCLogic {
     this.state = {
       acc: 'gm', branch: 'nl1', tab: 'dash', settled: {}, done: {}, toast: '',
       month: 10, target: null, kp: null, rep: 'full', range: 'today', onlyActive: true, sortCol: 0, sortDir: 1,
-      vType: 'صرف', vFrom: null, vTo: null, vNote: null, vAmt: '', vouchers: [], vNo: 1,
+      vType: 'صرف', vBox: null, vFor: null, vSub: null, vAmt: '', vouchers: [], vNo: 1,
       selUser: 'gm', users: null,
       log: [
         { who: '[اسم الموظف]', what: 'دخل · كاشير الأرضي', when: '[الوقت]' },
@@ -859,15 +857,21 @@ class Component extends DCLogic {
     ];
 
     // الحسابات والسندات
-    const ACC = [['القاصة · كاشير الأرضي', 'نقدية', '#22C55E'], ['القاصة · كاشير العلوي', 'نقدية', '#22C55E'], ['الموردين', 'موردين', '#F59E0B'], ['المصروفات', 'مصروفات', '#FA2949'], ['الإيرادات', 'إيرادات', '#3D7BFF'], ['رأس المال', 'رأس مال', '#8B5CF6']];
-    const accList = ACC.map((a) => ({ name: a[0], kind: a[1], style: 'background: linear-gradient(160deg, ' + a[2] + '22, #151821 60%); border: 1px solid ' + a[2] + '55; border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px' }));
+    const ACC = [['قاصة ' + BR[branchKey], 'النقد الموجود الآن', '#22C55E'], ['مصروفات هذا الشهر', 'كل ما صُرف من القاصة', '#FA2949'], ['قبض هذا الشهر', 'كل ما دخل القاصة غير المبيعات', '#3D7BFF'], ['باقي للموردين', 'مبالغ علينا لم تُسدَّد', '#F59E0B'], ['ديون الزبائن', 'مبالغ لنا عند الزبائن', '#8B5CF6'], ['سلف الموظفين', 'سلف لم تُستقطع بعد', '#EC4899']];
+    const accList = ACC.map((a) => ({ name: a[0], kind: a[1], val: '[المبلغ]', sub: '', style: 'background: linear-gradient(160deg, ' + a[2] + '22, #151821 60%); border: 1px solid ' + a[2] + '55; border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px' }));
     const chip = (on) => 'min-height: 38px; padding: 0 12px; border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; font-family: inherit; ' + (on ? 'background: ' + accent + '; color: #FFFFFF; border: 1px solid ' + accent + ';' : 'background: #10131A; color: #C9CEDC; border: 1px solid #2A2F40;');
-    const vTypes = ['صرف', 'قبض'].map((t) => ({ name: t === 'صرف' ? '↑ سند صرف' : '↓ سند قبض', style: chip(st.vType === t) + ' flex: 1; height: 44px;', pick: () => this.setState({ vType: t }) }));
-    const accNames = ACC.map((a) => a[0]);
-    const vFrom = accNames.map((a) => ({ name: a, style: chip(st.vFrom === a), pick: () => this.setState({ vFrom: a }) }));
-    const vTo = accNames.filter((a) => a !== st.vFrom).map((a) => ({ name: a, style: chip(st.vTo === a), pick: () => this.setState({ vTo: a }) }));
-    const vNotes = ['شراء مواد بارستا', 'شراء معسل وفحم', 'مواد تنظيف', 'تسديد مورد', 'أخرى'].map((a) => ({ name: a, style: chip(st.vNote === a), pick: () => this.setState({ vNote: a }) }));
-    const vReady = !!(st.vFrom && st.vTo && st.vNote && st.vAmt);
+    const isOut = st.vType === 'صرف';
+    const vTypes = ['صرف', 'قبض'].map((t) => ({ name: t === 'صرف' ? '↑ صرف (مبلغ خارج)' : '↓ قبض (مبلغ داخل)', style: chip(st.vType === t) + ' flex: 1; height: 44px;', pick: () => this.setState({ vType: t, vFor: null, vSub: null }) }));
+    const BOXES = ['صندوق كاشير الأرضي', 'صندوق كاشير العلوي', 'صندوق الإدارة'];
+    const vBoxes = BOXES.map((a) => ({ name: a, style: chip(st.vBox === a), pick: () => this.setState({ vBox: a }) }));
+    const FORS = isOut
+      ? [['exp', 'مصروف', 'ما نوع المصروف؟', ['كاز', 'مواد نراجيل', 'مواد بارستا', 'مواد تنظيف', 'كهرباء', 'مصروفات عامة', 'أخرى']], ['sup', 'تسديد مورد', 'أي مورد؟', ['أقداح', 'مونين', '[مورد آخر]']], ['adv', 'سلفة موظف', 'أي موظف؟', ['[اسم الموظف 1]', '[اسم الموظف 2]', '[اسم الموظف 3]']]]
+      : [['own', 'إيداع من المالك', '', []], ['debt', 'زبون سدّد دينه', 'أي زبون؟', ['[اسم الزبون 1]', '[اسم الزبون 2]']], ['oth', 'إيراد آخر', '', []]];
+    const curFor = FORS.find((f) => f[0] === st.vFor) || null;
+    const vFors = FORS.map((f) => ({ name: f[1], style: chip(st.vFor === f[0]), pick: () => this.setState({ vFor: f[0], vSub: null }) }));
+    const vHasQ3 = !!(curFor && curFor[3].length);
+    const vSubs = vHasQ3 ? curFor[3].map((a) => ({ name: a, style: chip(st.vSub === a), pick: () => this.setState({ vSub: a }) })) : [];
+    const vReady = !!(curFor && (!vHasQ3 || st.vSub) && st.vAmt);
     const vouchers = st.vouchers.map((v) => ({ ...v, typeStyle: 'padding: 10px 12px; font-weight: 800; color: ' + (v.type === 'صرف' ? '#FF8FA1' : '#4ADE80') }));
 
     // الموظفون والصلاحيات
@@ -888,7 +892,10 @@ class Component extends DCLogic {
 
     return {
       live, accent, tabs, accounts, branches, cashiers, alerts, statCards, secCards, bars, ch, money, reports, ranges, cols, rows, gridHead, tableNote, fullBlocks,
-      accList, vTypes, vFrom, vTo, vNotes, vouchers, users, roleOpts, branchOpts, perms,
+      accList, vTypes, vBoxes, vFors, vSubs, vHasQ3, vouchers,
+      vHint: isOut ? 'مبلغ يخرج من قاصة ' + BR[branchKey] + '.' : 'مبلغ يدخل إلى قاصة ' + BR[branchKey] + '.',
+      vQ1: isOut ? 'من أي صندوق يخرج المبلغ؟' : 'إلى أي صندوق يدخل المبلغ؟',
+      vQ2: isOut ? 'لأي غرض؟' : 'من أين جاء المبلغ؟', vQ3: curFor ? curFor[2] : '', vQAmt: (vHasQ3 ? '3' : '2') + '. المبلغ', users, roleOpts, branchOpts, perms,
       isDash: st.tab === 'dash', isCash: st.tab === 'cash', isRep: st.tab === 'rep', isAcc: st.tab === 'acc', isStaff: st.tab === 'staff',
       isGM, canSwitchBranch: me.br === 'both', lockedBranch: me.br !== 'both',
       branchName: BR[branchKey], scopeText: 'تشوف: ' + BR[branchKey],
@@ -908,10 +915,10 @@ class Component extends DCLogic {
       vKeys: keysFor('vAmt'), vAmtShow: fmtN(st.vAmt),
       saveVStyle: 'height: 52px; border-radius: 12px; border: none; font-size: 16px; font-weight: 900; cursor: pointer; font-family: inherit; ' + (vReady ? 'background: linear-gradient(135deg, ' + accent + ', #B3122F); color: #FFFFFF; box-shadow: 0 0 18px ' + accent + '66;' : 'background: #232838; color: #6E7489;'),
       saveVoucher: () => {
-        if (!vReady) { this._toast('اختار: من حساب، إلى حساب، البيان، واكتب المبلغ.'); return; }
-        const v = { no: 'س-' + String(st.vNo).padStart(4, '0'), type: st.vType, from: st.vFrom, to: st.vTo, amt: fmtN(st.vAmt), note: st.vNote, by: me.name, when: 'الآن' };
-        this.setState({ vouchers: [v].concat(st.vouchers), vNo: st.vNo + 1, vAmt: '', vNote: null });
-        this._toast('تمت: سُجّل السند ' + v.no + ' باسمك ✓');
+        if (!vReady) { this._toast('أكمل الخطوات: الغرض' + (vHasQ3 ? '، ثم التفاصيل' : '') + '، ثم المبلغ.'); return; }
+        const v = { no: 'س-' + String(st.vNo).padStart(4, '0'), type: st.vType, box: 'قاصة ' + BR[branchKey], purpose: curFor[1], amt: fmtN(st.vAmt), note: st.vSub || '—', by: me.name, when: 'الآن' };
+        this.setState({ vouchers: [v].concat(st.vouchers), vNo: st.vNo + 1, vAmt: '', vFor: null, vSub: null });
+        this._toast('تم تسجيل السند ' + v.no + ' باسمك ✓');
       },
       su: { name: S.name, role: ROLES[S.role] + ' · ' + BR[S.br], initial: S.name.replace(/[\[\]]/g, '').replace('اسم ', '').charAt(0) || '؟', avatar: 'width: 60px; height: 60px; border-radius: 50%; background: ' + S.color + '; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 24px; color: #FFFFFF; box-shadow: 0 0 20px ' + S.color + '88' },
       readOnlyPerms: !canEdit,
