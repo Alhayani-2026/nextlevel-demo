@@ -1,0 +1,83 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>نيكست لفل · الملاحظات</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0;min-height:100vh;background:#0B0D12;color:#F2F3F7;font-family:Cairo,system-ui,sans-serif;padding:28px 16px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:16px}
+.w{width:100%;max-width:820px;display:flex;flex-direction:column;gap:12px}
+h1{margin:0;font-size:26px}p{margin:0;color:#9AA0B4}
+.top{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+button,a.k{font:800 16px Cairo,system-ui,sans-serif;height:48px;padding:0 20px;border-radius:12px;border:0;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+.cp{background:#FA2949;color:#fff}.k{background:#232838;color:#C3C8D6}
+.n{background:#151821;border:1px solid #232838;border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.h{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13px;color:#9AA0B4}.h b{color:#FF8FA1;font-size:15px}
+.t{font-size:17px;line-height:1.7;white-space:pre-wrap}#msg{font-weight:700;color:#4ADE80;min-height:22px}
+</style></head><body><div class="w">
+<h1>ملاحظات التجربة</h1><p>كل ملاحظة كتبها أحد من زر «اكتب ملاحظة» بأي شاشة. اضغط «نسخ كل الملاحظات» والصقها بالمحادثة.</p>
+<div class="top"><button class="cp" id="cp">نسخ كل الملاحظات</button><button class="k" id="rf">تحديث</button><a class="k" href="index.html">الرئيسية</a><span id="cnt" style="color:#9AA0B4"></span></div>
+<div id="msg"></div><div id="list"></div></div>
+<script>window.NL_NO_NOTE_BTN=true;</script><script>(function () {
+  var DB = 'https://nextlevel-demo-default-rtdb.europe-west1.firebasedatabase.app'; var REMOTE = DB.indexOf('https://') === 0; var LK = 'nextlevel-notes-v1';
+  var SCREEN = document.title.split('·').pop().trim() || 'الصفحة الرئيسية';
+  function loc() { try { return JSON.parse(localStorage.getItem(LK)) || {}; } catch (e) { return {}; } }
+  window.NLNotes = {
+    add: function (n) {
+      if (REMOTE) return fetch(DB + '/notes.json', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(n) }).then(function (r) { if (!r.ok) throw 0; });
+      var a = loc(); a['n' + Date.now()] = n; try { localStorage.setItem(LK, JSON.stringify(a)); } catch (e) {} return Promise.resolve();
+    },
+    all: function () {
+      if (REMOTE) return fetch(DB + '/notes.json').then(function (r) { return r.json(); }).then(function (o) { return o || {}; });
+      return Promise.resolve(loc());
+    }
+  };
+  if (window.NL_NO_NOTE_BTN) return;
+  var css = document.createElement('style');
+  css.textContent = '#nlnb{position:fixed;left:18px;bottom:18px;z-index:99999;height:52px;padding:0 20px;border-radius:26px;border:0;background:#FA2949;color:#fff;font:800 17px Cairo,system-ui,sans-serif;box-shadow:0 0 24px rgba(250,41,73,.6);cursor:pointer}' +
+    '#nlnm{position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;font-family:Cairo,system-ui,sans-serif;direction:rtl}' +
+    '#nlnm .b{background:#151821;border:1px solid #FA294966;border-radius:20px;padding:22px;width:min(520px,92vw);display:flex;flex-direction:column;gap:12px;color:#F2F3F7}' +
+    '#nlnm h3{margin:0;font-size:21px}#nlnm small{color:#9AA0B4;font-size:14px}#nlnm label{font-size:14px;color:#C3C8D6;font-weight:700}' +
+    '#nlnm input,#nlnm textarea{font:600 17px Cairo,system-ui,sans-serif;background:#0B0D12;color:#F2F3F7;border:1px solid #2A2F40;border-radius:12px;padding:10px 12px;box-sizing:border-box;width:100%}' +
+    '#nlnm textarea{min-height:130px;resize:vertical}#nlnm .r{display:flex;gap:10px}' +
+    '#nlnm button{flex:1;height:50px;border-radius:12px;border:0;font:800 17px Cairo,system-ui,sans-serif;cursor:pointer}#nlnm .s{background:#FA2949;color:#fff}#nlnm .c{background:#232838;color:#C3C8D6}' +
+    '#nlnm .m{font-size:15px;font-weight:700;min-height:20px}';
+  document.head.appendChild(css);
+  var btn = document.createElement('button'); btn.id = 'nlnb'; btn.textContent = '✍ اكتب ملاحظة';
+  var m = document.createElement('div'); m.id = 'nlnm';
+  m.innerHTML = '<div class="b"><h3>ملاحظة على: ' + SCREEN + '</h3><small>اكتب أي شي ما عجبك، أو شي تريده يتغيّر، أو فكرة جديدة. تنحفظ وتوصل مباشرة.</small>' +
+    '<label>اسمك</label><input id="nlnn" placeholder="اكتب اسمك">' +
+    '<label>الملاحظة</label><textarea id="nlnt" placeholder="مثال: بشاشة البلاي، زر المحاسبة صغير وأريده أكبر"></textarea>' +
+    '<div class="m" id="nlnmsg"></div><div class="r"><button class="s" id="nlns">إرسال الملاحظة</button><button class="c" id="nlnc">إلغاء</button></div></div>';
+  function open() { try { document.getElementById('nlnn').value = localStorage.getItem('nextlevel-name') || ''; } catch (e) {} document.getElementById('nlnmsg').textContent = ''; m.style.display = 'flex'; document.getElementById('nlnt').focus(); }
+  function close() { m.style.display = 'none'; }
+  document.addEventListener('DOMContentLoaded', function () {
+    document.body.appendChild(btn); document.body.appendChild(m);
+    btn.onclick = open; document.getElementById('nlnc').onclick = close;
+    m.addEventListener('click', function (e) { if (e.target === m) close(); });
+    document.getElementById('nlns').onclick = function () {
+      var name = document.getElementById('nlnn').value.trim(), text = document.getElementById('nlnt').value.trim(), msg = document.getElementById('nlnmsg');
+      if (!name) { msg.style.color = '#FF8FA1'; msg.textContent = 'اكتب اسمك أولًا.'; return; }
+      if (!text) { msg.style.color = '#FF8FA1'; msg.textContent = 'اكتب الملاحظة أولًا.'; return; }
+      try { localStorage.setItem('nextlevel-name', name); } catch (e) {}
+      this.disabled = true; var self = this; msg.style.color = '#C3C8D6'; msg.textContent = 'جاري الإرسال…';
+      NLNotes.add({ t: Date.now(), name: name, screen: SCREEN, text: text }).then(function () {
+        msg.style.color = '#4ADE80'; msg.textContent = '✓ وصلت الملاحظة، شكرًا.'; document.getElementById('nlnt').value = ''; self.disabled = false; setTimeout(close, 1400);
+      }).catch(function () { msg.style.color = '#FF8FA1'; msg.textContent = 'ما وصلت. تأكد من الإنترنت وجرّب مرة ثانية.'; self.disabled = false; });
+    };
+  });
+})();
+</script>
+<script>
+var txt='';function tm(t){var d=new Date(t);return d.toLocaleDateString('en-GB')+' '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});}
+function esc(s){return String(s).replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
+function load(){document.getElementById('list').innerHTML='<p>جاري التحميل…</p>';NLNotes.all().then(function(o){var a=Object.keys(o).map(function(k){return o[k];}).filter(Boolean).sort(function(x,y){return y.t-x.t;});
+document.getElementById('cnt').textContent=a.length+' ملاحظة';
+if(!a.length){document.getElementById('list').innerHTML='<p>ما أكو ملاحظات بعد.</p>';txt='';return;}
+document.getElementById('list').innerHTML=a.map(function(n){return '<div class="n"><div class="h"><b>'+esc(n.name)+'</b><span>'+esc(n.screen)+' · '+tm(n.t)+'</span></div><div class="t">'+esc(n.text)+'</div></div>';}).join('');
+txt='ملاحظات التجربة ('+a.length+'):\n\n'+a.slice().reverse().map(function(n,i){return (i+1)+'. '+n.name+' | '+n.screen+' | '+tm(n.t)+'\n'+n.text;}).join('\n\n');
+}).catch(function(){document.getElementById('list').innerHTML='<p style="color:#FF8FA1">ما گدر يجيب الملاحظات. تأكد من الإنترنت واضغط تحديث.</p>';});}
+document.getElementById('rf').onclick=load;
+document.getElementById('cp').onclick=function(){var m=document.getElementById('msg');if(!txt){m.textContent='ما أكو شي ينسخ.';return;}
+function done(){m.textContent='✓ انسخت. الصقها بالمحادثة.';}
+if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(txt).then(done,fb);}else fb();
+function fb(){var t=document.createElement('textarea');t.value=txt;document.body.appendChild(t);t.select();try{document.execCommand('copy');done();}catch(e){m.textContent='انسخها يدويًا.';}document.body.removeChild(t);}};
+load();
+</script></body></html>
