@@ -8,7 +8,7 @@ window.NLDemo = (function () {
   var DB = 'https://nextlevel-demo-default-rtdb.europe-west1.firebasedatabase.app'; var REMOTE = DB.indexOf('https://') === 0;
   var K = 'nextlevel-demo-v1', subs = [], bc = null, cache = null;
   function norm(s) {
-    if (!s) return s; s.units = s.units || {}; s.timers = s.timers || {}; s.hist = s.hist || {}; s.groups = s.groups || {}; s.sales = s.sales ? (Array.isArray(s.sales) ? s.sales : Object.keys(s.sales).map(function (k) { return s.sales[k]; })) : [];
+    if (!s) return s; s.units = s.units || {}; s.timers = s.timers || {}; s.hist = s.hist || {}; s.groups = s.groups || {}; s.credits = s.credits || {}; s.sales = s.sales ? (Array.isArray(s.sales) ? s.sales : Object.keys(s.sales).map(function (k) { return s.sales[k]; })) : [];
     Object.keys(s.units).forEach(function (u) { var d = s.units[u]; if (d) d.orders = d.orders || []; });
     Object.keys(s.timers).forEach(function (u) { var t = s.timers[u]; if (t && t.limit === undefined) t.limit = null; });
     Object.keys(s.groups).forEach(function (g) { s.groups[g].units = s.groups[g].units || []; });
@@ -49,7 +49,7 @@ window.NLDemo = (function () {
       hist: { 'PS1': [[Date.now() - 90 * 60000, 'دخل على طاولة 3 (الصالة)'], [Date.now() - 75 * 60000, 'نُقل إلى PS1 (بلاي ستيشن)']] },
       groups: { 'g1': { name: 'مجموعة 1', units: ['إليت 6', 'إليت 7', 'إليت 8', 'إليت 9'], color: '#7B2FBE' } },
       units: {
-        'PS1': { status: 'run', mode: 'زوجي', segs: [{ mode: 'فردي', start: Date.now() - 75 * 60000 }, { mode: 'زوجي', start: Date.now() - 45 * 60000 }], start: '9:05 م', time: '01:15', orders: [['موهيتو رمان', 4000], ['تفاحتين', 7000]] },
+        'PS1': { status: 'run', mode: 'زوجي', cust: { name: 'علي حسن', phone: '07801234567' }, segs: [{ mode: 'فردي', start: Date.now() - 75 * 60000 }, { mode: 'زوجي', start: Date.now() - 45 * 60000 }], start: '9:05 م', time: '01:15', orders: [['موهيتو رمان', 4000], ['تفاحتين', 7000]] },
         'PS3': { status: 'warn', start: '8:25 م', time: '01:55', orders: [['ايس لاتيه كراميل', 4500]] },
         'PS4': { status: 'booked', time: '10:30 م', guest: 'حجز باسم [اسم الزبون]' },
         'إليت 12': { status: 'oos', reason: 'الشاشة ما تشتغل', by: '[اسم الموظف]', since: 'اليوم 6:10 م' },
@@ -66,10 +66,10 @@ window.NLDemo = (function () {
         'بلياردو 1': { status: 'run', start: '9:30 م', time: '00:50', orders: [] },
         'سينما 1': { status: 'booked', time: '11:00 م', guest: 'حجز باسم [اسم الزبون]' }
       }
-      , sales: [] }; }
+      , sales: [], credits: { '07801234567': 2500 } }; }
   var ACTIVE = function (d) { return d && d.status !== 'booked' && d.status !== 'oos'; };
   function toCap(s) {
-    var open = {}, modes = {}, timers = {}, segs = {};
+    var open = {}, modes = {}, timers = {}, segs = {}, cust = {};
     Object.keys(s.units || {}).forEach(function (u) {
       var d = s.units[u]; if (!ACTIVE(d)) return;
       var g = {}, order = [];
@@ -77,9 +77,10 @@ window.NLDemo = (function () {
       open[u] = order.map(function (k) { return g[k]; });
       if (d.mode === 'فردي' || d.mode === 'زوجي') modes[u] = d.mode;
       if (d.segs && d.segs.length > 1) segs[u] = d.segs;
+      if (d.cust) cust[u] = d.cust;
       if (s.timers && s.timers[u]) timers[u] = s.timers[u];
     });
-    return { open: open, modes: modes, timers: timers, segs: segs };
+    return { open: open, modes: modes, timers: timers, segs: segs, cust: cust, credits: s.credits || {} };
   }
   function fromCap(c, s) {
     s = s || seed(); var now = Date.now();
@@ -93,6 +94,7 @@ window.NLDemo = (function () {
       var mode = c.modes[u] || (prev && prev.mode);
       var nu = Object.assign({}, ACTIVE(prev) ? prev : { status: 'run', start: 'الآن', time: '' }, { orders: orders });
       if (mode) nu.mode = mode;
+      if (c.cust && c.cust[u]) nu.cust = c.cust[u]; else delete nu.cust;
       if (c.segs && c.segs[u] && c.segs[u].length > 1) nu.segs = c.segs[u];
       else       if (ACTIVE(prev) && prev.mode && c.modes[u] && c.modes[u] !== prev.mode) { var t0 = (s.timers[u] || {}).start || now; nu.segs = (prev.segs || [{ mode: prev.mode, start: t0 }]).concat([{ mode: c.modes[u], start: now }]); }
       units[u] = nu;
@@ -298,6 +300,24 @@ button,input{font-family:inherit;color:inherit}
           </div>
           <span style="font-size: 26px; font-weight: 800">{{unit.totalText}}</span>
         </div>
+        <sc-if value="{{unit.custHas}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 12px; border-radius: 10px; background: #12202E; border: 1px solid #2B5FD9">
+            <span style="font-size: 16px; font-weight: 800">👤 {{unit.custText}}</span>
+            <sc-if value="{{unit.hasCredit}}" hint-placeholder-val="{{false}}"><span style="font-size: 14px; font-weight: 800; color: #0B0D12; background: #FFD27A; border-radius: 8px; padding: 2px 10px">له بذمتنا {{unit.creditText}}، تُعوَّض بالكاشير</span></sc-if>
+            <button onClick="{{editCust}}" style="margin-inline-start: auto; height: 34px; padding: 0 12px; border-radius: 8px; border: 1px solid #343A50; background: #151821; color: #C3C8D6; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit">تعديل</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{unit.custAsk}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: 12px; background: #12202E; border: 2px dashed #2B5FD9">
+            <span style="font-size: 15px; font-weight: 800; color: #9DBBFF">👤 بيانات الزبون <span style="font-weight: 600; color: #9AA0B4; font-size: 13px">· اسأله عن اسمه ورقمه قبل ما يبدأ</span></span>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap">
+              <input value="{{custDraft.name}}" onInput="{{setCustName}}" placeholder="اسم الزبون" style="flex: 1; min-width: 160px; height: 46px; border-radius: 10px; border: 1px solid #343A50; background: #0B0D12; color: #F2F3F7; padding: 0 12px; font-size: 17px; font-family: inherit"/>
+              <input value="{{custDraft.phone}}" onInput="{{setCustPhone}}" placeholder="رقم الهاتف 07xxxxxxxxx" inputmode="numeric" style="flex: 1; min-width: 160px; height: 46px; border-radius: 10px; border: 1px solid #343A50; background: #0B0D12; color: #F2F3F7; padding: 0 12px; font-size: 17px; font-family: inherit; direction: ltr; text-align: right"/>
+              <sc-if value="{{unit.isOpen}}" hint-placeholder-val="{{false}}"><button onClick="{{saveCust}}" style="height: 46px; padding: 0 18px; border-radius: 10px; border: none; background: #2B5FD9; color: #FFFFFF; font-size: 16px; font-weight: 800; cursor: pointer; font-family: inherit">حفظ</button></sc-if>
+            </div>
+            <span style="font-size: 13px; color: {{unit.custHintColor}}">{{unit.custHint}}</span>
+          </div>
+        </sc-if>
         <sc-if value="{{unit.hasTimer}}" hint-placeholder-val="{{true}}">
           <div style="{{unit.timerStyle}}">
             <div style="display: flex; flex-direction: column">
@@ -501,7 +521,7 @@ button,input{font-family:inherit;color:inherit}
             </div>
           </sc-if>
           <sc-if value="{{needType}}" hint-placeholder-val="{{false}}">
-            <div style="background: #33121C; border: 2px solid #C8102E; color: #FF5A72; border-radius: 10px; padding: 8px 12px; font-size: 15px; font-weight: 800; text-align: center">اختر نوع النرجيلة (ألماني أو بابلي) حتى يُرسل الطلب</div>
+            <div style="background: #33121C; border: 2px solid #C8102E; color: #FF5A72; border-radius: 10px; padding: 8px 12px; font-size: 15px; font-weight: 800; text-align: center">اختر نوع النرجيلة (ألماني أو بابلي أو خشب) حتى يُرسل الطلب</div>
           </sc-if>
           <div style="display: flex; justify-content: space-between; align-items: baseline">
             <span style="font-size: 15px; font-weight: 700">المجموع</span>
@@ -584,10 +604,11 @@ class Component extends DCLogic {
       open: { 'PS8': [{ name: 'كرك', qty: 1, price: 2000, extra: '' }], 'PS2': [{ name: 'موهيتو رمان', qty: 2, price: 4000, extra: '' }, { name: 'شاي عراقي', qty: 1, price: 1000, extra: '', src: 'cashier' }], 'PS5': [], 'إليت 3': [], 'طاولة 4': [{ name: 'تفاحتين', qty: 1, price: 7000, extra: 'ألماني' }] },
       now: Date.now(), pendingMode: null, customMin: '',
       timers: { 'PS8': { start: Date.now() - 34 * 60000, limit: 30 }, 'PS2': { start: Date.now() - 27 * 60000, limit: 30 }, 'PS5': { start: Date.now() - 50 * 60000, limit: null }, 'إليت 3': { start: Date.now() - 62 * 60000, limit: 60 } },
-      modes: { 'PS2': 'زوجي', 'PS5': 'فردي' }, dept: 'bar', cat: 'mojito', qty: {}, lineNotes: {}, sheet: null, move: null, moveTab: null, toast: ''
+      modes: { 'PS2': 'زوجي', 'PS5': 'فردي' }, dept: 'bar', cat: 'mojito', qty: {}, lineNotes: {}, sheet: null, move: null, moveTab: null, toast: '',
+      cust: { 'PS2': { name: 'علي حسن', phone: '07801234567' } }, custDraft: { name: '', phone: '' }, credits: { '07801234567': 2500 }
     };
     this._tick = setInterval(() => this.setState({ now: Date.now() }), 1000);
-    if (window.NLDemo) { const D = window.NLDemo; const C = ['open', 'timers', 'modes', 'segs']; Object.assign(this.state, D.toCap(D.init())); const base = this.setState.bind(this); this.setState = (o) => { base(o); if (o && C.some((k) => k in o)) { const m = { ...this.state, ...o }; D.patch(D.fromCap({ open: m.open, timers: m.timers, modes: m.modes, segs: m.segs || {} }, D.get())); } }; D.sub((s2) => base(D.toCap(s2))); }
+    if (window.NLDemo) { const D = window.NLDemo; const C = ['open', 'timers', 'modes', 'segs', 'cust']; Object.assign(this.state, D.toCap(D.init())); const base = this.setState.bind(this); this.setState = (o) => { base(o); if (o && C.some((k) => k in o)) { const m = { ...this.state, ...o }; D.patch(D.fromCap({ open: m.open, timers: m.timers, modes: m.modes, segs: m.segs || {}, cust: m.cust || {} }, D.get())); } }; D.sub((s2) => base(D.toCap(s2))); }
   }
   renderVals() {
     const accent = this.props.accent ?? '#C8102E';
@@ -659,7 +680,7 @@ class Component extends DCLogic {
         name: u, isPlay: sec.kind === 'play', isPc: sec.kind === 'pc' || sec.kind === 'room', isTable: sec.kind === 'table' || sec.kind === 'pool',
         sub,
         style: 'height: 118px; border-radius: 14px; cursor: pointer; font-family: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-variant-numeric: tabular-nums; ' + look,
-        pick: () => { if (sec.kind === 'table' && st.open[u] === undefined) { this.setState({ open: { ...st.open, [u]: [] }, unit: u, screen: 'add', dept: 'bar', qty: {}, lineNotes: {}, toast: 'انفتحت ' + u + '. اختر البارستا أو النراجيل.' }); return; } this.setState({ unit: u, screen: 'unit', toast: '' }); }
+        pick: () => { if (sec.kind === 'table' && st.open[u] === undefined) { this.setState({ open: { ...st.open, [u]: [] }, unit: u, screen: 'add', dept: 'bar', qty: {}, lineNotes: {}, toast: 'انفتحت ' + u + '. اختر البارستا أو النراجيل.' }); return; } this.setState({ unit: u, screen: 'unit', toast: '', custEdit: false, custDraft: { name: '', phone: '' } }); }
       };
     }) : [];
 
@@ -691,7 +712,22 @@ class Component extends DCLogic {
     };
     const utc = isOpen && st.unit ? timeCost(st.unit) : { has: false, cost: 0, parts: [] };
     const unitTotal = isOpen ? orders.reduce((a, x) => a + x.price * x.qty, 0) + utc.cost: 0;
+    const custOf = (u) => (st.cust || {})[u] || null;
+    const normPhone = (p) => String(p || '').replace(/[٠-٩]/g, (d) => d.charCodeAt(0) - 1632).replace(/[^0-9]/g, '');
+    const draft = st.custDraft || { name: '', phone: '' };
+    const dPhone = normPhone(draft.phone);
+    const draftCust = () => (draft.name.trim() || dPhone) ? { name: draft.name.trim(), phone: dPhone } : null;
+    const withCust = (u) => { const c = draftCust(); return c ? { ...(st.cust || {}), [u]: c } : (st.cust || {}); };
+    const curCust = st.unit ? custOf(st.unit) : null;
+    const credit = curCust && curCust.phone ? ((st.credits || {})[curCust.phone] || 0) : 0;
+    const known = dPhone.length === 11 ? Object.keys(st.cust || {}).map((k) => st.cust[k]).find((c) => c.phone === dPhone) : null;
+    const dCredit = dPhone.length === 11 ? ((st.credits || {})[dPhone] || 0) : 0;
     const unit = {
+      custHas: !!curCust && !st.custEdit, custText: curCust ? [curCust.name || 'بدون اسم', curCust.phone || 'بدون رقم'].join(' · ') : '',
+      hasCredit: credit > 0, creditText: fmt(credit),
+      custAsk: !!st.unit && (!curCust || !!st.custEdit),
+      custHint: dPhone && dPhone.length !== 11 ? 'الرقم لازم 11 رقم ويبدأ بـ 07' : dCredit > 0 ? 'زبون سابق: له بذمتنا ' + fmt(dCredit) + '، تُعوَّض بالكاشير.' : (dPhone.length === 11 ? 'رقم جديد، ينحفظ ويا الزبون.' : 'اختياري، بس مهم للعروض وللرصيد.'),
+      custHintColor: dPhone && dPhone.length !== 11 ? '#FF5A72' : dCredit > 0 ? '#FFD27A' : '#9AA0B4',
       tc: utc, hasTimeCost: utc.has,
       name: st.unit || '', isFree: !isOpen, isOpen,
       statusText: isOpen ? ('مفتوح' + (isWheel ? ' · دركسون 10,000 د.ع للساعة' : (isPs ? ' · ' + (st.modes[st.unit] || 'فردي') : ''))) : 'متاح، غير مفتوح',
@@ -722,8 +758,9 @@ class Component extends DCLogic {
     const setQty = (name, d) => { const q = { ...st.qty }; q[name] = Math.max(0, (q[name] || 0) + d); if (!q[name]) delete q[name]; this.setState({ qty: q, toast: '' }); };
 const FLAV = { 'تفاحتين': '#2E9E4F', 'انكليزي': '#8D5524', 'ليمون ونعناع': '#7DA41F', 'علج ونعناع': '#0F8F7A', 'عنب ونعناع': '#6A3FC1', 'نكست لفل': '#C8102E', 'إليت زون': '#2B5FD9', 'علج فراولة': '#D6336C', 'تغيير رأس': '#4A4A4A' };
     const isHk = st.dept === 'hookah';
+    const WOOD = 5000; const pp = (n, t) => (printerOf[n] === 'النراجيل' && n !== 'تغيير رأس' && t === 'خشب') ? WOOD : priceOf[n];
     const items = group.items.map((i) => ({
-      name: i[0], priceText: fmt(i[1]), qty: st.qty[i[0]] || 0,
+      name: i[0], priceText: fmt(isHk ? pp(i[0], st.hookType) : i[1]), qty: st.qty[i[0]] || 0,
       imgStyle: 'height: 56px; background: ' + (isHk ? FLAV[i[0]] + '33' : catColor[st.cat] + '22') + '; display: flex; align-items: center; justify-content: center;' + (isHk ? ' border-bottom: 6px solid ' + FLAV[i[0]] + ';' : ''),
       cardStyle: 'border-radius: 14px; background: #151821; overflow: hidden; display: flex; flex-direction: column; ' + ((st.qty[i[0]] || 0) > 0 ? 'border: 3px solid #8A92AB; box-shadow: 0 0 0 3px ' + accent + ';' : 'border: 1px solid #2E3448;'),
       isCold: group.icon === 'cold', isHot: group.icon === 'hot', isSweet: group.icon === 'sweet', isHookah: group.icon === 'hookah',
@@ -731,8 +768,8 @@ const FLAV = { 'تفاحتين': '#2E9E4F', 'انكليزي': '#8D5524', 'ليم
     }));
     const noteText = (name) => { const n = st.lineNotes[name] || {}; return Object.keys(n).filter((k) => n[k]).join(' · '); };
     const cartNames = Object.keys(st.qty);
-    const cart = cartNames.map((name) => ({ name, qty: st.qty[name], extra: [printerOf[name] === 'النراجيل' && name !== 'تغيير رأس' ? (st.hookType || '⚠ اختر ألماني أو بابلي') : '', noteText(name)].filter(Boolean).join(' · '), extraStyle: (printerOf[name] === 'النراجيل' && name !== 'تغيير رأس' && !st.hookType) ? 'font-size: 14px; font-weight: 800; color: #C8102E' : 'font-size: 12px; color: #C3C8D6', printer: printerOf[name], edit: () => this.setState({ sheet: name }) }));
-    const cartTotal = cartNames.reduce((a, n) => a + priceOf[n] * st.qty[n] + ((st.lineNotes[n] || {})['بوبا +2,000 د.ع'] ? 2000 * st.qty[n] : 0), 0);
+    const cart = cartNames.map((name) => ({ name, qty: st.qty[name], extra: [printerOf[name] === 'النراجيل' && name !== 'تغيير رأس' ? (st.hookType || '⚠ اختر ألماني أو بابلي أو خشب') : '', noteText(name)].filter(Boolean).join(' · '), extraStyle: (printerOf[name] === 'النراجيل' && name !== 'تغيير رأس' && !st.hookType) ? 'font-size: 14px; font-weight: 800; color: #C8102E' : 'font-size: 12px; color: #C3C8D6', printer: printerOf[name], edit: () => this.setState({ sheet: name }) }));
+    const cartTotal = cartNames.reduce((a, n) => a + pp(n, st.hookType) * st.qty[n] + ((st.lineNotes[n] || {})['بوبا +2,000 د.ع'] ? 2000 * st.qty[n] : 0), 0);
 
     const forKey = st.forKey || 'cust';
     const forDefs = { cust: ['زبون', 0, '#151821'], staff: ['موظف', 25, '#2E2610'], admin: ['إدارة', 50, '#14213F'] };
@@ -751,7 +788,10 @@ const FLAV = { 'تفاحتين': '#2E9E4F', 'انكليزي': '#8D5524', 'ليم
       const groups = [];
       if (k === 'hookah') {
         groups.push({ title: 'ملاحظة', chips: ['فحم زيادة', 'خفيفة'].map((n) => ({ name: n, style: chip(!!cur[n]), toggle: tog(n) })) });
+      } else if (name === 'ماء' || name === 'قدح ثلج') {
+        groups.push({ title: 'ملاحظة', chips: ['بارد', 'عادي'].map((n) => ({ name: n, style: chip(!!cur[n]), toggle: pickOne(['بارد', 'عادي'], n) })) });
       } else {
+        if (k !== 'sweet' && name !== 'ماء' && name !== 'قدح ثلج') { const szs = ['حجم صغير', 'حجم كبير (سعره يُحدد لاحقًا)']; groups.push({ title: 'الحجم', chips: szs.map((n) => ({ name: n, style: chip(!!cur[n]), toggle: pickOne(szs, n) })) }); }
         const sug = ['بدون سكر', 'سكر قليل', 'سكر زيادة'];
         groups.push({ title: 'السكر', chips: sug.map((n) => ({ name: n, style: chip(!!cur[n]), toggle: pickOne(sug, n) })) });
         if (k !== 'hot' && k !== 'sweet') groups.push({ title: 'الثلج والإضافات', chips: ['ثلج قليل', 'بدون ثلج', 'بوبا +2,000 د.ع'].map((n) => ({ name: n, style: chip(!!cur[n]), toggle: tog(n) })) });
@@ -764,7 +804,7 @@ const FLAV = { 'تفاحتين': '#2E9E4F', 'انكليزي': '#8D5524', 'ليم
       if ((st.forKey || 'cust') !== 'cust' && !st.person) { this.setState({ toast: 'اختر الاسم قبل الإرسال.' }); return; }
       if (cartNames.some((n) => printerOf[n] === 'النراجيل' && n !== 'تغيير رأس') && !st.hookType) return;
       const forTag = (st.forKey || 'cust') !== 'cust' ? forDefs[st.forKey][0] + ': ' + st.person : '';
-      const lines = cartNames.map((n) => ({ name: n, qty: st.qty[n], price: priceOf[n], extra: [printerOf[n] === 'النراجيل' && n !== 'تغيير رأس' ? st.hookType: '', noteText(n), forTag].filter(Boolean).join(' · ') }));
+      const lines = cartNames.map((n) => ({ name: n, qty: st.qty[n], price: pp(n, st.hookType), extra: [printerOf[n] === 'النراجيل' && n !== 'تغيير رأس' ? st.hookType: '', noteText(n), forTag].filter(Boolean).join(' · ') }));
       const counts = {};
       cartNames.forEach((n) => { counts[printerOf[n]] = (counts[printerOf[n]] || 0) + st.qty[n]; });
       const parts = Object.keys(counts).map((p) => 'طابعة ' + p + ' (' + counts[p] + (counts[p] === 1 ? ' صنف' : ' أصناف') + ')');
@@ -792,7 +832,8 @@ const FLAV = { 'تفاحتين': '#2E9E4F', 'انكليزي': '#8D5524', 'ليم
               else if (toTimed) tx[u] = { start: Date.now(), limit: null };
               if (toTimed && S[tabKey].kind === 'play' && u.indexOf('دركسون') !== 0) { mx[u] = mx[st.unit] || 'فردي'; if (sx[st.unit]) sx[u] = sx[st.unit]; }
               delete mx[st.unit]; delete sx[st.unit];
-              this.setState({ open: nx, timers: tx, modes: mx, segs: sx, move: null, moveTab: null, screen: 'units', unit: null, toast: 'نُقل الزبون من ' + st.unit + ' إلى ' + u + ' مع طلباته. صار بذمة كابتن ' + S[tabKey].name + '.' });
+              const cx = { ...(st.cust || {}) }; if (cx[st.unit]) { cx[u] = cx[st.unit]; delete cx[st.unit]; }
+              this.setState({ cust: cx, open: nx, timers: tx, modes: mx, segs: sx, move: null, moveTab: null, screen: 'units', unit: null, toast: 'نُقل الزبون من ' + st.unit + ' إلى ' + u + ' مع طلباته. صار بذمة كابتن ' + S[tabKey].name + '.' });
             }
           };
         })
@@ -801,7 +842,7 @@ const FLAV = { 'تفاحتين': '#2E9E4F', 'انكليزي': '#8D5524', 'ليم
 
     const startTimer = (m) => {
       const u = st.unit; const nm = st.modes; const mode = isPs ? st.pendingMode: null;
-      this.setState({ open: { ...st.open, [u]: [] }, timers: { ...st.timers, [u]: { start: Date.now(), limit: m } }, modes: mode ? { ...nm, [u]: mode } : nm, pendingMode: null, customMin: '', toast: 'فُتح ' + u + (mode ? ' ' + mode: '') + (m ? ' لمدة ' + m + ' دقيقة. التنبيه قبل النهاية بـ 5 دقائق.' : ' وقت مفتوح.') });
+      this.setState({ cust: withCust(u), custDraft: { name: '', phone: '' }, open: { ...st.open, [u]: [] }, timers: { ...st.timers, [u]: { start: Date.now(), limit: m } }, modes: mode ? { ...nm, [u]: mode } : nm, pendingMode: null, customMin: '', toast: 'فُتح ' + u + (mode ? ' ' + mode: '') + (m ? ' لمدة ' + m + ' دقيقة. التنبيه قبل النهاية بـ 5 دقائق.' : ' وقت مفتوح.') });
     };
     const extendBy = (m) => {
       const u = st.unit; const t = st.timers[u]; if (!t) return;
@@ -826,7 +867,7 @@ const FLAV = { 'تفاحتين': '#2E9E4F', 'انكليزي': '#8D5524', 'ليم
       backText: st.screen === 'units' ? 'خروج' : '→ رجوع',
       isSections: st.screen === 'sections', isUnits: st.screen === 'units', isUnit: st.screen === 'unit', isAdd: st.screen === 'add',
       needType: !st.hookType && Object.keys(st.qty).some((n) => printerOf[n] === 'النراجيل' && n !== 'تغيير رأس'),
-      hasCats: st.dept === 'bar', isHookahDept: st.dept === 'hookah', hookTypes: ['ألماني', 'بابلي'].map((n) => ({ name: n, pick: () => this.setState({ hookType: n, toast: '' }), style: 'height: 52px; min-width: 130px; padding: 0 20px; border-radius: 12px; font-size: 19px; font-weight: 800; cursor: pointer; font-family: inherit; ' + (st.hookType === n ? 'background: #5B4FB5; color: #FFFFFF; border: 3px solid #8A92AB;' : 'background: #151821; color: #B9AEFF; border: 2px solid #5B4FB5;') })),
+      hasCats: st.dept === 'bar', isHookahDept: st.dept === 'hookah', hookTypes: ['ألماني', 'بابلي', 'خشب'].map((n) => ({ name: n === 'خشب' ? 'خشب · 5,000' : n, pick: () => this.setState({ hookType: n, toast: '' }), style: 'height: 52px; min-width: 130px; padding: 0 20px; border-radius: 12px; font-size: 19px; font-weight: 800; cursor: pointer; font-family: inherit; ' + (st.hookType === n ? 'background: #5B4FB5; color: #FFFFFF; border: 3px solid #8A92AB;' : 'background: #151821; color: #B9AEFF; border: 2px solid #5B4FB5;') })),
       groupTitle: st.dept === 'hookah' ? 'النراجيل' : 'البارستا / ' + bar[st.cat].name,
       groupPrinter: st.dept === 'hookah' ? 'النراجيل' : 'البارستا',
       groupBar: 'display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-radius: 12px; background: ' + (st.dept === 'hookah' ? '#5B4FB5' : catColor[st.cat]) + '22; border-right: 8px solid ' + (st.dept === 'hookah' ? '#5B4FB5' : catColor[st.cat]) + ';',
@@ -836,7 +877,12 @@ const FLAV = { 'تفاحتين': '#2E9E4F', 'انكليزي': '#8D5524', 'ليم
       hasDisc: disc > 0 && cart.length > 0,
       discLine: 'خصم ' + forDefs[forKey][0] + ' ' + disc + '% يُطبَّق عند المحاسبة بالكاشير (يصير ' + fmt(net) + ')',
       chargeLine: 'يُسجَّل على حساب: ' + (st.person || 'اختر الاسم'),
-      openSingle: () => this.setState({ open: { ...st.open, [st.unit]: [] }, toast: 'فُتح ' + st.unit + '.' }),
+      custDraft: draft,
+      setCustName: (e) => this.setState({ custDraft: { ...draft, name: e.target.value } }),
+      setCustPhone: (e) => this.setState({ custDraft: { ...draft, phone: e.target.value } }),
+      editCust: () => { const c = curCust || { name: '', phone: '' }; this.setState({ custEdit: true, custDraft: { name: c.name || '', phone: c.phone || '' } }); },
+      saveCust: () => { if (dPhone && dPhone.length !== 11) { this.setState({ toast: 'رقم الهاتف لازم 11 رقم ويبدأ بـ 07.' }); return; } const c = draftCust(); const nc = { ...(st.cust || {}) }; if (c) nc[st.unit] = c; else delete nc[st.unit]; this.setState({ cust: nc, custEdit: false, custDraft: { name: '', phone: '' }, toast: c ? 'انحفظت بيانات الزبون على ' + st.unit + '.' : '' }); },
+      openSingle: () => this.setState({ cust: withCust(st.unit), custDraft: { name: '', phone: '' }, open: { ...st.open, [st.unit]: [] }, toast: 'فُتح ' + st.unit + '.' }),
       pickSingle: () => this.setState({ pendingMode: 'فردي' }),
       pickDouble: () => this.setState({ pendingMode: 'زوجي' }),
       durations: [['وقت مفتوح', null], ['15 دقيقة', 15], ['30 دقيقة', 30], ['45 دقيقة', 45], ['ساعة', 60], ['ساعتين', 120]].map(([n, m]) => ({ name: n, pick: () => startTimer(m) })),

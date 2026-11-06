@@ -8,7 +8,7 @@ window.NLDemo = (function () {
   var DB = 'https://nextlevel-demo-default-rtdb.europe-west1.firebasedatabase.app'; var REMOTE = DB.indexOf('https://') === 0;
   var K = 'nextlevel-demo-v1', subs = [], bc = null, cache = null;
   function norm(s) {
-    if (!s) return s; s.units = s.units || {}; s.timers = s.timers || {}; s.hist = s.hist || {}; s.groups = s.groups || {}; s.sales = s.sales ? (Array.isArray(s.sales) ? s.sales : Object.keys(s.sales).map(function (k) { return s.sales[k]; })) : [];
+    if (!s) return s; s.units = s.units || {}; s.timers = s.timers || {}; s.hist = s.hist || {}; s.groups = s.groups || {}; s.credits = s.credits || {}; s.sales = s.sales ? (Array.isArray(s.sales) ? s.sales : Object.keys(s.sales).map(function (k) { return s.sales[k]; })) : [];
     Object.keys(s.units).forEach(function (u) { var d = s.units[u]; if (d) d.orders = d.orders || []; });
     Object.keys(s.timers).forEach(function (u) { var t = s.timers[u]; if (t && t.limit === undefined) t.limit = null; });
     Object.keys(s.groups).forEach(function (g) { s.groups[g].units = s.groups[g].units || []; });
@@ -49,7 +49,7 @@ window.NLDemo = (function () {
       hist: { 'PS1': [[Date.now() - 90 * 60000, 'دخل على طاولة 3 (الصالة)'], [Date.now() - 75 * 60000, 'نُقل إلى PS1 (بلاي ستيشن)']] },
       groups: { 'g1': { name: 'مجموعة 1', units: ['إليت 6', 'إليت 7', 'إليت 8', 'إليت 9'], color: '#7B2FBE' } },
       units: {
-        'PS1': { status: 'run', mode: 'زوجي', segs: [{ mode: 'فردي', start: Date.now() - 75 * 60000 }, { mode: 'زوجي', start: Date.now() - 45 * 60000 }], start: '9:05 م', time: '01:15', orders: [['موهيتو رمان', 4000], ['تفاحتين', 7000]] },
+        'PS1': { status: 'run', mode: 'زوجي', cust: { name: 'علي حسن', phone: '07801234567' }, segs: [{ mode: 'فردي', start: Date.now() - 75 * 60000 }, { mode: 'زوجي', start: Date.now() - 45 * 60000 }], start: '9:05 م', time: '01:15', orders: [['موهيتو رمان', 4000], ['تفاحتين', 7000]] },
         'PS3': { status: 'warn', start: '8:25 م', time: '01:55', orders: [['ايس لاتيه كراميل', 4500]] },
         'PS4': { status: 'booked', time: '10:30 م', guest: 'حجز باسم [اسم الزبون]' },
         'إليت 12': { status: 'oos', reason: 'الشاشة ما تشتغل', by: '[اسم الموظف]', since: 'اليوم 6:10 م' },
@@ -66,10 +66,10 @@ window.NLDemo = (function () {
         'بلياردو 1': { status: 'run', start: '9:30 م', time: '00:50', orders: [] },
         'سينما 1': { status: 'booked', time: '11:00 م', guest: 'حجز باسم [اسم الزبون]' }
       }
-      , sales: [] }; }
+      , sales: [], credits: { '07801234567': 2500 } }; }
   var ACTIVE = function (d) { return d && d.status !== 'booked' && d.status !== 'oos'; };
   function toCap(s) {
-    var open = {}, modes = {}, timers = {}, segs = {};
+    var open = {}, modes = {}, timers = {}, segs = {}, cust = {};
     Object.keys(s.units || {}).forEach(function (u) {
       var d = s.units[u]; if (!ACTIVE(d)) return;
       var g = {}, order = [];
@@ -77,9 +77,10 @@ window.NLDemo = (function () {
       open[u] = order.map(function (k) { return g[k]; });
       if (d.mode === 'فردي' || d.mode === 'زوجي') modes[u] = d.mode;
       if (d.segs && d.segs.length > 1) segs[u] = d.segs;
+      if (d.cust) cust[u] = d.cust;
       if (s.timers && s.timers[u]) timers[u] = s.timers[u];
     });
-    return { open: open, modes: modes, timers: timers, segs: segs };
+    return { open: open, modes: modes, timers: timers, segs: segs, cust: cust, credits: s.credits || {} };
   }
   function fromCap(c, s) {
     s = s || seed(); var now = Date.now();
@@ -93,6 +94,7 @@ window.NLDemo = (function () {
       var mode = c.modes[u] || (prev && prev.mode);
       var nu = Object.assign({}, ACTIVE(prev) ? prev : { status: 'run', start: 'الآن', time: '' }, { orders: orders });
       if (mode) nu.mode = mode;
+      if (c.cust && c.cust[u]) nu.cust = c.cust[u]; else delete nu.cust;
       if (c.segs && c.segs[u] && c.segs[u].length > 1) nu.segs = c.segs[u];
       else       if (ACTIVE(prev) && prev.mode && c.modes[u] && c.modes[u] !== prev.mode) { var t0 = (s.timers[u] || {}).start || now; nu.segs = (prev.segs || [{ mode: prev.mode, start: t0 }]).concat([{ mode: c.modes[u], start: now }]); }
       units[u] = nu;
