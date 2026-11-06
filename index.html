@@ -29,7 +29,7 @@ window.NLDemo = (function () {
   var DB = 'https://nextlevel-demo-default-rtdb.europe-west1.firebasedatabase.app'; var REMOTE = DB.indexOf('https://') === 0;
   var K = 'nextlevel-demo-v1', subs = [], bc = null, cache = null;
   function norm(s) {
-    if (!s) return s; s.units = s.units || {}; s.timers = s.timers || {}; s.hist = s.hist || {}; s.groups = s.groups || {}; s.credits = s.credits || {}; s.sales = s.sales ? (Array.isArray(s.sales) ? s.sales : Object.keys(s.sales).map(function (k) { return s.sales[k]; })) : [];
+    if (!s) return s; s.units = s.units || {}; s.timers = s.timers || {}; s.hist = s.hist || {}; s.groups = s.groups || {}; s.credits = s.credits || {}; s.debts = s.debts || {}; s.sales = s.sales ? (Array.isArray(s.sales) ? s.sales : Object.keys(s.sales).map(function (k) { return s.sales[k]; })) : [];
     Object.keys(s.units).forEach(function (u) { var d = s.units[u]; if (d) d.orders = d.orders || []; });
     Object.keys(s.timers).forEach(function (u) { var t = s.timers[u]; if (t && t.limit === undefined) t.limit = null; });
     Object.keys(s.groups).forEach(function (g) { s.groups[g].units = s.groups[g].units || []; });

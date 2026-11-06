@@ -8,7 +8,7 @@ window.NLDemo = (function () {
   var DB = 'https://nextlevel-demo-default-rtdb.europe-west1.firebasedatabase.app'; var REMOTE = DB.indexOf('https://') === 0;
   var K = 'nextlevel-demo-v1', subs = [], bc = null, cache = null;
   function norm(s) {
-    if (!s) return s; s.units = s.units || {}; s.timers = s.timers || {}; s.hist = s.hist || {}; s.groups = s.groups || {}; s.credits = s.credits || {}; s.sales = s.sales ? (Array.isArray(s.sales) ? s.sales : Object.keys(s.sales).map(function (k) { return s.sales[k]; })) : [];
+    if (!s) return s; s.units = s.units || {}; s.timers = s.timers || {}; s.hist = s.hist || {}; s.groups = s.groups || {}; s.credits = s.credits || {}; s.debts = s.debts || {}; s.sales = s.sales ? (Array.isArray(s.sales) ? s.sales : Object.keys(s.sales).map(function (k) { return s.sales[k]; })) : [];
     Object.keys(s.units).forEach(function (u) { var d = s.units[u]; if (d) d.orders = d.orders || []; });
     Object.keys(s.timers).forEach(function (u) { var t = s.timers[u]; if (t && t.limit === undefined) t.limit = null; });
     Object.keys(s.groups).forEach(function (g) { s.groups[g].units = s.groups[g].units || []; });
@@ -304,6 +304,7 @@ button,input{font-family:inherit;color:inherit}
           <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 12px; border-radius: 10px; background: #12202E; border: 1px solid #2B5FD9">
             <span style="font-size: 16px; font-weight: 800">👤 {{unit.custText}}</span>
             <sc-if value="{{unit.hasCredit}}" hint-placeholder-val="{{false}}"><span style="font-size: 14px; font-weight: 800; color: #0B0D12; background: #FFD27A; border-radius: 8px; padding: 2px 10px">له بذمتنا {{unit.creditText}}، تُعوَّض بالكاشير</span></sc-if>
+            <sc-if value="{{unit.hasDebt}}" hint-placeholder-val="{{false}}"><span style="font-size: 14px; font-weight: 800; color: #FFFFFF; background: #FA2949; border-radius: 8px; padding: 2px 10px">⚠ عليه دين {{unit.debtText}}</span></sc-if>
             <button onClick="{{editCust}}" style="margin-inline-start: auto; height: 34px; padding: 0 12px; border-radius: 8px; border: 1px solid #343A50; background: #151821; color: #C3C8D6; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit">تعديل</button>
           </div>
         </sc-if>
@@ -605,7 +606,7 @@ class Component extends DCLogic {
       now: Date.now(), pendingMode: null, customMin: '',
       timers: { 'PS8': { start: Date.now() - 34 * 60000, limit: 30 }, 'PS2': { start: Date.now() - 27 * 60000, limit: 30 }, 'PS5': { start: Date.now() - 50 * 60000, limit: null }, 'إليت 3': { start: Date.now() - 62 * 60000, limit: 60 } },
       modes: { 'PS2': 'زوجي', 'PS5': 'فردي' }, dept: 'bar', cat: 'mojito', qty: {}, lineNotes: {}, sheet: null, move: null, moveTab: null, toast: '',
-      cust: { 'PS2': { name: 'علي حسن', phone: '07801234567' } }, custDraft: { name: '', phone: '' }, credits: { '07801234567': 2500 }
+      cust: { 'PS2': { name: 'علي حسن', phone: '07801234567' } }, custDraft: { name: '', phone: '' }, credits: { '07801234567': 2500 }, debts: {}
     };
     this._tick = setInterval(() => this.setState({ now: Date.now() }), 1000);
     if (window.NLDemo) { const D = window.NLDemo; const C = ['open', 'timers', 'modes', 'segs', 'cust']; Object.assign(this.state, D.toCap(D.init())); const base = this.setState.bind(this); this.setState = (o) => { base(o); if (o && C.some((k) => k in o)) { const m = { ...this.state, ...o }; D.patch(D.fromCap({ open: m.open, timers: m.timers, modes: m.modes, segs: m.segs || {}, cust: m.cust || {} }, D.get())); } }; D.sub((s2) => base(D.toCap(s2))); }
@@ -724,12 +725,15 @@ class Component extends DCLogic {
     const credit = curCust && curCust.phone ? ((st.credits || {})[curCust.phone] || 0) : 0;
     const known = dPhone.length === 11 ? Object.keys(st.cust || {}).map((k) => st.cust[k]).find((c) => c.phone === dPhone) : null;
     const dCredit = dPhone.length === 11 ? ((st.credits || {})[dPhone] || 0) : 0;
+    const DBT = (window.NLDemo ? (window.NLDemo.get() || {}).debts : st.debts) || {};
+    const dDebt = dPhone.length === 11 && DBT[dPhone] ? DBT[dPhone].amt : 0;
+    const cDebt = curCust && curCust.phone && DBT[curCust.phone] ? DBT[curCust.phone].amt : 0;
     const unit = {
       custHas: !!curCust && !st.custEdit, custText: curCust ? [curCust.name || 'بدون اسم', curCust.phone || 'بدون رقم'].join(' · ') : '',
-      hasCredit: credit > 0, creditText: fmt(credit),
+      hasCredit: credit > 0, creditText: fmt(credit), hasDebt: cDebt > 0, debtText: fmt(cDebt),
       custAsk: !!st.unit && (!curCust || !!st.custEdit),
-      custHint: dPhone && dPhone.length !== 11 ? 'الرقم لازم 11 رقم ويبدأ بـ 07' : dCredit > 0 ? 'زبون سابق: له بذمتنا ' + fmt(dCredit) + '، تُعوَّض بالكاشير.' : (dPhone.length === 11 ? 'رقم جديد، ينحفظ ويا الزبون.' : 'اختياري، بس مهم للعروض وللرصيد.'),
-      custHintColor: dPhone && dPhone.length !== 11 ? '#FF5A72' : dCredit > 0 ? '#FFD27A' : '#9AA0B4',
+      custHint: dPhone && dPhone.length !== 11 ? 'الرقم لازم 11 رقم ويبدأ بـ 07' : dDebt > 0 ? '⚠ هذا الزبون عليه دين ' + fmt(dDebt) + '. بلّغ الكاشير قبل لا يطلب.' : dCredit > 0 ? 'زبون سابق: له بذمتنا ' + fmt(dCredit) + '، تُعوَّض بالكاشير.' : (dPhone.length === 11 ? 'رقم جديد، ينحفظ ويا الزبون.' : 'اختياري، بس مهم للعروض وللرصيد.'),
+      custHintColor: dPhone && dPhone.length !== 11 ? '#FF5A72' : dDebt > 0 ? '#FF5A72' : dCredit > 0 ? '#FFD27A' : '#9AA0B4',
       tc: utc, hasTimeCost: utc.has,
       name: st.unit || '', isFree: !isOpen, isOpen,
       statusText: isOpen ? ('مفتوح' + (isWheel ? ' · دركسون 10,000 د.ع للساعة' : (isPs ? ' · ' + (st.modes[st.unit] || 'فردي') : ''))) : 'متاح، غير مفتوح',

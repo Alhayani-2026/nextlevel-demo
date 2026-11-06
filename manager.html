@@ -8,7 +8,7 @@ window.NLDemo = (function () {
   var DB = 'https://nextlevel-demo-default-rtdb.europe-west1.firebasedatabase.app'; var REMOTE = DB.indexOf('https://') === 0;
   var K = 'nextlevel-demo-v1', subs = [], bc = null, cache = null;
   function norm(s) {
-    if (!s) return s; s.units = s.units || {}; s.timers = s.timers || {}; s.hist = s.hist || {}; s.groups = s.groups || {}; s.credits = s.credits || {}; s.sales = s.sales ? (Array.isArray(s.sales) ? s.sales : Object.keys(s.sales).map(function (k) { return s.sales[k]; })) : [];
+    if (!s) return s; s.units = s.units || {}; s.timers = s.timers || {}; s.hist = s.hist || {}; s.groups = s.groups || {}; s.credits = s.credits || {}; s.debts = s.debts || {}; s.sales = s.sales ? (Array.isArray(s.sales) ? s.sales : Object.keys(s.sales).map(function (k) { return s.sales[k]; })) : [];
     Object.keys(s.units).forEach(function (u) { var d = s.units[u]; if (d) d.orders = d.orders || []; });
     Object.keys(s.timers).forEach(function (u) { var t = s.timers[u]; if (t && t.limit === undefined) t.limit = null; });
     Object.keys(s.groups).forEach(function (g) { s.groups[g].units = s.groups[g].units || []; });
@@ -406,15 +406,18 @@ button{font-family:inherit}
                 <span style="font-size: 14px; color: #9AA0B4">لا يوجد شيء معلّق.</span>
               </sc-if>
               <sc-for list="{{alerts}}" as="a" hint-placeholder-count="3">
-                <div style="background: #10131A; border: 1px solid #2A2F40; border-right: 4px solid #FA2949; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px">
-                  <span style="font-size: 14px; font-weight: 800">{{a.title}}</span>
+                <button onClick="{{a.open}}" style="{{a.card}}">
+                  <span style="display: flex; align-items: center; gap: 8px; width: 100%"><span style="font-size: 14px; font-weight: 800">{{a.title}}</span><sc-if value="{{a.hasTag}}" hint-placeholder-val="{{false}}"><span style="{{a.tagStyle}}">{{a.tag}}</span></sc-if><span style="margin-inline-start: auto; font-size: 12px; color: #6E7489">{{a.when}}</span></span>
                   <span style="font-size: 13px; color: #9AA0B4">{{a.body}}</span>
-                  <div style="display: flex; gap: 8px">
-                    <button onClick="{{a.ok}}" style="flex: 1; height: 40px; border-radius: 10px; border: none; background: #FA2949; color: #FFFFFF; font-size: 14px; font-weight: 800; cursor: pointer">{{a.okText}}</button>
-                    <button onClick="{{a.no}}" style="flex: 1; height: 40px; border-radius: 10px; border: 1px solid #343A4E; background: transparent; color: #FFFFFF; font-size: 14px; font-weight: 700; cursor: pointer">{{a.noText}}</button>
-                  </div>
-                </div>
+                  <span style="align-self: flex-start; height: 36px; padding: 0 14px; border-radius: 10px; background: #FA2949; color: #FFFFFF; font-size: 13px; font-weight: 800; display: flex; align-items: center">شوف التفاصيل وقرّر ←</span>
+                </button>
               </sc-for>
+              <sc-if value="{{hasDLog}}" hint-placeholder-val="{{false}}">
+                <button onClick="{{toggleDLog}}" style="height: 36px; border-radius: 10px; background: transparent; border: 1px dashed #3A4258; color: #C9CEDC; font-size: 13px; font-weight: 800; cursor: pointer; font-family: inherit">{{dLogN}}</button>
+                <sc-if value="{{showDLog}}" hint-placeholder-val="{{false}}">
+                  <sc-for list="{{dLog}}" as="dl" hint-placeholder-count="2"><div style="font-size: 13px; color: #C3C8D6; padding: 4px 0; border-bottom: 1px dashed #2A2F40"><strong style="color: #FFFFFF">{{dl.title}}</strong> · {{dl.choice}} · {{dl.who}} · {{dl.when}}</div></sc-for>
+                </sc-if>
+              </sc-if>
             </section>
           </div>
         </div>
@@ -656,6 +659,49 @@ button{font-family:inherit}
     </sc-if>
 
     <!-- ===== الموظفون والصلاحيات ===== -->
+    <sc-if value="{{isDebtTab}}" hint-placeholder-val="{{false}}">
+      <div style="display: flex; flex-direction: column; gap: 16px; animation: nlin .35s ease">
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+          <div style="background: #151821; border: 1px solid #3A4258; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; border-color: #FA294988"><span style="font-size: 13px; color: #9AA0B4">مجموع الديون</span><span style="font-size: 28px; font-weight: 900; color: #FF8FA1">{{debtsV.total}}</span></div>
+          <div style="background: #151821; border: 1px solid #3A4258; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 13px; color: #9AA0B4">عدد الزبائن المديونين</span><span style="font-size: 28px; font-weight: 900">{{debtsV.count}}</span></div>
+          <div style="background: #151821; border: 1px solid #3A4258; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 13px; color: #9AA0B4">أقدم دين</span><span style="font-size: 20px; font-weight: 900">{{debtsV.oldest}}</span></div>
+        </div>
+        <section style="background: #151821; border: 1px solid #3A4258; border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+          <div style="display: flex; align-items: center; gap: 10px"><h2 style="margin: 0; font-size: 18px; font-weight: 900">كل زبون وقديش عليه</h2><span style="font-size: 13px; color: #9AA0B4">الأقدم بالأول · اضغط على الاسم حتى تشوف التفاصيل وتستلم</span></div>
+          <sc-if value="{{debtsV.none}}" hint-placeholder-val="{{false}}"><span style="font-size: 14px; color: #9AA0B4">ماكو ديون. لما الكاشير يختار «دين على الزبون» ينسجل هنا باسمه ورقمه.</span></sc-if>
+          <sc-for list="{{debtsV.list}}" as="dbt" hint-placeholder-count="2">
+            <div style="{{dbt.card}}">
+              <button onClick="{{dbt.toggle}}" style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap; background: transparent; border: none; color: #FFFFFF; cursor: pointer; font-family: inherit; text-align: right; padding: 0">
+                <span style="font-size: 16px; font-weight: 900">👤 {{dbt.name}}</span>
+                <span style="font-size: 14px; color: #C9CEDC; direction: ltr">{{dbt.phone}}</span>
+                <span style="font-size: 13px; color: #9AA0B4">{{dbt.since}} · {{dbt.times}}</span>
+                <span style="margin-inline-start: auto; font-size: 20px; font-weight: 900; color: #FF8FA1">{{dbt.amt}}</span>
+              </button>
+              <sc-if value="{{dbt.open}}" hint-placeholder-val="{{false}}">
+                <div style="border-top: 1px dashed #2A2F40; padding-top: 8px; display: flex; flex-direction: column; gap: 4px">
+                  <sc-for list="{{dbt.hist}}" as="hh" hint-placeholder-count="2"><span style="font-size: 13px; color: #C3C8D6">• {{hh}}</span></sc-for>
+                </div>
+                <sc-if value="{{dbt.canCollect}}" hint-placeholder-val="{{true}}">
+                  <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
+                    <input value="{{dbt.amtVal}}" onInput="{{dbt.setAmt}}" placeholder="المبلغ المستلم" inputmode="numeric" style="width: 170px; height: 42px; border-radius: 10px; border: 1px solid #343A50; background: #0B0D12; color: #F2F3F7; padding: 0 12px; font-size: 15px; font-family: inherit">
+                    <button onClick="{{dbt.collect}}" style="height: 42px; padding: 0 14px; border-radius: 10px; border: 1px solid #22C55E; background: transparent; color: #4ADE80; font-size: 14px; font-weight: 900; cursor: pointer; font-family: inherit">استلام جزء</button>
+                    <button onClick="{{dbt.collectAll}}" style="height: 42px; padding: 0 14px; border-radius: 10px; border: none; background: #22C55E; color: #0B0D12; font-size: 14px; font-weight: 900; cursor: pointer; font-family: inherit">استلام الدين كامل</button>
+                    <span style="font-size: 12px; color: #9AA0B4">كل استلام ينسجل سند قبض باسمك.</span>
+                  </div>
+                </sc-if>
+              </sc-if>
+            </div>
+          </sc-for>
+        </section>
+        <sc-if value="{{debtsV.hasLog}}" hint-placeholder-val="{{false}}">
+          <section style="background: #151821; border: 1px solid #3A4258; border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 4px">
+            <h2 style="margin: 0 0 6px; font-size: 16px; font-weight: 900">سجل الاستلام</h2>
+            <sc-for list="{{debtsV.log}}" as="lg" hint-placeholder-count="2"><div style="font-size: 13px; color: #C3C8D6; padding: 4px 0; border-bottom: 1px dashed #2A2F40"><strong style="color: #FFFFFF">{{lg.who}}</strong> · {{lg.what}} · {{lg.when}}</div></sc-for>
+          </section>
+        </sc-if>
+      </div>
+    </sc-if>
+
     <sc-if value="{{isMenu}}" hint-placeholder-val="{{false}}">
       <div style="display: flex; flex-direction: column; gap: 16px; animation: nlin .35s ease">
         <section style="background: #151821; border: 1px solid #3A4258; border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px">
@@ -860,6 +906,33 @@ button{font-family:inherit}
     </sc-if>
   </div>
 
+  <sc-if value="{{dOpen}}" hint-placeholder-val="{{false}}">
+    <div style="position: fixed; inset: 0; background: rgba(6,8,12,0.72); z-index: 30; display: flex; align-items: center; justify-content: center; padding: 20px">
+      <div style="width: 620px; max-width: 100%; max-height: 90vh; overflow-y: auto; background: #151821; border: 1px solid #3A4258; border-radius: 20px; padding: 22px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 20px 60px rgba(0,0,0,.6)">
+        <div style="display: flex; align-items: center; gap: 10px">
+          <span style="font-size: 20px; font-weight: 900">{{dView.title}}</span>
+          <span style="font-size: 13px; color: #9AA0B4">{{dView.when}}</span>
+          <button onClick="{{dView.close}}" style="margin-inline-start: auto; width: 38px; height: 38px; border-radius: 10px; background: transparent; border: 1px solid #3A4258; color: #FFFFFF; font-size: 18px; cursor: pointer">✕</button>
+        </div>
+        <span style="font-size: 15px; color: #C9CEDC">{{dView.body}}</span>
+        <sc-if value="{{dView.waiting}}" hint-placeholder-val="{{false}}"><div style="background: #14213F; color: #9DB8FF; border-radius: 10px; padding: 8px 12px; font-size: 13px; font-weight: 700">سألت عن توضيح، وبانتظار الرد. تكدر تقرر هسه إذا تريد.</div></sc-if>
+        <div style="background: #10131A; border: 1px solid #2A2F40; border-radius: 14px; overflow: hidden">
+          <sc-for list="{{dView.rows}}" as="r" hint-placeholder-count="5">
+            <div style="display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 10px; padding: 10px 14px; border-bottom: 1px solid #1E2230; font-size: 14px"><span style="color: #9AA0B4; font-weight: 700">{{r.k}}</span><span style="font-weight: 800">{{r.v}}</span></div>
+          </sc-for>
+        </div>
+        <span style="font-size: 13px; font-weight: 800; color: #9AA0B4">قرارك (تحت كل زر شنو يصير):</span>
+        <sc-for list="{{dView.acts}}" as="x" hint-placeholder-count="2">
+          <div style="display: flex; flex-direction: column; gap: 4px">
+            <button onClick="{{x.pick}}" style="{{x.style}}">{{x.name}}</button>
+            <span style="font-size: 12.5px; color: #AEB4C6; padding: 0 4px">{{x.desc}}</span>
+          </div>
+        </sc-for>
+        <button onClick="{{dView.later}}" style="height: 42px; border-radius: 12px; background: transparent; border: 1px solid #3A4258; color: #C9CEDC; font-size: 14px; font-weight: 800; cursor: pointer; font-family: inherit">أقرر بعدين (يبقى بالقائمة بعلامة «مؤجّل»)</button>
+      </div>
+    </div>
+  </sc-if>
+
   <sc-if value="{{toast}}" hint-placeholder-val="{{false}}">
     <div style="position: fixed; top: 76px; left: 50%; transform: translateX(-50%); max-width: 560px; background: #151821; color: #FFFFFF; padding: 12px 20px; border-radius: 12px; font-size: 15px; font-weight: 700; border: 1px solid #22C55E; box-shadow: 0 0 24px rgba(34,197,94,0.35); z-index: 9">{{toast}}</div>
   </sc-if>
@@ -870,7 +943,7 @@ class Component extends DCLogic {
   constructor(props) {
     super(props);
     this.state = {
-      acc: 'gm', branch: 'nl1', tab: 'dash', settled: {}, done: {}, toast: '',
+      acc: 'gm', branch: 'nl1', tab: 'dash', settled: {}, done: {}, toast: '', debts: { '07701112233': { name: '[اسم الزبون]', phone: '07701112233', amt: 6500, list: [{ amt: 6500, on: '[الجهاز]', at: 0, by: '[اسم الكاشير]' }] } },
       month: 10, target: null, kp: null, rep: 'full', range: 'today', onlyActive: true, sortCol: 0, sortDir: 1,
       vType: 'صرف', vBox: null, vFor: null, vSub: null, vAmt: '', vouchers: [], vNo: 1,
       selUser: 'gm', users: null,
@@ -992,7 +1065,7 @@ class Component extends DCLogic {
       saveDev: () => { if (!devDirty) return; const m = clone(MENU); const ch = []; Object.keys(mDraft).filter((k) => k.indexOf('dev:') === 0).forEach((k) => { const [, t, j] = k.split(':'); const np = toNum(mDraft[k]); if (np && np !== m.price[t][+j]) { ch.push(PRICE_N[t] + ' (' + ['ربع', 'نص', '45 د', 'ساعة'][+j] + ') من ' + fN(m.price[t][+j]) + ' إلى ' + fN(np)); m.price[t][+j] = np; } }); if (!ch.length) { this.setState({ mDraft: {} }); return; } setMenu(m, 'غيّر سعر ' + ch.join('، ')); },
       log: (st.mLog || []), hasLog: (st.mLog || []).length > 0
     };
-    const tabsDef = [['dash', 'لوحة التحكم'], ['cash', 'المحاسبة'], ['rep', 'التقارير'], ['acc', 'الحسابات والسندات'], ['menu', 'المنيو والأسعار'], ['staff', 'الموظفون والصلاحيات']];
+    const tabsDef = [['dash', 'لوحة التحكم'], ['cash', 'المحاسبة'], ['rep', 'التقارير'], ['acc', 'الحسابات والسندات'], ['menu', 'المنيو والأسعار'], ['debt', 'ديون الزبائن'], ['staff', 'الموظفون والصلاحيات']];
     const tabs = tabsDef.map((t) => ({ name: t[1], style: 'height: 42px; padding: 0 16px; border-radius: 12px; font-size: 14px; font-weight: 800; cursor: pointer; font-family: inherit; ' + (st.tab === t[0] ? 'background: linear-gradient(135deg, ' + accent + ', #B3122F); color: #FFFFFF; border: none; box-shadow: 0 0 18px ' + accent + '77;' : 'background: transparent; color: #C9CEDC; border: 1px solid #2A2F40;'), pick: () => this.setState({ tab: t[0], kp: null }) }));
 
     const accounts = Object.keys(login).map((k) => ({ label: ROLES[U[login[k]].role] + (k === 'm1' ? ' 1' : k === 'm2' ? ' 2' : ''), style: pill(st.acc === k, '#3A4058'), pick: () => {
@@ -1124,14 +1197,74 @@ class Component extends DCLogic {
       };
     });
 
+    const DBS = (window.NLDemo ? (window.NLDemo.get() || {}).debts : st.debts) || {};
+    const dbKeys = Object.keys(DBS).filter((k) => DBS[k] && DBS[k].amt > 0);
+    const fmtD = (n) => Number(n || 0).toLocaleString('en-US') + ' د.ع';
+    const tStr = (t) => { if (!t) return '[التاريخ]'; const d = new Date(t); return d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0'); };
+    const firstAt = (x) => { const l = x.list || []; return l.length ? l[l.length - 1].at : 0; };
+    const daysOf = (t) => t ? Math.max(0, Math.floor((Date.now() - t) / 86400000)) : null;
+    const saveDebts = (nd, what) => { if (window.NLDemo) window.NLDemo.patch({ debts: nd }); this.setState({ debts: nd, debtLog: [{ who: me.name, what: what, when: 'الآن' }].concat(st.debtLog || []).slice(0, 30), log: [{ who: me.name, what: what, when: 'الآن' }].concat(st.log).slice(0, 6) }); };
+    const sortedDb = dbKeys.slice().sort((a, b) => (firstAt(DBS[a]) || 0) - (firstAt(DBS[b]) || 0));
+    const oldest = sortedDb.length ? DBS[sortedDb[0]] : null;
+    const canCollect = has('vouch');
+    const debtsV = {
+      none: dbKeys.length === 0, has: dbKeys.length > 0,
+      total: fmtD(dbKeys.reduce((a, k) => a + DBS[k].amt, 0)), count: String(dbKeys.length),
+      oldest: oldest ? (daysOf(firstAt(oldest)) === null ? '[المدة]' : daysOf(firstAt(oldest)) + ' يوم') + ' · ' + oldest.name : '—',
+      list: sortedDb.map((k) => { const x = DBS[k]; const open = st.debtSel === k; const d0 = daysOf(firstAt(x));
+        return { name: x.name, phone: x.phone, amt: fmtD(x.amt), since: 'من ' + tStr(firstAt(x)).split(' ')[0] + (d0 === null ? '' : ' · ' + d0 + ' يوم'), times: (x.list || []).length + ' مرة' + ((x.seen || []).length ? ' · رجع ' + (x.seen || []).length + ' مرة' : ''),
+          open, toggle: () => this.setState({ debtSel: open ? null : k, debtAmt: '' }),
+          card: 'background: #10131A; border: 1px solid ' + (open ? accent : '#2A2F40') + '; border-right: 4px solid #FA2949; border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px',
+          hist: (x.list || []).map((r) => 'دين ' + fmtD(r.amt) + ' · ' + (r.on || '') + ' · ' + tStr(r.at) + ' · سجّله ' + (r.by || ''))
+            .concat((x.paid || []).map((r) => 'استلام ' + fmtD(r.amt) + ' · ' + tStr(r.at) + ' · ' + (r.by || '')))
+            .concat((x.seen || []).map((r) => 'رجع للمحل · ' + (r.on || '') + ' · ' + tStr(r.at))),
+          canCollect, amtVal: open ? (st.debtAmt || '') : '', setAmt: (e) => this.setState({ debtAmt: e.target.value.replace(/[^0-9]/g, '') }),
+          collect: () => { const n = parseInt(st.debtAmt || '0', 10) || 0; if (!n) { this._toast('اكتب المبلغ اللي استلمته.'); return; } if (n > x.amt) { this._toast('المبلغ أكثر من الدين (' + fmtD(x.amt) + ').'); return; }
+            const left = x.amt - n; const nd = { ...DBS }; if (left > 0) nd[k] = { ...x, amt: left, paid: [{ amt: n, at: Date.now(), by: me.name }].concat(x.paid || []) }; else delete nd[k];
+            saveDebts(nd, 'استلم ' + fmtD(n) + ' من دين ' + x.name + (left > 0 ? '، باقي ' + fmtD(left) : '، وتسدّد كامل')); this.setState({ debtAmt: '' }); this._toast('تمت: انسجل سند قبض ' + fmtD(n) + ' من ' + x.name + '.'); },
+          collectAll: () => { const nd = { ...DBS }; delete nd[k]; saveDebts(nd, 'استلم كل دين ' + x.name + ' ' + fmtD(x.amt)); this.setState({ debtSel: null }); this._toast('تمت: ' + x.name + ' سدّد ' + fmtD(x.amt) + ' كامل، وانسجل سند قبض.'); } }; }),
+      log: st.debtLog || [], hasLog: (st.debtLog || []).length > 0
+    };
+    const seenAlerts = dbKeys.filter((k) => (DBS[k].seen || []).length && (DBS[k].seen[0].at || 0) > (DBS[k].ack || 0)).map((k) => { const x = DBS[k]; const s0 = x.seen[0];
+      return { id: 'seen-' + k, title: 'زبون عليه دين رجع للمحل', body: x.name + ' عليه ' + fmtD(x.amt) + '، وهسه على ' + s0.on + '.', when: tStr(s0.at),
+        rows: [['الزبون', x.name], ['الهاتف', x.phone], ['الدين الكلي', fmtD(x.amt)], ['من متى', tStr(firstAt(x))], ['عدد مرات الدين', String((x.list || []).length)], ['هسه على', s0.on], ['وقت رجوعه', tStr(s0.at)]],
+        acts: [['ack', 'اطّلعت', 'التنبيه ينغلق. الكاشير شايف الدين وقت المحاسبة ويكدر يستلمه ويّا الحساب.', 'g'], ['goDebt', 'افتح ملف ديونه', 'ينقلك لتبويب «ديون الزبائن» على اسمه.', 'b']], debtKey: k }; });
     const alertDef = [
-      ['d1', 'خصم فوق الحد', 'طلب الكاشير خصمًا أعلى من صلاحيته على فاتورة [الجهاز].', 'موافقة', 'رفض'],
-      ['d2', 'حجز أُلغي من الكاشير', 'ألغى الكاشير حجز [اسم الزبون] لـ[الجهاز]. السبب: [السبب].', 'اطّلعت', 'مراجعة'],
-      ['d3', 'جهاز خارج الخدمة', 'حوّل [اسم الموظف] [الجهاز] إلى خارج الخدمة. السبب: [السبب].', 'اطّلعت', 'مراجعة'],
-      ['d4', 'عمليات أثناء انقطاع الإنترنت', 'عمليات سُجّلت معلّقة وتنتظر مراجعتك.', 'مراجعة', 'لاحقًا']
+      { id: 'd1', title: 'خصم فوق الحد', body: 'الكاشير طلب خصم أعلى من صلاحيته على فاتورة [الجهاز].', when: '[الوقت]',
+        rows: [['الجهاز', '[الجهاز]'], ['الكاشير', '[اسم الكاشير]'], ['مبلغ الفاتورة', '[المبلغ]'], ['الخصم المطلوب', '[النسبة] ([المبلغ])'], ['حد الكاشير', '[النسبة]'], ['السبب اللي كتبه', '[السبب]']],
+        acts: [['ok', 'موافقة على الخصم', 'الخصم ينطبق على الفاتورة والكاشير يكمّل المحاسبة. ينسجل باسمك.', 'g'], ['no', 'رفض', 'الكاشير يحاسب بالخصم المسموح له بس، ويوصله إشعار بالرفض.', 'r']] },
+      { id: 'd2', title: 'حجز أُلغي من الكاشير', body: 'الكاشير ألغى حجز [اسم الزبون] على [الجهاز].', when: '[الوقت]',
+        rows: [['الزبون', '[اسم الزبون] · [رقم الهاتف]'], ['الجهاز', '[الجهاز]'], ['وقت الحجز', '[الوقت]'], ['اللي ألغاه', '[اسم الموظف]'], ['وقت الإلغاء', '[الوقت]'], ['السبب', '[السبب]'], ['العربون', '[رجع / ما رجع]']],
+        acts: [['seen', 'اطّلعت، تمام', 'ينغلق الطلب وينحفظ بسجل القرارات.', 'g'], ['ask', 'أريد توضيح', 'يوصل سؤال لمسؤول القاعة والكاشير، ويبقى الطلب مفتوح عندك لحد ما يردون.', 'b']] },
+      { id: 'd3', title: 'جهاز خارج الخدمة', body: '[اسم الموظف] حوّل [الجهاز] إلى خارج الخدمة.', when: '[الوقت]',
+        rows: [['الجهاز', '[الجهاز]'], ['اللي حوّله', '[اسم الموظف]'], ['من وكت', '[الوقت] (صار له [المدة])'], ['السبب', '[السبب]'], ['الدخل اللي ممكن ينخسر', 'يحسبه النظام من معدل الجهاز']],
+        acts: [['seen', 'اطّلعت، تمام', 'يبقى الجهاز خارج الخدمة لحد ما يتصلّح، والطلب ينغلق.', 'g'], ['ask', 'أريد توضيح', 'يوصل سؤال للي حوّله، ويبقى الطلب مفتوح عندك لحد ما يرد.', 'b']] },
+      { id: 'd4', title: 'عمليات أثناء انقطاع الإنترنت', body: '[العدد] عمليات انسجلت والإنترنت مقطوع، وتنتظر مراجعتك.', when: '[الوقت]',
+        rows: [['الفترة', 'من [الوقت] إلى [الوقت]'], ['العملية 1', '[الوقت] · [الجهاز] · فتح وقت · [اسم الموظف]'], ['العملية 2', '[الوقت] · [الجهاز] · محاسبة [المبلغ] · [اسم الموظف]'], ['العملية 3', '[الوقت] · [الجهاز] · طلب [الصنف] · [اسم الموظف]'], ['المجموع', '[المبلغ]']],
+        acts: [['ok', 'اعتماد العمليات', 'العمليات تنضاف للمبيعات والتقارير كأنها صارت والإنترنت شغال.', 'g'], ['ask', 'بيها شي غلط', 'تنعلّم العمليات للتدقيق، ويوصل سؤال لمسؤول القاعة. ما تنحسب لحد ما تقرر.', 'r']] }
     ];
-    const alerts = alertDef.filter((a) => !st.done[a[0]]).map((a) => ({ title: a[1], body: a[2], okText: a[3], noText: a[4],
-      ok: () => this.setState({ done: { ...st.done, [a[0]]: true } }), no: () => this.setState({ done: { ...st.done, [a[0]]: true } }) }));
+    alertDef.push(...seenAlerts);
+    const dDone = st.done || {}; const dLater = st.later || {};
+    const ACT_ST = { g: 'background: #22C55E; color: #0B0D12; border: none;', r: 'background: #FA2949; color: #FFFFFF; border: none;', b: 'background: #3D7BFF; color: #FFFFFF; border: none;' };
+    const openA = (a) => this.setState({ dOpen: a.id });
+    const alertsAll = alertDef.filter((a) => !dDone[a.id] || dDone[a.id].k === 'ask');
+    const alerts = alertsAll.slice().sort((x, y) => (dLater[x.id] ? 1 : 0) - (dLater[y.id] ? 1 : 0)).map((a) => { const w = dDone[a.id]; return { title: a.title, body: a.body, when: a.when,
+      tag: w ? 'بانتظار توضيح' : dLater[a.id] ? 'مؤجّل' : '', hasTag: !!w || !!dLater[a.id],
+      tagStyle: 'border-radius: 8px; padding: 0 8px; font-size: 12px; font-weight: 800; ' + (w ? 'background: #14213F; color: #9DB8FF;' : 'background: #2A2F40; color: #C9CEDC;'),
+      card: 'background: #10131A; border: 1px solid #2A2F40; border-right: 4px solid ' + (w ? '#3D7BFF' : dLater[a.id] ? '#6E7489' : '#FA2949') + '; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px; cursor: pointer; text-align: right; font-family: inherit; color: #FFFFFF',
+      open: () => openA(a) }; });
+    const dA = alertDef.find((a) => a.id === st.dOpen);
+    const decide = (k, label) => { const a = dA;
+      if (a.debtKey) { const nd = { ...DBS, [a.debtKey]: { ...DBS[a.debtKey], ack: Date.now() } }; if (window.NLDemo) window.NLDemo.patch({ debts: nd }); this.setState({ debts: nd, dOpen: null, tab: k === 'goDebt' ? 'debt' : st.tab, debtSel: k === 'goDebt' ? a.debtKey : st.debtSel }); return; } const entry = { id: a.id, title: a.title, choice: label, who: me.name, when: 'الآن' };
+      const nd = { ...dDone, [a.id]: { k: k, label: label } }; const nl = { ...dLater }; delete nl[a.id];
+      this.setState({ done: nd, later: nl, dOpen: null, dLog: [entry].concat(st.dLog || []).slice(0, 20), log: [{ who: me.name, what: a.title + ': ' + label, when: 'الآن' }].concat(st.log).slice(0, 6) });
+      this._toast(k === 'ask' ? 'تمام: انبعث السؤال، والطلب يبقى عندك بعلامة «بانتظار توضيح».' : 'تمام: انحفظ قرارك «' + label + '» بسجل القرارات.'); };
+    const dView = dA ? { title: dA.title, body: dA.body, when: dA.when, rows: dA.rows.map((r) => ({ k: r[0], v: r[1] })),
+      waiting: !!(dDone[dA.id] && dDone[dA.id].k === 'ask'),
+      acts: dA.acts.map((x) => ({ name: x[1], desc: x[2], style: 'min-height: 48px; padding: 0 16px; border-radius: 12px; font-size: 15px; font-weight: 900; cursor: pointer; font-family: inherit; ' + ACT_ST[x[3]], pick: () => decide(x[0], x[1]) })),
+      later: () => { this.setState({ later: { ...dLater, [dA.id]: true }, dOpen: null }); this._toast('تأجّل. يبقى بالقائمة بعلامة «مؤجّل» لحد ما تقرر.'); },
+      close: () => this.setState({ dOpen: null }) } : null;
+    const dLog = (st.dLog || []);
 
     // التقارير
     const REPS = [
@@ -1282,7 +1415,7 @@ class Component extends DCLogic {
       vQ1: isOut ? 'من أي صندوق يخرج المبلغ؟' : 'إلى أي صندوق يدخل المبلغ؟',
       vQ2: isOut ? 'لأي غرض؟' : 'من أين جاء المبلغ؟', vQ3: curFor ? curFor[2] : '', vQAmt: (vHasQ3 ? '4' : '3') + '. المبلغ', vQDet: (vHasQ3 ? '3' : '2') + '. التفاصيل' + (detNeed ? ' (مطلوبة)' : ' (اختيارية)'),
       vDet: st.vDet || '', vDetPh: curFor && curFor[0] === 'xfer' ? 'مثال: حوالة إلى فلان، والسبب' : curFor && curFor[0] === 'proj' ? 'اسم المشروع، وعلى ماذا صُرف المبلغ' : curFor && curFor[0] === 'home' ? 'مثال: مراجعة طبيب أطفال' : 'اكتب التفاصيل هنا', setVDet: (e) => this.setState({ vDet: e.target.value }), users, roleOpts, branchOpts, perms,
-      isDash: st.tab === 'dash', isCash: st.tab === 'cash', isRep: st.tab === 'rep', isAcc: st.tab === 'acc', isStaff: st.tab === 'staff', isMenu: st.tab === 'menu', menuV,
+      isDash: st.tab === 'dash', isCash: st.tab === 'cash', isRep: st.tab === 'rep', isAcc: st.tab === 'acc', isStaff: st.tab === 'staff', isMenu: st.tab === 'menu', menuV, isDebtTab: st.tab === 'debt',
       isGM, canSwitchBranch: me.br === 'both', lockedBranch: me.br !== 'both',
       branchName: BR[branchKey], scopeText: 'تشوف: ' + BR[branchKey],
       countsNote: branchKey === 'nl1' ? 'أعداد فرع 1 من النموذج، والعلوي مؤقتة' : 'أعداد فرع 2 تنضاف من الإعدادات',
@@ -1291,7 +1424,7 @@ class Component extends DCLogic {
       editTarget: () => this.setState({ kp: st.target || '' }), kpTarget: st.kp !== null, kpShow: fmtN(st.kp), keys: keysFor('kp'),
       kpSave: () => { if (!st.kp) { this._toast('اكتب الهدف أولًا.'); return; } this.setState({ target: st.kp, kp: null }); this._toast('تمت: انحفظ الهدف الشهري باسمك ✓'); },
       kpCancel: () => this.setState({ kp: null }),
-      hasAlerts: alerts.length > 0, alertCount: alerts.length, noAlerts: alerts.length === 0,
+      hasAlerts: alerts.length > 0, alertCount: alerts.length, noAlerts: alerts.length === 0, dOpen: !!dView, dView: dView || { rows: [], acts: [] }, dLog, hasDLog: dLog.length > 0, debtsV, dLogN: 'سجل القرارات (' + dLog.length + ')', showDLog: !!st.showDLog, toggleDLog: () => this.setState({ showDLog: !st.showDLog }),
       repPerm: has('reports'), noRepPerm: !has('reports'), repTitle: curRep[2], isFull: st.rep === 'full', isTable: st.rep !== 'full',
       repHasFilter: st.rep === 'dev' || st.rep === 'sec', toggleActive: () => this.setState({ onlyActive: !st.onlyActive }),
       activeText: (st.onlyActive ? '☑' : '☐') + ' بس اللي عليها حركة', activeStyle: pill(st.onlyActive, '#3A4058'),

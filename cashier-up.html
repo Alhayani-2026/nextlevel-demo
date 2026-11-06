@@ -8,7 +8,7 @@ window.NLDemo = (function () {
   var DB = 'https://nextlevel-demo-default-rtdb.europe-west1.firebasedatabase.app'; var REMOTE = DB.indexOf('https://') === 0;
   var K = 'nextlevel-demo-v1', subs = [], bc = null, cache = null;
   function norm(s) {
-    if (!s) return s; s.units = s.units || {}; s.timers = s.timers || {}; s.hist = s.hist || {}; s.groups = s.groups || {}; s.credits = s.credits || {}; s.sales = s.sales ? (Array.isArray(s.sales) ? s.sales : Object.keys(s.sales).map(function (k) { return s.sales[k]; })) : [];
+    if (!s) return s; s.units = s.units || {}; s.timers = s.timers || {}; s.hist = s.hist || {}; s.groups = s.groups || {}; s.credits = s.credits || {}; s.debts = s.debts || {}; s.sales = s.sales ? (Array.isArray(s.sales) ? s.sales : Object.keys(s.sales).map(function (k) { return s.sales[k]; })) : [];
     Object.keys(s.units).forEach(function (u) { var d = s.units[u]; if (d) d.orders = d.orders || []; });
     Object.keys(s.timers).forEach(function (u) { var t = s.timers[u]; if (t && t.limit === undefined) t.limit = null; });
     Object.keys(s.groups).forEach(function (g) { s.groups[g].units = s.groups[g].units || []; });
@@ -342,6 +342,7 @@ button{font-family:inherit;color:inherit}
               <span style="background: rgba(255,255,255,0.22); border-radius: 10px; padding: 1px 10px; font-size: 13px; font-weight: 800">{{sel.grpTag}}</span>
               <sc-if value="{{sel.hasCust}}" hint-placeholder-val="{{false}}"><span style="background: rgba(0,0,0,0.35); border-radius: 10px; padding: 1px 10px; font-size: 13px; font-weight: 800">👤 {{sel.custText}}</span></sc-if>
               <sc-if value="{{sel.hasCredit}}" hint-placeholder-val="{{false}}"><span style="background: #FFD27A; color: #0B0D12; border-radius: 10px; padding: 1px 10px; font-size: 13px; font-weight: 800">له بذمتنا {{sel.creditText}}</span></sc-if>
+              <sc-if value="{{sel.hasDebt}}" hint-placeholder-val="{{false}}"><span style="background: #FA2949; color: #FFFFFF; border-radius: 10px; padding: 1px 10px; font-size: 13px; font-weight: 800">عليه دين {{sel.debtText}}</span></sc-if>
             </div>
           </div>
           <div style="flex: 1; overflow-y: auto; padding: 8px 16px; display: flex; flex-direction: column; gap: 6px; min-height: 0">
@@ -698,6 +699,17 @@ button{font-family:inherit;color:inherit}
             </sc-for>
           </div>
         </sc-if>
+        <sc-if value="{{pay.hasPDebt}}" hint-placeholder-val="{{false}}">
+          <div style="border: 2px solid #FA2949; background: #2A0E16; border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px">
+            <span style="font-size: 16px; font-weight: 900; color: #FF8FA1">⚠ {{pay.pDebtTitle}}</span>
+            <span style="font-size: 13px; color: #F2C6CF">{{pay.pDebtInfo}}</span>
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+              <button onClick="{{pay.togglePayDebt}}" style="{{pay.payDebtStyle}}">{{pay.payDebtBtn}}</button>
+              <span style="font-size: 15px; font-weight: 900; color: #FFD27A">{{pay.totalWithDebt}}</span>
+            </div>
+            <span style="font-size: 12px; color: #9AA0B4">المدير العام وصله تنبيه إن هذا الزبون رجع وعليه دين.</span>
+          </div>
+        </sc-if>
         <sc-if value="{{pay.hasCust}}" hint-placeholder-val="{{false}}">
           <div style="display: flex; flex-direction: column; gap: 8px; background: #12202E; border: 1px solid #2B5FD9; border-radius: 12px; padding: 8px 12px">
             <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
@@ -734,6 +746,17 @@ button{font-family:inherit;color:inherit}
             <button onClick="{{m.pick}}" style="{{m.style}}">{{m.name}}</button>
           </sc-for>
         </div>
+        <sc-if value="{{pay.isDebt}}" hint-placeholder-val="{{false}}">
+          <div style="border: 2px solid #FA2949; background: #241018; border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px">
+            <span style="font-size: 14px; font-weight: 900; color: #FF8FA1">الدين على مَن؟ ({{pay.debtAmt}}) · الاسم والرقم إجباريات</span>
+            <div style="display: flex; gap: 8px">
+              <input value="{{pay.debtName}}" onInput="{{pay.setDName}}" placeholder="اسم الزبون" style="flex: 1; height: 42px; border-radius: 10px; border: 1px solid #343A50; background: #0B0D12; color: #F2F3F7; padding: 0 12px; font-size: 15px; font-family: inherit">
+              <input value="{{pay.debtPhone}}" onInput="{{pay.setDPhone}}" placeholder="رقم الهاتف 07xxxxxxxxx" inputmode="numeric" style="flex: 1; height: 42px; border-radius: 10px; border: 1px solid #343A50; background: #0B0D12; color: #F2F3F7; padding: 0 12px; font-size: 15px; font-family: inherit; direction: ltr; text-align: right">
+            </div>
+            <sc-if value="{{pay.hasOldDebt}}" hint-placeholder-val="{{false}}"><span style="font-size: 13px; font-weight: 800; color: #FFD27A">{{pay.oldDebtText}}</span></sc-if>
+            <span style="font-size: 12px; color: #9AA0B4">الدين ينسجل باسمه ورقمه ووقته واسم الكاشير، ويطلع بحاسبة المدير بـ«ديون الزبائن».</span>
+          </div>
+        </sc-if>
         <sc-if value="{{pay.discClosed}}" hint-placeholder-val="{{true}}">
           <div style="display: flex; justify-content: flex-start">
             <button onClick="{{pay.openDisc}}" style="height: 36px; padding: 0 14px; border-radius: 10px; border: 1px dashed #4A5068; background: #151821; color: #9AA0B4; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit">خصم…</button>
@@ -789,7 +812,7 @@ class Component extends DCLogic {
       hist: { 'PS1': [[Date.now() - 90 * 60000, 'دخل على طاولة 3 (الصالة)'], [Date.now() - 75 * 60000, 'نُقل إلى PS1 (بلاي ستيشن)']] },
       disc: null, discPerson: null, grpSel: null, payScope: 'group',
       groups: { 'g1': { name: 'مجموعة 1', units: ['إليت 6', 'إليت 7', 'إليت 8', 'إليت 9'], color: '#7B2FBE' } },
-      credits: { '07801234567': 2500 },
+      credits: { '07801234567': 2500 }, debts: {}, dName: null, dPhone: null,
       screen: 'home', myFloor: 'u', sec: 'pool', selected: null, showPay: false, method: 'cash', toast: '', move: null, moveTab: null,
       units: {
         'PS1': { status: 'run', mode: 'زوجي', cust: { name: 'علي حسن', phone: '07801234567' }, segs: [{ mode: 'فردي', start: Date.now() - 75 * 60000 }, { mode: 'زوجي', start: Date.now() - 45 * 60000 }], start: '9:05 م', time: '01:15', orders: [['موهيتو رمان', 4000], ['تفاحتين', 7000]] },
@@ -811,7 +834,7 @@ class Component extends DCLogic {
       }
     };
     this._tick = setInterval(() => this.setState({ now: Date.now() }), 1000);
-    if (window.NLDemo) { const D = window.NLDemo; const K = ['units', 'timers', 'hist', 'groups', 'credits']; const s = D.init(); K.forEach((k) => { this.state[k] = s[k] || {}; }); const base = this.setState.bind(this); this.setState = (o) => { base(o); if (o && K.some((k) => k in o)) { const p = {}; K.forEach((k) => { if (k in o) p[k] = o[k]; }); D.patch(p); } }; D.sub((s2) => { const p = {}; K.forEach((k) => { p[k] = s2[k] || {}; }); base(p); }); }
+    if (window.NLDemo) { const D = window.NLDemo; const K = ['units', 'timers', 'hist', 'groups', 'credits', 'debts']; const s = D.init(); K.forEach((k) => { this.state[k] = s[k] || {}; }); const base = this.setState.bind(this); this.setState = (o) => { base(o); if (o && K.some((k) => k in o)) { const p = {}; K.forEach((k) => { if (k in o) p[k] = o[k]; }); D.patch(p); } }; D.sub((s2) => { const p = {}; K.forEach((k) => { p[k] = s2[k] || {}; }); base(p); }); }
   }
   renderVals() {
     const accent = this.props.accent ?? '#C8102E';
@@ -922,6 +945,7 @@ class Component extends DCLogic {
         place: (sec.floor === 'g' ? 'الطابق الأرضي' : 'الطابق العلوي') + ' · ' + sec.name + ' · ' + u,
         headStyle: 'padding: 8px 16px; display: flex; flex-direction: column; gap: 2px; color: #FFFFFF; background: linear-gradient(135deg, ' + (groupOf(u) && !readOnly ? (groupOf(u).color || '#7B2FBE') : colorsSel[st.sec]) + ', #141414 180%);',
         hasCust: !readOnly && !!d.cust, custText: d.cust ? [d.cust.name || 'بدون اسم', d.cust.phone || 'بدون رقم'].join(' · ') : '',
+        hasDebt: !readOnly && !!(d.cust && d.cust.phone && (st.debts || {})[d.cust.phone]), debtText: d.cust && d.cust.phone && (st.debts || {})[d.cust.phone] ? fmt((st.debts || {})[d.cust.phone].amt) : '',
         hasCredit: !readOnly && !!(d.cust && d.cust.phone && (st.credits || {})[d.cust.phone]), creditText: d.cust && d.cust.phone ? fmt((st.credits || {})[d.cust.phone] || 0) : '',
         grpTag: groupOf(u) && !readOnly ? groupOf(u).name + ' · ' + groupOf(u).units.length + ' أجهزة' : 'زبون منفرد', 
         panelBorder: 'border-right: 6px solid ' + (groupOf(u) && !readOnly ? (groupOf(u).color || '#7B2FBE') : colorsSel[st.sec]) + ';',
@@ -1105,7 +1129,25 @@ const FLAV = { 'تفاحتين': '#2E9E4F', 'انكليزي': '#8D5524', 'ليم
     const afterDisc = base - dAmt;
     const useCr = pCredit > 0 && st.useCredit !== false ? Math.min(pCredit, afterDisc) : 0;
     const leftAmt = parseInt(String(st.leftAmt || '').replace(/[^0-9]/g, ''), 10) || 0;
+    const isDebt = st.method === 'debt';
+    const dNm = st.dName !== null && st.dName !== undefined ? st.dName : (pc && pc.name) || '';
+    const dPh = st.dPhone !== null && st.dPhone !== undefined ? st.dPhone : (pc && pc.phone) || '';
+    const oldDebt = /^07[0-9]{9}$/.test(dPh) ? (st.debts || {})[dPh] : null;
+    const debtNet = afterDisc - useCr;
+    const markSeen = () => { const c = (st.units[st.selected] || {}).cust; const db = st.debts || {}; if (!c || !c.phone || !db[c.phone]) return; const x = db[c.phone]; const ls = (x.seen || [])[0]; if (ls && ls.on === st.selected && Date.now() - ls.at < 30 * 60000) return; this.setState({ debts: { ...db, [c.phone]: { ...x, seen: [{ at: Date.now(), on: st.selected }].concat(x.seen || []).slice(0, 20) } } }); };
+    const fmtDate = (t) => { if (!t) return '[التاريخ]'; const d = new Date(t); return d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear(); };
+    const pDebtKey = pc && pc.phone && (st.debts || {})[pc.phone] ? pc.phone : (/^07[0-9]{9}$/.test(dPh) && (st.debts || {})[dPh] ? dPh : null);
+    const pDebt = pDebtKey ? st.debts[pDebtKey] : null;
+    const pdFirst = pDebt && pDebt.list && pDebt.list.length ? pDebt.list[pDebt.list.length - 1] : null;
+    const payDebtToo = !!pDebt && !!st.payDebt;
     const pay = {
+      hasPDebt: !!pDebt, pDebtTitle: pDebt ? 'تنبيه: ' + pDebt.name + ' عليه دين ' + fmt(pDebt.amt) : '',
+      pDebtInfo: pDebt ? 'من ' + fmtDate(pdFirst && pdFirst.at) + ' · ' + (pDebt.list || []).length + ' مرة · آخرها على ' + ((pDebt.list || [])[0] || {}).on + ' · سجّله ' + ((pDebt.list || [])[0] || {}).by : '',
+      payDebtToo, payDebtBtn: payDebtToo ? '✓ يسدّد الدين ويّا الحساب (' + (pDebt ? fmt(pDebt.amt) : '') + ')' : 'يسدّد الدين ويّا الحساب', togglePayDebt: () => this.setState({ payDebt: !st.payDebt }),
+      payDebtStyle: 'min-height: 40px; padding: 0 12px; border-radius: 10px; font-size: 14px; font-weight: 800; cursor: pointer; font-family: inherit; ' + (payDebtToo ? 'background: #22C55E; color: #0B0D12; border: none;' : 'background: transparent; color: #FFFFFF; border: 1px solid #FF8FA1;'),
+      totalWithDebt: payDebtToo ? 'المطلوب مع الدين: ' + fmt(afterDisc - useCr + pDebt.amt) : '',
+      isDebt, debtName: dNm, debtPhone: dPh, debtAmt: fmt(debtNet), hasOldDebt: !!oldDebt, oldDebtText: oldDebt ? 'عليه دين سابق ' + fmt(oldDebt.amt) + '، ويصير المجموع ' + fmt(oldDebt.amt + debtNet) : '',
+      setDName: (e) => this.setState({ dName: e.target.value }), setDPhone: (e) => this.setState({ dPhone: e.target.value.replace(/[^0-9]/g, '').slice(0, 11) }),
       hasCust: !!pc, custText: pc ? [pc.name || 'بدون اسم', pc.phone].join(' · ') : '', noCust: !pc,
       hasCredit: pCredit > 0, creditText: fmt(pCredit), useCredit: useCr > 0, useCrText: fmt(useCr),
       creditStyle: 'min-height: 40px; padding: 0 12px; border-radius: 10px; font-size: 14px; font-weight: 800; cursor: pointer; font-family: inherit; ' + (useCr > 0 ? 'background: #FFD27A; color: #0B0D12; border: none;' : 'background: #151821; color: #FFD27A; border: 1px solid #FFD27A;'),
@@ -1168,15 +1210,22 @@ const FLAV = { 'تفاحتين': '#2E9E4F', 'انكليزي': '#8D5524', 'ليم
       openMove: () => this.setState({ move: true, moveTab: null, toast: '' }),
       closeMove: () => this.setState({ move: null }),
       openUnit: () => this.setState({ units: { ...st.units, [st.selected]: { status: 'run', start: 'الآن', time: '00:00', orders: [] } }, timers: { ...st.timers, [st.selected]: { start: Date.now(), limit: null } }, toast: 'فُتح ' + st.selected + '.' }),
-      openPay: () => { const ti = tinfo(st.selected); if (ti && ti.left !== null && ti.left > 0) { this.setState({ payWarn: hms(ti.left), toast: '' }); return; } this.setState({ showPay: true, payAt: null, disc: null, discPerson: null, discOpen: false, toast: '' }); },
+      openPay: () => { markSeen(); const ti = tinfo(st.selected); if (ti && ti.left !== null && ti.left > 0) { this.setState({ payWarn: hms(ti.left), toast: '' }); return; } this.setState({ showPay: true, method: 'cash', payDebt: false, payAt: null, disc: null, discPerson: null, discOpen: false, toast: '' }); },
       payWarn: st.payWarn || '', hasPayWarn: !!st.payWarn,
       warnNo: () => this.setState({ payWarn: null }),
-      warnYes: () => this.setState({ payWarn: null, showPay: true, payAt: Date.now(), disc: null, discPerson: null, discOpen: false, toast: '' }),
+      warnYes: () => this.setState({ payWarn: null, showPay: true, method: 'cash', payDebt: false, payAt: Date.now(), disc: null, discPerson: null, discOpen: false, toast: '' }),
       payClock: clock(st.payAt || st.now),
       payState: st.payAt ? '⏸ الوقت متوقف' : '⏱ الوقت يمشي · يتوقف لحظة التأكيد',
       payStateStyle: st.payAt ? 'color: #FF5A72' : 'color: #1E8A4C',
-      closePay: () => this.setState({ showPay: false, payAt: null, useCredit: true, leftAmt: '' }),
-      confirmPay: () => { if ((st.disc === 'staff' || st.disc === 'admin') && !st.discPerson) { this.setState({ toast: 'اختر الاسم اللي ينسجل عليه الخصم.' }); return; } if (window.NLDemo) { const s0 = window.NLDemo.get() || {}; window.NLDemo.patch({ sales: (s0.sales || []).concat([{ t: Date.now(), units: scopeUnits, sec: sec.name, time: timeSum, ord: ordSum, hook: scopeUnits.reduce((a, u) => a + ((st.units[u] || {}).orders || []).filter((o) => printerOf[String(o[0]).replace(/ \(.*\)$/, '')] === 'النراجيل').reduce((b, o) => b + o[1], 0), 0), disc: dAmt, total: base - dAmt, method: (methodList.find((m) => m[0] === st.method) || [0, 'نقد'])[1] }]) }); } const nx = { ...st.units }; const tx = { ...st.timers }; scopeUnits.forEach((u) => { delete nx[u]; delete tx[u]; }); const ng = {}; Object.keys(st.groups).forEach((g) => { const left = st.groups[g].units.filter((u) => nx[u]); if (left.length) ng[g] = { ...st.groups[g], units: left }; }); const ncr = { ...(st.credits || {}) }; if (pc) { const v = pCredit - useCr + leftAmt; if (v > 0) ncr[pc.phone] = v; else delete ncr[pc.phone]; } this.setState({ credits: ncr, useCredit: true, leftAmt: '', units: nx, timers: tx, groups: ng, showPay: false, payAt: null, selected: null, toast: 'تمت محاسبة ' + (scope === 'group' && selG ? selG.name + ' (' + scopeUnits.join('، ') + ')' : st.selected) + ' وطُبع الوصل.' }); }
+      closePay: () => this.setState({ showPay: false, payAt: null, useCredit: true, leftAmt: '', dName: null, dPhone: null, payDebt: false }),
+      confirmPay: () => { if ((st.disc === 'staff' || st.disc === 'admin') && !st.discPerson) { this.setState({ toast: 'اختر الاسم اللي ينسجل عليه الخصم.' }); return; }
+        if (payDebtToo && !isDebt) { const db1 = { ...(st.debts || {}) }; delete db1[pDebtKey]; this.setState({ debts: db1, payDebt: false, debtPaidLog: [{ name: pDebt.name, phone: pDebt.phone, amt: pDebt.amt, at: Date.now(), by: '[اسم الكاشير]' }].concat(st.debtPaidLog || []).slice(0, 30) }); }
+        if (isDebt) {
+          if (!dNm.trim()) { this.setState({ toast: 'الدين لازم يكون باسم: اكتب اسم الزبون.' }); return; }
+          if (!/^07[0-9]{9}$/.test(dPh)) { this.setState({ toast: 'اكتب رقم هاتف الزبون صحيح (11 رقم يبدأ بـ 07).' }); return; }
+          const db0 = st.debts || {}; const prev = db0[dPh] || { name: dNm.trim(), phone: dPh, amt: 0, list: [] };
+          this.setState({ dName: null, dPhone: null, debts: { ...db0, [dPh]: { name: dNm.trim(), phone: dPh, amt: prev.amt + debtNet, list: [{ amt: debtNet, on: scope === 'group' && selG ? selG.name : st.selected, at: Date.now(), by: '[اسم الكاشير]' }].concat(prev.list || []).slice(0, 20) } } });
+        } if (window.NLDemo) { const s0 = window.NLDemo.get() || {}; window.NLDemo.patch({ sales: (s0.sales || []).concat([{ t: Date.now(), units: scopeUnits, sec: sec.name, time: timeSum, ord: ordSum, hook: scopeUnits.reduce((a, u) => a + ((st.units[u] || {}).orders || []).filter((o) => printerOf[String(o[0]).replace(/ \(.*\)$/, '')] === 'النراجيل').reduce((b, o) => b + o[1], 0), 0), disc: dAmt, total: base - dAmt, method: (methodList.find((m) => m[0] === st.method) || [0, 'نقد'])[1] }]) }); } const nx = { ...st.units }; const tx = { ...st.timers }; scopeUnits.forEach((u) => { delete nx[u]; delete tx[u]; }); const ng = {}; Object.keys(st.groups).forEach((g) => { const left = st.groups[g].units.filter((u) => nx[u]); if (left.length) ng[g] = { ...st.groups[g], units: left }; }); const ncr = { ...(st.credits || {}) }; if (pc) { const v = pCredit - useCr + leftAmt; if (v > 0) ncr[pc.phone] = v; else delete ncr[pc.phone]; } this.setState({ credits: ncr, useCredit: true, leftAmt: '', units: nx, timers: tx, groups: ng, showPay: false, payAt: null, selected: null, toast: 'تمت محاسبة ' + (scope === 'group' && selG ? selG.name + ' (' + scopeUnits.join('، ') + ')' : st.selected) + ' وطُبع الوصل.' }); }
     };
   }
 }
