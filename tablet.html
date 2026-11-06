@@ -180,12 +180,12 @@ window.NLDemo = (function () {
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
 <style>
-body{margin:0;font-family:'Cairo',system-ui,sans-serif;color:#F2F3F7;background:#0B0D12}
+body{margin:0;font-family:'Cairo',system-ui,sans-serif;color:#F2F3F7;background:#2E3548}
 button,input{font-family:inherit;color:inherit}
 @keyframes nlpulse{0%,100%{box-shadow:0 0 0 0 rgba(200,16,46,0.7)}50%{box-shadow:0 0 0 8px rgba(200,16,46,0)}}
 </style>
 </helmet>
-<div dir="rtl" style="width: 1280px; height: 800px; box-sizing: border-box; background: #0B0D12; display: flex; flex-direction: column; font-family: 'Cairo', system-ui, sans-serif; position: relative; overflow: hidden">
+<div dir="rtl" style="width: 1280px; height: 800px; box-sizing: border-box; background: #2E3548; display: flex; flex-direction: column; font-family: 'Cairo', system-ui, sans-serif; position: relative; overflow: hidden">
   <header style="height: 64px; background: linear-gradient(90deg, #171A23, #0B0D12 60%, #1A0B10); border-bottom: 2px solid #FA2949; box-shadow: 0 4px 22px rgba(250,41,73,0.35); color: #FFFFFF; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; flex-shrink: 0; gap: 16px">
     <div style="display: flex; align-items: center; gap: 14px; min-width: 0">
       <sc-if value="{{canBack}}" hint-placeholder-val="{{true}}">
@@ -198,7 +198,7 @@ button,input{font-family:inherit;color:inherit}
   </header>
 
   <sc-if value="{{isSections}}" hint-placeholder-val="{{true}}">
-    <main style="flex: 1; padding: 24px 40px; display: flex; flex-direction: column; gap: 18px; overflow-y: auto; background: linear-gradient(180deg, #1A0E14 0%, #0B0D12 60%)">
+    <main style="flex: 1; padding: 24px 40px; display: flex; flex-direction: column; gap: 18px; overflow-y: auto; background: #2E3548">
       <div style="display: flex; align-items: baseline; justify-content: space-between">
         <h1 style="margin: 0; font-size: 28px; font-weight: 800">تسجيل الدخول</h1>
         <span style="font-size: 15px; font-weight: 800; color: #FFFFFF; background: #C8102E; border-radius: 20px; padding: 4px 14px">{{loginStep}}</span>

@@ -180,15 +180,18 @@ window.NLDemo = (function () {
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&amp;display=swap" rel="stylesheet">
 <style>
-body{margin:0;font-family:'Cairo',system-ui,sans-serif;color:#F4F5F8;background:#0B0D12}
+body{margin:0;font-family:'Cairo',system-ui,sans-serif;color:#F4F5F8;background:#2E3548}
 button{font-family:inherit}
+.nltip{display:none;position:absolute;bottom:calc(100% + 8px);right:0;left:0;z-index:20;background:#FFFFFF;color:#171A23;font-size:14px;font-weight:700;line-height:1.6;padding:10px 14px;border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.5);text-align:right;pointer-events:none}
+.nltip::after{content:"";position:absolute;top:100%;right:24px;border:7px solid transparent;border-top-color:#FFFFFF}
+.nlpt:hover .nltip{display:block}
 @keyframes nlglow{0%,100%{box-shadow:0 0 0 1px rgba(250,41,73,.45),0 0 18px rgba(250,41,73,.25)}50%{box-shadow:0 0 0 1px rgba(250,41,73,.8),0 0 30px rgba(250,41,73,.45)}}
 @keyframes nlrise{from{transform:scaleY(0)}to{transform:scaleY(1)}}
 @keyframes nlblink{0%,100%{opacity:1}50%{opacity:.35}}
 @keyframes nlin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 </style>
 </helmet>
-<div dir="rtl" style="min-height: 100vh; box-sizing: border-box; background: radial-gradient(1200px 500px at 85% -10%, rgba(250,41,73,0.22), transparent 60%), radial-gradient(900px 500px at 0% 110%, rgba(61,123,255,0.16), transparent 60%), #0B0D12; font-family: 'Cairo', system-ui, sans-serif; position: relative; color: #F4F5F8">
+<div dir="rtl" style="min-height: 100vh; box-sizing: border-box; background: radial-gradient(1200px 500px at 85% -10%, rgba(250,41,73,0.18), transparent 60%), #2E3548; font-family: 'Cairo', system-ui, sans-serif; position: relative; color: #F4F5F8">
 
   <header style="background: rgba(11,13,18,0.85); border-bottom: 1px solid #232838; padding: 10px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; position: sticky; top: 0; z-index: 5; backdrop-filter: blur(8px)">
     <div style="display: flex; align-items: center; gap: 14px">
@@ -258,20 +261,20 @@ button{font-family:inherit}
               <span style="font-size: 12px; color: #9AA0B4">كل محاسبة بالكاشير تظهر هنا فورًا</span>
             </div>
             <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px">
-              <div style="background: #0B0D12; border-radius: 12px; padding: 10px 12px"><div style="font-size: 12px; color: #9AA0B4">المبيعات</div><div style="font-size: 22px; font-weight: 900; color: #FF5A72">{{live.total}}</div></div>
-              <div style="background: #0B0D12; border-radius: 12px; padding: 10px 12px"><div style="font-size: 12px; color: #9AA0B4">عدد الفواتير</div><div style="font-size: 22px; font-weight: 900">{{live.count}}</div></div>
-              <div style="background: #0B0D12; border-radius: 12px; padding: 10px 12px"><div style="font-size: 12px; color: #9AA0B4">وقت الأجهزة</div><div style="font-size: 18px; font-weight: 800">{{live.timeT}}</div></div>
-              <div style="background: #0B0D12; border-radius: 12px; padding: 10px 12px"><div style="font-size: 12px; color: #9AA0B4">الطلبات</div><div style="font-size: 18px; font-weight: 800">{{live.ordT}}</div></div>
-              <div style="background: #0B0D12; border-radius: 12px; padding: 10px 12px"><div style="font-size: 12px; color: #9AA0B4">الخصومات</div><div style="font-size: 18px; font-weight: 800">{{live.discT}}</div></div>
+              <div style="background: #222838; border-radius: 12px; padding: 10px 12px"><div style="font-size: 12px; color: #9AA0B4">المبيعات</div><div style="font-size: 22px; font-weight: 900; color: #FF5A72">{{live.total}}</div></div>
+              <div style="background: #222838; border-radius: 12px; padding: 10px 12px"><div style="font-size: 12px; color: #9AA0B4">عدد الفواتير</div><div style="font-size: 22px; font-weight: 900">{{live.count}}</div></div>
+              <div style="background: #222838; border-radius: 12px; padding: 10px 12px"><div style="font-size: 12px; color: #9AA0B4">وقت الأجهزة</div><div style="font-size: 18px; font-weight: 800">{{live.timeT}}</div></div>
+              <div style="background: #222838; border-radius: 12px; padding: 10px 12px"><div style="font-size: 12px; color: #9AA0B4">الطلبات</div><div style="font-size: 18px; font-weight: 800">{{live.ordT}}</div></div>
+              <div style="background: #222838; border-radius: 12px; padding: 10px 12px"><div style="font-size: 12px; color: #9AA0B4">الخصومات</div><div style="font-size: 18px; font-weight: 800">{{live.discT}}</div></div>
             </div>
             <sc-if value="{{live.empty}}" hint-placeholder-val="{{true}}"><div style="color: #9AA0B4; font-size: 14px">ما صارت محاسبة بعد. حاسب أي جهاز من شاشة الكاشير وشوفه يطلع هنا.</div></sc-if>
-            <sc-for list="{{live.list}}" as="x" hint-placeholder-count="3"><div style="display: flex; justify-content: space-between; gap: 10px; padding: 8px 12px; border-radius: 10px; background: #0B0D12; font-size: 14px"><span>{{x.text}}</span><strong>{{x.amt}}</strong></div></sc-for>
+            <sc-for list="{{live.list}}" as="x" hint-placeholder-count="3"><div style="display: flex; justify-content: space-between; gap: 10px; padding: 8px 12px; border-radius: 10px; background: #222838; font-size: 14px"><span>{{x.text}}</span><strong>{{x.amt}}</strong></div></sc-for>
           </section>
         </sc-if>
 
         <div style="display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 18px; align-items: start">
           <div style="display: flex; flex-direction: column; gap: 18px; min-width: 0">
-            <section style="background: #151821; border: 1px solid #232838; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+            <section style="background: #151821; border: 1px solid #3A4258; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
               <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap">
                 <h2 style="margin: 0; font-size: 19px; font-weight: 900">المبيعات · {{ch.title}}</h2>
                 <span style="background: #2A2F40; border-radius: 8px; padding: 2px 10px; font-size: 12px; font-weight: 700; color: #C9CEDC">شكل توضيحي · الأرقام الحقيقية تطلع من النظام</span>
@@ -279,7 +282,7 @@ button{font-family:inherit}
               <div style="display: flex; gap: 8px; flex-wrap: wrap">
                 <sc-for list="{{ch.presets}}" as="p" hint-placeholder-count="5"><button onClick="{{p.pick}}" style="{{p.style}}">{{p.name}}</button></sc-for>
               </div>
-              <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; background: #0B0D12; border: 1px solid #2A2F40; border-radius: 14px; padding: 10px 12px">
+              <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; background: #222838; border: 1px solid #3A4258; border-radius: 14px; padding: 10px 12px">
                 <span style="font-weight: 800; color: #9AA0B4">من</span>
                 <input type="date" value="{{ch.fromD}}" onChange="{{ch.setFromD}}" style="{{ch.inStyle}}"/>
                 <input type="time" value="{{ch.fromT}}" onChange="{{ch.setFromT}}" style="{{ch.inStyle}}"/>
@@ -288,9 +291,9 @@ button{font-family:inherit}
                 <input type="time" value="{{ch.toT}}" onChange="{{ch.setToT}}" style="{{ch.inStyle}}"/>
               </div>
               <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
-                <div style="background: #0B0D12; border-radius: 12px; padding: 10px 12px"><div style="font-size: 12px; color: #9AA0B4">مجموع الفترة</div><div style="font-size: 20px; font-weight: 900; color: #FF5A72">{{ch.total}}</div></div>
-                <div style="background: #0B0D12; border-radius: 12px; padding: 10px 12px"><div style="font-size: 12px; color: #9AA0B4">{{ch.bestLbl}}</div><div style="font-size: 18px; font-weight: 800">{{ch.best}}</div></div>
-                <div style="background: #0B0D12; border-radius: 12px; padding: 10px 12px"><div style="font-size: 12px; color: #9AA0B4">{{ch.avgLbl}}</div><div style="font-size: 18px; font-weight: 800">{{ch.avg}}</div></div>
+                <div style="background: #222838; border-radius: 12px; padding: 10px 12px"><div style="font-size: 12px; color: #9AA0B4">مجموع الفترة</div><div style="font-size: 20px; font-weight: 900; color: #FF5A72">{{ch.total}}</div></div>
+                <div style="background: #222838; border-radius: 12px; padding: 10px 12px"><div style="font-size: 12px; color: #9AA0B4">{{ch.bestLbl}}</div><div style="font-size: 18px; font-weight: 800">{{ch.best}}</div></div>
+                <div style="background: #222838; border-radius: 12px; padding: 10px 12px"><div style="font-size: 12px; color: #9AA0B4">{{ch.avgLbl}}</div><div style="font-size: 18px; font-weight: 800">{{ch.avg}}</div></div>
               </div>
               <div style="font-size: 12px; color: #9AA0B4">{{ch.unit}} · اضغط على أي عمود حتى يطلعلك تفصيله</div>
               <div style="height: 230px; display: flex; align-items: flex-end; gap: 4px; padding: 22px 4px 0; border-bottom: 1px solid #2A2F40; direction: ltr; background: repeating-linear-gradient(0deg, transparent 0 51px, rgba(255,255,255,0.04) 51px 52px)">
@@ -305,7 +308,7 @@ button{font-family:inherit}
                 <sc-for list="{{ch.bars}}" as="br" hint-placeholder-count="30"><span style="flex: 1; min-width: 0; text-align: center; font-size: 11px; color: #6E7489; direction: rtl; white-space: nowrap">{{br.ax}}</span></sc-for>
               </div>
               <sc-if value="{{ch.hasSel}}" hint-placeholder-val="{{false}}">
-                <div style="display: flex; gap: 14px; flex-wrap: wrap; align-items: center; background: #0B0D12; border: 1px solid #3D7BFF66; border-radius: 12px; padding: 10px 14px; font-size: 14px">
+                <div style="display: flex; gap: 14px; flex-wrap: wrap; align-items: center; background: #222838; border: 1px solid #3D7BFF66; border-radius: 12px; padding: 10px 14px; font-size: 14px">
                   <strong style="font-size: 15px">{{ch.sel.name}}</strong>
                   <span><span style="color: #FA2949">●</span> وقت الأجهزة: <b>{{ch.sel.time}}</b></span>
                   <span><span style="color: #F59E0B">●</span> البارستا: <b>{{ch.sel.bar}}</b></span>
@@ -315,7 +318,7 @@ button{font-family:inherit}
               </sc-if>
             </section>
 
-            <section style="background: #151821; border: 1px solid #232838; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+            <section style="background: #151821; border: 1px solid #3A4258; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
               <div style="display: flex; align-items: center; justify-content: space-between">
                 <h2 style="margin: 0; font-size: 19px; font-weight: 900">الأجهزة حسب القسم · {{branchName}}</h2>
                 <span style="font-size: 12px; color: #9AA0B4">{{countsNote}}</span>
@@ -384,7 +387,7 @@ button{font-family:inherit}
               </sc-if>
             </section>
 
-            <section style="background: #151821; border: 1px solid #232838; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 10px">
+            <section style="background: #151821; border: 1px solid #3A4258; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 10px">
               <h2 style="margin: 0; font-size: 18px; font-weight: 900">الوقت مقابل الطلبات</h2>
               <sc-for list="{{money}}" as="m" hint-placeholder-count="6">
                 <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #2A2F40">
@@ -394,7 +397,7 @@ button{font-family:inherit}
               </sc-for>
             </section>
 
-            <section style="background: #151821; border: 1px solid #232838; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 10px">
+            <section style="background: #151821; border: 1px solid #3A4258; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 10px">
               <div style="display: flex; align-items: center; justify-content: space-between">
                 <h2 style="margin: 0; font-size: 18px; font-weight: 900">تحتاج قرارك</h2>
                 <sc-if value="{{hasAlerts}}" hint-placeholder-val="{{true}}"><span style="background: #FA2949; color: #FFFFFF; border-radius: 12px; padding: 0 10px; font-size: 13px; font-weight: 900; animation: nlblink 1.6s infinite">{{alertCount}}</span></sc-if>
@@ -426,7 +429,7 @@ button{font-family:inherit}
           <span style="font-size: 14px; color: #9AA0B4">يحاسبهم مسؤول القاعة أو أي مدير أو المدير العام. كل كاشير منفصل، وتُسجَّل المحاسبة باسم من قام بها.</span>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px">
             <sc-for list="{{cashiers}}" as="c" hint-placeholder-count="2">
-              <div style="background: #151821; border: 1px solid #232838; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+              <div style="background: #151821; border: 1px solid #3A4258; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
                 <div style="display: flex; justify-content: space-between; align-items: center">
                   <span style="font-size: 18px; font-weight: 900">{{c.name}}</span>
                   <span style="{{c.badgeStyle}}">{{c.status}}</span>
@@ -449,7 +452,7 @@ button{font-family:inherit}
         </section>
         <section style="display: flex; flex-direction: column; gap: 12px">
           <h2 style="margin: 0; font-size: 20px; font-weight: 900">سجل الدخول والخروج</h2>
-          <div style="background: #151821; border: 1px solid #232838; border-radius: 18px; padding: 6px 16px; display: flex; flex-direction: column">
+          <div style="background: #151821; border: 1px solid #3A4258; border-radius: 18px; padding: 6px 16px; display: flex; flex-direction: column">
             <sc-for list="{{log}}" as="g" hint-placeholder-count="3">
               <div style="display: flex; justify-content: space-between; gap: 8px; padding: 10px 0; border-bottom: 1px dashed #2A2F40; font-size: 14px">
                 <span><strong>{{g.who}}</strong> · {{g.what}}</span>
@@ -478,7 +481,7 @@ button{font-family:inherit}
             </sc-for>
           </div>
 
-          <div style="background: #151821; border: 1px solid #232838; border-radius: 18px; padding: 14px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap">
+          <div style="background: #151821; border: 1px solid #3A4258; border-radius: 18px; padding: 14px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap">
             <span style="font-size: 15px; font-weight: 900; margin-inline-end: 6px">{{repTitle}}</span>
             <div style="display: flex; gap: 6px; align-items: center; background: #10131A; border: 1px solid #2A2F40; border-radius: 12px; padding: 4px 10px; font-size: 13px">
               <span style="color: #9AA0B4">من</span><strong>[التاريخ · الساعة]</strong>
@@ -499,7 +502,7 @@ button{font-family:inherit}
           <sc-if value="{{isFull}}" hint-placeholder-val="{{false}}">
             <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px">
               <sc-for list="{{fullBlocks}}" as="fb" hint-placeholder-count="3">
-                <div style="background: #151821; border: 1px solid #232838; border-top: 4px solid {{fb.color}}; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 4px">
+                <div style="background: #151821; border: 1px solid #3A4258; border-top: 4px solid {{fb.color}}; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 4px">
                   <span style="font-size: 16px; font-weight: 900; margin-bottom: 4px">{{fb.title}}</span>
                   <sc-for list="{{fb.rows}}" as="fr" hint-placeholder-count="5">
                     <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #2A2F40; font-size: 14px"><span style="color: #C9CEDC">{{fr}}</span><strong>[المبلغ]</strong></div>
@@ -516,7 +519,7 @@ button{font-family:inherit}
           </sc-if>
 
           <sc-if value="{{isTable}}" hint-placeholder-val="{{true}}">
-            <div style="background: #151821; border: 1px solid #232838; border-radius: 18px; overflow: hidden">
+            <div style="background: #151821; border: 1px solid #3A4258; border-radius: 18px; overflow: hidden">
               <div style="{{gridHead}}">
                 <sc-for list="{{cols}}" as="co" hint-placeholder-count="7">
                   <button onClick="{{co.sort}}" style="{{co.style}}">{{co.name}} <span style="opacity: .8">{{co.arrow}}</span></button>
@@ -555,7 +558,7 @@ button{font-family:inherit}
                   </div>
                 </sc-for>
               </div>
-              <div style="background: #0B0D12; border: 1px solid #2A2F40; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 10px">
+              <div style="background: #222838; border: 1px solid #3A4258; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 10px">
                 <span style="font-size: 15px; font-weight: 900">⇄ تحويل من قاصة إلى قاصة</span>
                 <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
                   <span style="font-size: 13px; color: #9AA0B4; font-weight: 800; min-width: 34px">من</span>
@@ -584,7 +587,7 @@ button{font-family:inherit}
               </div>
             </sc-for>
           </div>
-          <section style="background: #151821; border: 1px solid #232838; border-radius: 18px; overflow: hidden">
+          <section style="background: #151821; border: 1px solid #3A4258; border-radius: 18px; overflow: hidden">
             <div style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center">
               <h2 style="margin: 0; font-size: 18px; font-weight: 900">آخر السندات</h2>
               <span style="font-size: 12px; color: #9AA0B4">كل سند يُسجَّل باسم من سجّله ولا يُحذف. الخطأ يُصحَّح بسند معاكس.</span>
@@ -603,7 +606,7 @@ button{font-family:inherit}
           </section>
         </div>
 
-        <section style="background: #151821; border: 1px solid #232838; border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+        <section style="background: #151821; border: 1px solid #3A4258; border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 10px">
           <h2 style="margin: 0; font-size: 18px; font-weight: 900">سند جديد</h2>
           <sc-if value="{{noVouchPerm}}" hint-placeholder-val="{{false}}">
             <span style="font-size: 14px; color: #FF8FA1; font-weight: 700">هذا الحساب لا يملك صلاحية تسجيل السندات.</span>
@@ -655,7 +658,7 @@ button{font-family:inherit}
     <!-- ===== الموظفون والصلاحيات ===== -->
     <sc-if value="{{isMenu}}" hint-placeholder-val="{{false}}">
       <div style="display: flex; flex-direction: column; gap: 16px; animation: nlin .35s ease">
-        <section style="background: #151821; border: 1px solid #232838; border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px">
+        <section style="background: #151821; border: 1px solid #3A4258; border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px">
           <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap">
             <h2 style="margin: 0; font-size: 20px; font-weight: 900">المنيو والأسعار</h2>
             <span style="font-size: 13px; color: #9AA0B4">أي تغيير ينطبق فورًا على الكاشير والتاب، وينسجل باسمك.</span>
@@ -668,7 +671,7 @@ button{font-family:inherit}
           </div>
         </section>
         <sc-if value="{{menuV.notDev}}" hint-placeholder-val="{{true}}">
-          <section style="background: #151821; border: 1px solid #232838; border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px">
+          <section style="background: #151821; border: 1px solid #3A4258; border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px">
             <h3 style="margin: 0 0 6px; font-size: 17px; font-weight: 900">{{menuV.catName}}</h3>
             <div style="display: grid; grid-template-columns: minmax(0, 1fr) 130px 120px 90px; gap: 8px; font-size: 12px; font-weight: 800; color: #9AA0B4; padding-bottom: 4px; border-bottom: 1px solid #2A2F40">
               <span>اسم الصنف</span><span>السعر (د.ع)</span><span>الحالة</span><span></span>
@@ -698,7 +701,7 @@ button{font-family:inherit}
           </section>
         </sc-if>
         <sc-if value="{{menuV.isDev}}" hint-placeholder-val="{{false}}">
-          <section style="background: #151821; border: 1px solid #232838; border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px">
+          <section style="background: #151821; border: 1px solid #3A4258; border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px">
             <h3 style="margin: 0 0 6px; font-size: 17px; font-weight: 900">أسعار الأجهزة والألعاب (د.ع)</h3>
             <div style="display: grid; grid-template-columns: 180px repeat(4, minmax(0, 1fr)); gap: 8px; font-size: 12px; font-weight: 800; color: #9AA0B4">
               <span>الجهاز</span><sc-for list="{{menuV.devHead}}" as="h" hint-placeholder-count="4"><span style="text-align: center">{{h}}</span></sc-for>
@@ -713,7 +716,7 @@ button{font-family:inherit}
           </section>
         </sc-if>
         <sc-if value="{{menuV.hasLog}}" hint-placeholder-val="{{false}}">
-          <section style="background: #151821; border: 1px solid #232838; border-radius: 18px; padding: 14px 18px; display: flex; flex-direction: column; gap: 6px">
+          <section style="background: #151821; border: 1px solid #3A4258; border-radius: 18px; padding: 14px 18px; display: flex; flex-direction: column; gap: 6px">
             <h3 style="margin: 0; font-size: 16px; font-weight: 900">سجل التعديلات</h3>
             <sc-for list="{{menuV.log}}" as="lg" hint-placeholder-count="2"><div style="font-size: 13px; color: #C3C8D6; padding: 4px 0; border-bottom: 1px dashed #2A2F40"><strong style="color: #F2F3F7">{{lg.who}}</strong> · {{lg.what}} · {{lg.when}}</div></sc-for>
           </section>
@@ -723,7 +726,7 @@ button{font-family:inherit}
 
     <sc-if value="{{isStaff}}" hint-placeholder-val="{{false}}">
       <div style="display: grid; grid-template-columns: 360px minmax(0, 1fr); gap: 18px; align-items: start; animation: nlin .35s ease">
-        <section style="background: #151821; border: 1px solid #232838; border-radius: 18px; padding: 12px; display: flex; flex-direction: column; gap: 8px">
+        <section style="background: #151821; border: 1px solid #3A4258; border-radius: 18px; padding: 12px; display: flex; flex-direction: column; gap: 8px">
           <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 4px 6px">
             <h2 style="margin: 0; font-size: 18px; font-weight: 900">الحسابات</h2>
             <sc-if value="{{isGM}}" hint-placeholder-val="{{true}}">
@@ -741,7 +744,7 @@ button{font-family:inherit}
           </sc-for>
         </section>
 
-        <section style="background: #151821; border: 1px solid #232838; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 16px">
+        <section style="background: #151821; border: 1px solid #3A4258; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 16px">
           <div style="display: flex; align-items: center; gap: 14px">
             <span style="{{su.avatar}}">{{su.initial}}</span>
             <div style="display: flex; flex-direction: column; line-height: 1.25">
@@ -794,7 +797,14 @@ button{font-family:inherit}
               </div>
             </div>
             <div style="display: flex; flex-direction: column; gap: 6px">
-              <span style="font-size: 13px; font-weight: 800; color: #9AA0B4">أقسامه (يشوف ويشتغل بس عليها)</span>
+              <span style="font-size: 13px; font-weight: 800; color: #9AA0B4">يشتغل بأي طابق؟</span>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap">
+                <sc-for list="{{flOpts}}" as="fo" hint-placeholder-count="3">
+                  <button onClick="{{fo.pick}}" style="{{fo.style}}">{{fo.name}}</button>
+                </sc-for>
+              </div>
+              <span style="font-size: 13px; font-weight: 800; color: #9AA0B4; margin-top: 6px">أقسامه (يشوف ويشتغل بس عليها)</span>
+              <sc-if value="{{noFl}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; color: #6E7489">اختار الطابق أولًا حتى تطلع أقسامه.</span></sc-if>
               <div style="display: flex; gap: 6px; flex-wrap: wrap">
                 <sc-for list="{{secOpts}}" as="so" hint-placeholder-count="6">
                   <button onClick="{{so.pick}}" style="{{so.style}}">{{so.name}}</button>
@@ -806,7 +816,7 @@ button{font-family:inherit}
           <div style="display: flex; flex-direction: column; gap: 12px">
             <div style="display: flex; align-items: baseline; gap: 10px"><span style="font-size: 16px; font-weight: 900">الصلاحيات</span><span style="font-size: 13px; color: #9AA0B4">{{acct.permText}}</span></div>
             <sc-for list="{{pgroups}}" as="pg" hint-placeholder-count="3">
-              <div style="display: flex; flex-direction: column; gap: 8px; background: #10131A; border: 1px solid #232838; border-radius: 14px; padding: 12px">
+              <div style="display: flex; flex-direction: column; gap: 8px; background: #10131A; border: 1px solid #3A4258; border-radius: 14px; padding: 12px">
                 <div style="display: flex; align-items: center; gap: 10px">
                   <span style="font-size: 14px; font-weight: 900">{{pg.title}}</span>
                   <span style="font-size: 12px; color: #9AA0B4">{{pg.count}}</span>
@@ -819,9 +829,11 @@ button{font-family:inherit}
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
                   <sc-for list="{{pg.items}}" as="p" hint-placeholder-count="6">
-                    <button onClick="{{p.toggle}}" style="{{p.style}}">
+                    <button class="nlpt" onClick="{{p.toggle}}" style="{{p.style}}">
                       <span style="{{p.box}}">{{p.mark}}</span>
                       <span style="flex: 1; text-align: right">{{p.name}}</span>
+                      <span style="width: 20px; height: 20px; border-radius: 50%; border: 1px solid #4A5068; color: #9AA0B4; font-size: 12px; font-weight: 900; display: flex; align-items: center; justify-content: center; flex-shrink: 0">؟</span>
+                      <span class="nltip">{{p.desc}}</span>
                     </button>
                   </sc-for>
                 </div>
@@ -874,25 +886,46 @@ class Component extends DCLogic {
     const st = this.state;
     const accent = this.props.accent ?? '#FA2949';
     const PGROUPS = [
-      ['الكاشير والمحاسبة', [['open', 'يفتح جهاز أو طاولة ويشغّل الوقت'], ['order', 'يضيف طلبات للزبون'], ['move', 'ينقل زبون من جهاز لجهاز أو طاولة'], ['pay', 'يحاسب الزبون ويستلم الفلوس'],
-        ['discS', 'يعطي خصم ضمن الحد'], ['credit', 'يسجّل ويعوّض رصيد الزبون'], ['adv', 'يسحب سلفة من القاصة'], ['shift', 'يفتح ويسكّر الشفت']]],
-      ['الكابتن والتاب', [['tabOpen', 'يفتح جلسات وطاولات من التاب'], ['tabSend', 'يرسل طلبات للطابعة'], ['head', 'يغيّر رأس النرجيلة'], ['allSec', 'يشوف كل الأقسام مو بس قسمه']]],
-      ['الإدارة', [['settle', 'يحاسب الكاشيرية آخر الشفت'], ['disc', 'يوافق على خصم فوق الحد'], ['reports', 'يشوف التقارير'], ['vouch', 'يسجّل سندات صرف وقبض'],
-        ['menu', 'يضيف ويعدّل الأصناف والأسعار'], ['stock', 'يدخل فواتير المشتريات والجرد'], ['oos', 'يحوّل جهاز إلى خارج الخدمة'], ['cancel', 'يلغي حجز أو طلب (بسبب)'], ['target', 'يحدد الهدف الشهري']]]
+      ['الكاشير والمحاسبة', [
+        ['open', 'يفتح جهاز أو طاولة ويشغّل الوقت', 'يكدر يشغّل الوقت على جهاز فارغ أو يفتح طاولة لزبون. بدونها يشوف الأجهزة بس.'],
+        ['order', 'يضيف طلبات للزبون', 'يكدر يضيف مشروبات ونراجيل وأكل على حساب الزبون، وتنطبع بطابعة القسم.'],
+        ['move', 'ينقل زبون من جهاز لجهاز أو طاولة', 'يكدر ينقل الزبون ويّا وقته وطلباته لجهاز أو طاولة ثانية بنفس الطابق.'],
+        ['pay', 'يحاسب الزبون ويستلم الفلوس', 'يكدر يسكّر حساب الزبون ويستلم الفلوس، والمبلغ ينحسب على شفته.'],
+        ['discS', 'يعطي خصم ضمن الحد', 'يكدر يعطي خصم للزبون لحد الحد اللي تحدده أنت. أكثر من الحد يحتاج موافقة.'],
+        ['credit', 'يسجّل ويعوّض رصيد الزبون', 'يكدر يسجّل باقي للزبون بذمتنا، ويعوّضه من رصيده بزيارته الجاية.'],
+        ['adv', 'يسحب سلفة من القاصة', 'يكدر يسحب سلفة لموظف من قاصة الكاشير، وتنسجل باسم الموظف واسم اللي سحبها.'],
+        ['shift', 'يفتح ويسكّر الشفت', 'يكدر يفتح الشفت بأول الدوام ويسكّره بآخره ويسلّم القاصة.']]],
+      ['الكابتن والتاب', [
+        ['tabOpen', 'يفتح جلسات وطاولات من التاب', 'يكدر يفتح جلسة أو طاولة من التاب بأقسامه.'],
+        ['tabSend', 'يرسل طلبات للطابعة', 'يكدر يرسل طلبات الزبون من التاب، وتطلع مباشرة على طابعة القسم.'],
+        ['head', 'يغيّر رأس النرجيلة', 'يكدر يسجّل تغيير رأس النرجيلة للزبون، وينضاف على حسابه بسعره.'],
+        ['allSec', 'يشوف كل الأقسام مو بس قسمه', 'يشوف كل أقسام طابقه. بدونها يشوف أقسامه اللي اخترتها فوق بس.']]],
+      ['الإدارة', [
+        ['settle', 'يحاسب الكاشيرية آخر الشفت', 'يكدر يحاسب الكاشير آخر الشفت: يطابق الفلوس المعدودة ويّا المبيعات ويثبّت الفرق.'],
+        ['disc', 'يوافق على خصم فوق الحد', 'يكدر يوافق على خصم أكبر من الحد لما الكاشير يطلبه.'],
+        ['reports', 'يشوف التقارير', 'يشوف تقارير المبيعات والأجهزة والموظفين والخصومات للفرع المسموح له.'],
+        ['vouch', 'يسجّل سندات صرف وقبض', 'يكدر يسجّل سند صرف أو قبض. السند ما ينحذف، يتصحح بسند عكسي.'],
+        ['menu', 'يضيف ويعدّل الأصناف والأسعار', 'يكدر يضيف أصناف ويغيّر أسعارها ويوقف الصنف اللي نفد. كل تغيير ينسجل باسمه.'],
+        ['stock', 'يدخل فواتير المشتريات والجرد', 'يكدر يدخل فواتير المشتريات وجرد آخر الدوام للمخزن.'],
+        ['oos', 'يحوّل جهاز إلى خارج الخدمة', 'يكدر يحوّل جهاز «خارج الخدمة» بسبب عطل أو صيانة، ويرجّعه للخدمة.'],
+        ['cancel', 'يلغي حجز أو طلب (بسبب)', 'يكدر يلغي حجز أو طلب انرسل، بشرط يكتب السبب، وينسجل باسمه.'],
+        ['target', 'يحدد الهدف الشهري', 'يكدر يحدد الهدف الشهري للمبيعات ويغيّره.']]]
     ];
     const PERMS = [].concat(...PGROUPS.map((g) => g[1]));
     const ALLP = PERMS.map((p) => p[0]);
     const ROLES = { gm: 'المدير العام', mgr: 'مدير', hall: 'مسؤول القاعة', cashier: 'كاشير', captain: 'كابتن', sec: 'مسؤول قسم (بارستا/نراجيل)' };
-    const SECS = ['بلاي ستيشن', 'إليت', 'البلياردو', 'الصالة', 'النراجيل', 'البارستا'];
+    const SECF = { g: ['بلاي ستيشن', 'إليت', 'الصالة', 'النراجيل', 'البارستا'], u: ['البلياردو', 'ماستر', 'السينما', 'الصالة العلوية'] };
+    const SECS = SECF.g.concat(SECF.u);
+    const FLR = { g: 'الطابق الأرضي', u: 'الطابق العلوي', both: 'الطابقين' };
     const seedUsers = {
-      gm: { name: '[اسمك]', role: 'gm', br: 'both', color: accent, perms: ALLP.slice(), secs: SECS.slice(), pin: '', phone: '', on: true },
-      m1: { name: '[اسم المدير الأول]', role: 'mgr', br: 'both', color: '#22C55E', perms: ['settle', 'disc', 'reports', 'vouch', 'menu', 'stock', 'oos', 'cancel', 'pay', 'discS', 'adv', 'shift'], secs: SECS.slice(), pin: '', phone: '', on: true },
-      m2: { name: '[اسم المدير الثاني]', role: 'mgr', br: 'nl2', color: '#8B5CF6', perms: ['settle', 'reports', 'vouch', 'oos', 'cancel'], secs: SECS.slice(), pin: '', phone: '', on: true },
-      hall: { name: '[اسم مسؤول القاعة]', role: 'hall', br: 'nl1', color: '#3D7BFF', perms: ['settle', 'oos', 'cancel', 'open', 'move'], secs: ['بلاي ستيشن', 'إليت', 'البلياردو', 'الصالة'], pin: '', phone: '', on: true },
-      c1: { name: '[اسم الكاشير]', role: 'cashier', br: 'nl1', color: '#F59E0B', perms: ['open', 'order', 'move', 'pay', 'discS', 'credit', 'shift'], secs: ['بلاي ستيشن', 'إليت'], pin: '', phone: '', on: true },
-      k1: { name: '[اسم الكابتن]', role: 'captain', br: 'nl1', color: '#14B8A6', perms: ['tabOpen', 'tabSend'], secs: ['الصالة'], pin: '', phone: '', on: true }
+      gm: { name: '[اسمك]', role: 'gm', br: 'both', color: accent, perms: ALLP.slice(), secs: SECS.slice(), fl: 'both', pin: '', phone: '', on: true },
+      m1: { name: '[اسم المدير الأول]', role: 'mgr', br: 'both', color: '#22C55E', perms: ['settle', 'disc', 'reports', 'vouch', 'menu', 'stock', 'oos', 'cancel', 'pay', 'discS', 'adv', 'shift'], secs: SECS.slice(), fl: 'both', pin: '', phone: '', on: true },
+      m2: { name: '[اسم المدير الثاني]', role: 'mgr', br: 'nl2', color: '#8B5CF6', perms: ['settle', 'reports', 'vouch', 'oos', 'cancel'], secs: SECS.slice(), fl: 'both', pin: '', phone: '', on: true },
+      hall: { name: '[اسم مسؤول القاعة]', role: 'hall', br: 'nl1', color: '#3D7BFF', perms: ['settle', 'oos', 'cancel', 'open', 'move'], secs: ['بلاي ستيشن', 'إليت', 'الصالة'], fl: 'g', pin: '', phone: '', on: true },
+      c1: { name: '[اسم الكاشير]', role: 'cashier', br: 'nl1', color: '#F59E0B', perms: ['open', 'order', 'move', 'pay', 'discS', 'credit', 'shift'], secs: ['بلاي ستيشن', 'إليت'], fl: 'g', pin: '', phone: '', on: true },
+      k1: { name: '[اسم الكابتن]', role: 'captain', br: 'nl1', color: '#14B8A6', perms: ['tabOpen', 'tabSend'], secs: ['الصالة'], fl: 'g', pin: '', phone: '', on: true }
     };
-    const U0 = st.users || seedUsers; const U = {}; Object.keys(U0).forEach((k) => { const x = U0[k] || {}; U[k] = { ...x, perms: x.perms || [], secs: x.secs || [], pin: x.pin || '', phone: x.phone || '', on: x.on !== false }; });
+    const U0 = st.users || seedUsers; const U = {}; Object.keys(U0).forEach((k) => { const x = U0[k] || {}; U[k] = { ...x, perms: x.perms || [], secs: x.secs || [], pin: x.pin || '', phone: x.phone || '', fl: x.fl || '', on: x.on !== false }; });
     const login = { gm: 'gm', m1: 'm1', m2: 'm2', hall: 'hall' };
     const me = U[login[st.acc]];
     const has = (p) => me.perms.indexOf(p) >= 0;
@@ -1112,7 +1145,7 @@ class Component extends DCLogic {
       ['oos', '🛠️', 'الأعطال وخارج الخدمة', 'متى طلع ومتى رجع ومن سواه']
     ];
     const reports = REPS.map((r) => ({ icon: r[1], name: r[2], desc: r[3], pick: () => this.setState({ rep: r[0], sortCol: 0, sortDir: 1 }),
-      style: 'min-height: 92px; border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; cursor: pointer; font-family: inherit; color: #FFFFFF; text-align: right; transition: all .15s; ' + (st.rep === r[0] ? 'background: linear-gradient(135deg, ' + accent + '33, #151821); border: 1px solid ' + accent + '; box-shadow: 0 0 18px ' + accent + '44;' : 'background: #151821; border: 1px solid #232838;') }));
+      style: 'min-height: 92px; border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; cursor: pointer; font-family: inherit; color: #FFFFFF; text-align: right; transition: all .15s; ' + (st.rep === r[0] ? 'background: linear-gradient(135deg, ' + accent + '33, #151821); border: 1px solid ' + accent + '; box-shadow: 0 0 18px ' + accent + '44;' : 'background: #151821; border: 1px solid #3A4258;') }));
     const curRep = REPS.find((r) => r[0] === st.rep);
     const ranges = [['today', 'اليوم'], ['shift', 'الشفت'], ['week', 'هذا الأسبوع'], ['month', 'هذا الشهر']].map((r) => ({ name: r[1], style: pill(st.range === r[0], '#3A4058'), pick: () => this.setState({ range: r[0] }) }));
     const unitsOf = (k) => { const s = SEC.nl1.find((x) => x[0] === k); const n = s ? s[3] : 0; const pre = { play: 'PS', elite: 'إليت ', hall: 'طاولة ', pool: 'بلياردو ', master: 'ماستر ', cinema: 'سينما ', uhall: 'طاولة ع' }[k]; const out = []; for (let i = 1; i <= n; i++) out.push(k === 'play' && i === 21 ? 'دركسون 21' : pre + i); return out; };
@@ -1195,10 +1228,12 @@ class Component extends DCLogic {
     const upd = (patch, what) => { if (!canEdit) { this._toast(sk === 'gm' ? 'صلاحيات المدير العام كاملة وما تتغير.' : 'الصلاحيات يحددها المدير العام فقط.'); return; } const nu = { ...U, [sk]: { ...S, ...patch } }; this.setState(what && !S.draft ? { users: nu, log: logIt(what), sLog: sLogAdd(what) } : { users: nu }); };
     const roleOpts = Object.keys(ROLES).filter((r) => r !== 'gm' || sk === 'gm').map((r) => ({ name: ROLES[r], style: chip(S.role === r), pick: () => upd({ role: r }, 'غيّر دور ' + S.name + ' إلى ' + ROLES[r]) }));
     const branchOpts = brKeys.map((b) => ({ name: BR[b], style: chip(S.br === b), pick: () => upd({ br: b }, 'غيّر فرع ' + S.name + ' إلى ' + BR[b]) }));
-    const secOpts = SECS.map((s2) => { const on = S.secs.indexOf(s2) >= 0; return { name: (on ? '✓ ' : '') + s2, style: chip(on), pick: () => upd({ secs: on ? S.secs.filter((x) => x !== s2) : S.secs.concat([s2]) }, (on ? 'شال قسم ' : 'أضاف قسم ') + s2 + ' لـ' + S.name) }; });
-    const pItem = (p) => { const on = S.perms.indexOf(p[0]) >= 0; return { name: p[1], mark: on ? '✓' : '',
+    const flOpts = ['g', 'u', 'both'].map((f) => ({ name: FLR[f], style: chip(S.fl === f), pick: () => { const ok = f === 'both' ? SECS : SECF[f]; upd({ fl: f, secs: S.secs.filter((x) => ok.indexOf(x) >= 0) }, 'غيّر طابق ' + S.name + ' إلى ' + FLR[f]); } }));
+    const uSecList = S.fl === 'both' ? SECS : (SECF[S.fl] || []);
+    const secOpts = uSecList.map((s2) => { const on = S.secs.indexOf(s2) >= 0; return { name: (on ? '✓ ' : '') + s2, style: chip(on), pick: () => upd({ secs: on ? S.secs.filter((x) => x !== s2) : S.secs.concat([s2]) }, (on ? 'شال قسم ' : 'أضاف قسم ') + s2 + ' لـ' + S.name) }; });
+    const pItem = (p) => { const on = S.perms.indexOf(p[0]) >= 0; return { name: p[1], desc: p[2], mark: on ? '✓' : '',
       box: 'width: 24px; height: 24px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-weight: 900; flex-shrink: 0; ' + (on ? 'background: #22C55E; color: #0B0D12; box-shadow: 0 0 10px #22C55E88;' : 'background: #10131A; border: 1px solid #343A4E; color: transparent;'),
-      style: 'min-height: 46px; display: flex; align-items: center; gap: 10px; padding: 0 12px; border-radius: 12px; font-size: 14px; font-weight: 700; font-family: inherit; color: #FFFFFF; cursor: ' + (canEdit ? 'pointer' : 'default') + '; ' + (on ? 'background: #12251A; border: 1px solid #22C55E55;' : 'background: #10131A; border: 1px solid #232838;'),
+      style: 'min-height: 46px; display: flex; align-items: center; gap: 10px; padding: 0 12px; border-radius: 12px; position: relative; font-size: 14px; font-weight: 700; font-family: inherit; color: #FFFFFF; cursor: ' + (canEdit ? 'pointer' : 'default') + '; ' + (on ? 'background: #12251A; border: 1px solid #22C55E55;' : 'background: #10131A; border: 1px solid #3A4258;'),
       toggle: () => upd({ perms: on ? S.perms.filter((x) => x !== p[0]) : S.perms.concat([p[0]]) }, (on ? 'شال صلاحية «' : 'أعطى صلاحية «') + p[1] + '» لـ' + S.name) }; };
     const pgroups = PGROUPS.map((g) => { const keys = g[1].map((p) => p[0]); const n = keys.filter((x) => S.perms.indexOf(x) >= 0).length; return { title: g[0], count: n + ' من ' + keys.length, items: g[1].map(pItem),
       all: () => upd({ perms: S.perms.filter((x) => keys.indexOf(x) < 0).concat(keys) }, 'أعطى كل صلاحيات «' + g[0] + '» لـ' + S.name),
@@ -1217,7 +1252,8 @@ class Component extends DCLogic {
       save: () => {
         const nm = (S.name || '').trim();
         if (!nm) { this._toast('اكتب اسم الموظف أولًا.'); return; }
-        if (!S.role) { this._toast('اختار دوره (كابتن، كاشير، مسؤول الفرع، مدير...).'); return; }
+        if (!S.role) { this._toast('اختار دوره (كابتن، كاشير، مسؤول القاعة، مدير...).'); return; }
+        if (!S.fl) { this._toast('اختار الطابق اللي يشتغل بيه.'); return; }
         if (!pinOk) { this._toast('رمز الدخول لازم 4 أرقام.'); return; }
         const nu = { ...U, [sk]: { ...S, name: nm, draft: false } };
         const w = 'سوّى حساب ' + nm + ' (' + ROLES[S.role] + ') بـ' + permCount + ' صلاحية';
@@ -1270,10 +1306,10 @@ class Component extends DCLogic {
         this.setState({ vouchers: [v].concat(st.vouchers), vNo: st.vNo + 1, vAmt: '', vFor: null, vSub: null, vDet: '' });
         this._toast('تم تسجيل السند ' + v.no + ' باسمك ✓');
       },
-      su: { name: S.name || 'حساب جديد', role: (S.role ? ROLES[S.role] : 'الدور ما محدد') + ' · ' + BR[S.br] + (S.on ? '' : ' · موقوف'), initial: (S.name || '+').replace(/[\[\]]/g, '').replace('اسم ', '').charAt(0) || '؟', avatar: 'width: 60px; height: 60px; border-radius: 50%; background: ' + S.color + '; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 24px; color: #FFFFFF; box-shadow: 0 0 20px ' + S.color + '88' },
+      su: { name: S.name || 'حساب جديد', role: (S.role ? ROLES[S.role] : 'الدور ما محدد') + ' · ' + BR[S.br] + (S.fl ? ' · ' + FLR[S.fl] : '') + (S.on ? '' : ' · موقوف'), initial: (S.name || '+').replace(/[\[\]]/g, '').replace('اسم ', '').charAt(0) || '؟', avatar: 'width: 60px; height: 60px; border-radius: 50%; background: ' + S.color + '; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 24px; color: #FFFFFF; box-shadow: 0 0 20px ' + S.color + '88' },
       readOnlyPerms: !canEdit,
       addUser: () => { const dr = Object.keys(U).find((k) => U[k].draft); if (dr) { this.setState({ selUser: dr }); this._toast('عندك حساب جديد ما مكمّل، كمّله أو ألغيه.'); return; } const cols = ['#EC4899', '#06B6D4', '#84CC16', '#F97316', '#A855F7']; const id = 'n' + Date.now(); const nu = { ...U, [id]: { name: '', role: '', br: 'nl1', color: cols[Object.keys(U).length % cols.length], perms: [], secs: [], pin: '', phone: '', on: true, draft: true } }; this.setState({ users: nu, selUser: id }); },
-      acct, pgroups, secOpts, sLog, hasSLog: sLog.length > 0, isCaptainLike: S.role === 'captain' || S.role === 'sec' || S.role === 'cashier' || S.role === 'hall',
+      acct, pgroups, secOpts, flOpts, noFl: !S.fl, sLog, hasSLog: sLog.length > 0, isCaptainLike: S.role === 'captain' || S.role === 'sec' || S.role === 'cashier' || S.role === 'hall',
       me: { name: me.name, role: ROLES[me.role], avatarStyle: 'width: 42px; height: 42px; border-radius: 50%; background: ' + me.color + '; display: flex; align-items: center; justify-content: center; border: 2px solid #FFFFFF; box-shadow: 0 0 14px ' + me.color },
       log: st.log, toast: st.toast,
       changePhoto: () => this._toast('في النظام الحقيقي: تفتح الكاميرا أو المعرض، وكل شخص يرفع صورته ويغيّرها بنفسه.')
