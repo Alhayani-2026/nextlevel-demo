@@ -741,7 +741,7 @@ button{font-family:inherit}
           </sc-for>
         </section>
 
-        <section style="background: #151821; border: 1px solid #232838; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 14px">
+        <section style="background: #151821; border: 1px solid #232838; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 16px">
           <div style="display: flex; align-items: center; gap: 14px">
             <span style="{{su.avatar}}">{{su.initial}}</span>
             <div style="display: flex; flex-direction: column; line-height: 1.25">
@@ -749,37 +749,100 @@ button{font-family:inherit}
               <span style="font-size: 13px; color: #9AA0B4">{{su.role}}</span>
             </div>
             <sc-if value="{{readOnlyPerms}}" hint-placeholder-val="{{false}}">
-              <span style="margin-inline-start: auto; background: #2A2F40; border-radius: 10px; padding: 4px 12px; font-size: 12px; font-weight: 800; color: #C9CEDC">عرض فقط · التعديل للمدير العام</span>
+              <span style="margin-inline-start: auto; background: #2A2F40; border-radius: 10px; padding: 4px 12px; font-size: 12px; font-weight: 800; color: #C9CEDC">عرض فقط · الصلاحيات يحددها المدير العام</span>
+            </sc-if>
+            <sc-if value="{{acct.canToggle}}" hint-placeholder-val="{{true}}">
+              <button onClick="{{acct.toggleOn}}" style="margin-inline-start: auto; height: 36px; padding: 0 12px; border-radius: 10px; background: transparent; border: 1px solid #3A4058; color: #C9CEDC; font-size: 13px; font-weight: 800; cursor: pointer; font-family: inherit">
+                <sc-if value="{{acct.isOn}}" hint-placeholder-val="{{true}}">إيقاف الحساب</sc-if><sc-if value="{{acct.isOff}}" hint-placeholder-val="{{false}}">تفعيل الحساب</sc-if>
+              </button>
             </sc-if>
           </div>
+          <sc-if value="{{acct.isDraft}}" hint-placeholder-val="{{false}}">
+            <div style="background: #1A1508; border: 1px solid #FFD27A55; border-radius: 12px; padding: 10px 14px; font-size: 14px; font-weight: 700; color: #FFD27A">حساب جديد: يبدأ بدون أي صلاحية. أنت تكتب بياناته وتختار دوره وفرعه وأقسامه وكل صلاحية بيدك، وبعدين تضغط «حفظ الحساب».</div>
+          </sc-if>
+          <sc-if value="{{acct.isOff}}" hint-placeholder-val="{{false}}">
+            <div style="background: #2A1218; border: 1px solid #FA294955; border-radius: 12px; padding: 10px 14px; font-size: 14px; font-weight: 700; color: #FF8FA1">الحساب موقوف: ما يكدر يدخل على أي شاشة. ما ينحذف، وسجله يبقى.</div>
+          </sc-if>
+
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+            <label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; font-weight: 800; color: #9AA0B4">اسم الموظف</span>
+              <input value="{{acct.name}}" onInput="{{acct.setName}}" readOnly="{{acct.locked}}" placeholder="الاسم الكامل" style="height: 44px; border-radius: 12px; background: #10131A; border: 1px solid #2A2F40; color: #FFFFFF; font-size: 15px; font-weight: 700; padding: 0 12px; font-family: inherit; outline: none; width: 100%; box-sizing: border-box"></label>
+            <label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; font-weight: 800; color: #9AA0B4">رقم الهاتف</span>
+              <input value="{{acct.phone}}" onInput="{{acct.setPhone}}" readOnly="{{acct.locked}}" placeholder="07xxxxxxxxx" inputmode="numeric" style="height: 44px; border-radius: 12px; background: #10131A; border: 1px solid #2A2F40; color: #FFFFFF; font-size: 15px; font-weight: 700; padding: 0 12px; font-family: inherit; outline: none; width: 100%; box-sizing: border-box; direction: ltr; text-align: right"></label>
+            <label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; font-weight: 800; color: #9AA0B4">رمز الدخول (4 أرقام)</span>
+              <sc-if value="{{acct.editable}}" hint-placeholder-val="{{true}}"><input value="{{acct.pin}}" onInput="{{acct.setPin}}" placeholder="••••" inputmode="numeric" style="height: 44px; border-radius: 12px; background: #10131A; border: 1px solid #2A2F40; color: #FFFFFF; font-size: 15px; font-weight: 700; padding: 0 12px; font-family: inherit; outline: none; width: 100%; box-sizing: border-box; direction: ltr; text-align: right; letter-spacing: 6px"></sc-if>
+              <sc-if value="{{acct.locked}}" hint-placeholder-val="{{false}}"><span style="height: 44px; border-radius: 12px; background: #10131A; border: 1px solid #2A2F40; color: #FFFFFF; font-size: 15px; font-weight: 700; padding: 0 12px; font-family: inherit; outline: none; width: 100%; box-sizing: border-box; display: flex; align-items: center">{{acct.pinShown}}</span></sc-if>
+            </label>
+          </div>
+
           <div style="display: flex; flex-direction: column; gap: 6px">
-            <span style="font-size: 13px; font-weight: 800; color: #9AA0B4">الدور (القسم يحدده المدير، والكابتن ما يشوف غير قسمه)</span>
+            <span style="font-size: 13px; font-weight: 800; color: #9AA0B4">الدور</span>
             <div style="display: flex; gap: 6px; flex-wrap: wrap">
-              <sc-for list="{{roleOpts}}" as="ro" hint-placeholder-count="6">
+              <sc-for list="{{roleOpts}}" as="ro" hint-placeholder-count="7">
                 <button onClick="{{ro.pick}}" style="{{ro.style}}">{{ro.name}}</button>
               </sc-for>
             </div>
+            <span style="font-size: 12px; color: #6E7489">الدور اسم بس. تغيير الدور ما يغيّر الصلاحيات، أنت تحددها تحت.</span>
           </div>
-          <div style="display: flex; flex-direction: column; gap: 6px">
-            <span style="font-size: 13px; font-weight: 800; color: #9AA0B4">يشوف أي فرع؟</span>
-            <div style="display: flex; gap: 6px; flex-wrap: wrap">
-              <sc-for list="{{branchOpts}}" as="bo" hint-placeholder-count="3">
-                <button onClick="{{bo.pick}}" style="{{bo.style}}">{{bo.name}}</button>
-              </sc-for>
+          <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 14px">
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <span style="font-size: 13px; font-weight: 800; color: #9AA0B4">يشتغل بأي فرع؟</span>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap">
+                <sc-for list="{{branchOpts}}" as="bo" hint-placeholder-count="3">
+                  <button onClick="{{bo.pick}}" style="{{bo.style}}">{{bo.name}}</button>
+                </sc-for>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <span style="font-size: 13px; font-weight: 800; color: #9AA0B4">أقسامه (يشوف ويشتغل بس عليها)</span>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap">
+                <sc-for list="{{secOpts}}" as="so" hint-placeholder-count="6">
+                  <button onClick="{{so.pick}}" style="{{so.style}}">{{so.name}}</button>
+                </sc-for>
+              </div>
             </div>
           </div>
-          <div style="display: flex; flex-direction: column; gap: 6px">
-            <span style="font-size: 13px; font-weight: 800; color: #9AA0B4">الصلاحيات</span>
-            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
-              <sc-for list="{{perms}}" as="p" hint-placeholder-count="10">
-                <button onClick="{{p.toggle}}" style="{{p.style}}">
-                  <span style="{{p.box}}">{{p.mark}}</span>
-                  <span style="flex: 1; text-align: right">{{p.name}}</span>
-                </button>
-              </sc-for>
-            </div>
+
+          <div style="display: flex; flex-direction: column; gap: 12px">
+            <div style="display: flex; align-items: baseline; gap: 10px"><span style="font-size: 16px; font-weight: 900">الصلاحيات</span><span style="font-size: 13px; color: #9AA0B4">{{acct.permText}}</span></div>
+            <sc-for list="{{pgroups}}" as="pg" hint-placeholder-count="3">
+              <div style="display: flex; flex-direction: column; gap: 8px; background: #10131A; border: 1px solid #232838; border-radius: 14px; padding: 12px">
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <span style="font-size: 14px; font-weight: 900">{{pg.title}}</span>
+                  <span style="font-size: 12px; color: #9AA0B4">{{pg.count}}</span>
+                  <sc-if value="{{acct.editable}}" hint-placeholder-val="{{true}}">
+                    <span style="margin-inline-start: auto; display: flex; gap: 6px">
+                      <button onClick="{{pg.all}}" style="height: 30px; padding: 0 10px; border-radius: 8px; background: transparent; border: 1px solid #2A2F40; color: #C9CEDC; font-size: 12px; font-weight: 800; cursor: pointer; font-family: inherit">تحديد الكل</button>
+                      <button onClick="{{pg.none}}" style="height: 30px; padding: 0 10px; border-radius: 8px; background: transparent; border: 1px solid #2A2F40; color: #C9CEDC; font-size: 12px; font-weight: 800; cursor: pointer; font-family: inherit">إلغاء الكل</button>
+                    </span>
+                  </sc-if>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+                  <sc-for list="{{pg.items}}" as="p" hint-placeholder-count="6">
+                    <button onClick="{{p.toggle}}" style="{{p.style}}">
+                      <span style="{{p.box}}">{{p.mark}}</span>
+                      <span style="flex: 1; text-align: right">{{p.name}}</span>
+                    </button>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
           </div>
-          <span style="font-size: 12px; color: #6E7489">كل تغيير بالصلاحيات ينحفظ بالسجل باسم من سواه. مثل دوام: الحساب باسم الشخص وصورته، والصلاحيات حسب الدور.</span>
+
+          <sc-if value="{{acct.isDraft}}" hint-placeholder-val="{{false}}">
+            <div style="display: flex; gap: 10px">
+              <button onClick="{{acct.save}}" style="flex: 1; height: 50px; border-radius: 12px; border: none; background: #22C55E; color: #0B0D12; font-size: 16px; font-weight: 900; cursor: pointer; font-family: inherit">حفظ الحساب</button>
+              <button onClick="{{acct.discard}}" style="height: 50px; padding: 0 18px; border-radius: 12px; background: transparent; border: 1px solid #3A4058; color: #C9CEDC; font-size: 14px; font-weight: 800; cursor: pointer; font-family: inherit">إلغاء</button>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{hasSLog}}" hint-placeholder-val="{{false}}">
+            <div style="display: flex; flex-direction: column; gap: 4px">
+              <span style="font-size: 13px; font-weight: 800; color: #9AA0B4">سجل تغييرات الحسابات</span>
+              <sc-for list="{{sLog}}" as="sl" hint-placeholder-count="2"><div style="font-size: 13px; color: #C3C8D6; padding: 4px 0; border-bottom: 1px dashed #2A2F40"><strong style="color: #FFFFFF">{{sl.who}}</strong> · {{sl.what}} · {{sl.when}}</div></sc-for>
+            </div>
+          </sc-if>
+          <span style="font-size: 12px; color: #6E7489">كل حساب باسم الشخص ورمزه. الصلاحيات ما تتحدد تلقائيًا: المدير العام وحده يختارها لكل حساب، وكل تغيير ينحفظ بالسجل باسم من سواه. الحساب ما ينحذف، يتوقف بس.</span>
         </section>
       </div>
     </sc-if>
@@ -804,33 +867,32 @@ class Component extends DCLogic {
         { who: '[اسم الموظف]', what: 'دخل · تاب الكابتن', when: '[الوقت]' }
       ]
     };
-    if (window.NLDemo) { const D = window.NLDemo; const s0 = D.init(); if (s0 && s0.menu) this.state.menu = s0.menu; const base = this.setState.bind(this); this.setState = (o, cb) => { base(o, cb); if (o && o.menu) D.patch({ menu: o.menu }); }; D.sub((s2) => base({ demoRev: s2.rev, menu: s2.menu || this.state.menu })); }
+    if (window.NLDemo) { const D = window.NLDemo; const s0 = D.init(); if (s0 && s0.menu) this.state.menu = s0.menu; if (s0 && s0.users) this.state.users = s0.users; const base = this.setState.bind(this); this.setState = (o, cb) => { base(o, cb); if (o && o.menu) D.patch({ menu: o.menu }); if (o && o.users) D.patch({ users: o.users }); }; D.sub((s2) => base({ demoRev: s2.rev, menu: s2.menu || this.state.menu, users: s2.users || this.state.users })); }
   }
   _toast(t) { clearTimeout(this._tt); this.setState({ toast: t }); this._tt = setTimeout(() => this.setState({ toast: '' }), 5000); }
   renderVals() {
     const st = this.state;
     const accent = this.props.accent ?? '#FA2949';
-    const PERMS = [
-      ['settle', 'يحاسب الكاشيرية'], ['disc', 'يوافق على خصم فوق الحد'], ['reports', 'يشوف التقارير'], ['vouch', 'يسجّل سندات صرف وقبض'],
-      ['menu', 'يضيف ويعدّل الأصناف والأسعار'], ['staff', 'يضيف موظفين ويحدد أقسامهم'], ['oos', 'يحوّل جهاز إلى خارج الخدمة'], ['cancel', 'يلغي حجز أو طلب (بسبب)'],
-      ['target', 'يحدد الهدف الشهري'], ['perm', 'يغيّر صلاحيات الآخرين']
+    const PGROUPS = [
+      ['الكاشير والمحاسبة', [['open', 'يفتح جهاز أو طاولة ويشغّل الوقت'], ['order', 'يضيف طلبات للزبون'], ['move', 'ينقل زبون من جهاز لجهاز أو طاولة'], ['pay', 'يحاسب الزبون ويستلم الفلوس'],
+        ['discS', 'يعطي خصم ضمن الحد'], ['credit', 'يسجّل ويعوّض رصيد الزبون'], ['adv', 'يسحب سلفة من القاصة'], ['shift', 'يفتح ويسكّر الشفت']]],
+      ['الكابتن والتاب', [['tabOpen', 'يفتح جلسات وطاولات من التاب'], ['tabSend', 'يرسل طلبات للطابعة'], ['head', 'يغيّر رأس النرجيلة'], ['allSec', 'يشوف كل الأقسام مو بس قسمه']]],
+      ['الإدارة', [['settle', 'يحاسب الكاشيرية آخر الشفت'], ['disc', 'يوافق على خصم فوق الحد'], ['reports', 'يشوف التقارير'], ['vouch', 'يسجّل سندات صرف وقبض'],
+        ['menu', 'يضيف ويعدّل الأصناف والأسعار'], ['stock', 'يدخل فواتير المشتريات والجرد'], ['oos', 'يحوّل جهاز إلى خارج الخدمة'], ['cancel', 'يلغي حجز أو طلب (بسبب)'], ['target', 'يحدد الهدف الشهري']]]
     ];
-    const ROLE_P = {
-      gm: PERMS.map((p) => p[0]),
-      mgr: ['settle', 'disc', 'reports', 'vouch', 'menu', 'staff', 'oos', 'cancel'],
-      hall: ['settle', 'oos', 'cancel'],
-      cashier: ['oos'], captain: [], sec: []
-    };
-    const ROLES = { gm: 'المدير العام', mgr: 'مدير', hall: 'مسؤول القاعة', cashier: 'كاشير', captain: 'كابتن قسم', sec: 'مسؤول قسم (بارستا/نراجيل)' };
+    const PERMS = [].concat(...PGROUPS.map((g) => g[1]));
+    const ALLP = PERMS.map((p) => p[0]);
+    const ROLES = { gm: 'المدير العام', mgr: 'مدير', brm: 'مسؤول الفرع', hall: 'مسؤول القاعة', cashier: 'كاشير', captain: 'كابتن', sec: 'مسؤول قسم (بارستا/نراجيل)' };
+    const SECS = ['بلاي ستيشن', 'إليت', 'البلياردو', 'الصالة', 'النراجيل', 'البارستا'];
     const seedUsers = {
-      gm: { name: '[اسمك]', role: 'gm', br: 'both', color: accent, perms: ROLE_P.gm.slice() },
-      m1: { name: '[اسم المدير الأول]', role: 'mgr', br: 'both', color: '#22C55E', perms: ROLE_P.mgr.slice() },
-      m2: { name: '[اسم المدير الثاني]', role: 'mgr', br: 'nl2', color: '#8B5CF6', perms: ROLE_P.mgr.slice() },
-      hall: { name: '[اسم مسؤول القاعة]', role: 'hall', br: 'nl1', color: '#3D7BFF', perms: ROLE_P.hall.slice() },
-      c1: { name: '[اسم الكاشير]', role: 'cashier', br: 'nl1', color: '#F59E0B', perms: ROLE_P.cashier.slice() },
-      k1: { name: '[اسم الكابتن]', role: 'captain', br: 'nl1', color: '#14B8A6', perms: [] }
+      gm: { name: '[اسمك]', role: 'gm', br: 'both', color: accent, perms: ALLP.slice(), secs: SECS.slice(), pin: '', phone: '', on: true },
+      m1: { name: '[اسم المدير الأول]', role: 'mgr', br: 'both', color: '#22C55E', perms: ['settle', 'disc', 'reports', 'vouch', 'menu', 'stock', 'oos', 'cancel', 'pay', 'discS', 'adv', 'shift'], secs: SECS.slice(), pin: '', phone: '', on: true },
+      m2: { name: '[اسم المدير الثاني]', role: 'mgr', br: 'nl2', color: '#8B5CF6', perms: ['settle', 'reports', 'vouch', 'oos', 'cancel'], secs: SECS.slice(), pin: '', phone: '', on: true },
+      hall: { name: '[اسم مسؤول القاعة]', role: 'hall', br: 'nl1', color: '#3D7BFF', perms: ['settle', 'oos', 'cancel', 'open', 'move'], secs: ['بلاي ستيشن', 'إليت', 'البلياردو', 'الصالة'], pin: '', phone: '', on: true },
+      c1: { name: '[اسم الكاشير]', role: 'cashier', br: 'nl1', color: '#F59E0B', perms: ['open', 'order', 'move', 'pay', 'discS', 'credit', 'shift'], secs: ['بلاي ستيشن', 'إليت'], pin: '', phone: '', on: true },
+      k1: { name: '[اسم الكابتن]', role: 'captain', br: 'nl1', color: '#14B8A6', perms: ['tabOpen', 'tabSend'], secs: ['الصالة'], pin: '', phone: '', on: true }
     };
-    const U = st.users || seedUsers;
+    const U0 = st.users || seedUsers; const U = {}; Object.keys(U0).forEach((k) => { const x = U0[k] || {}; U[k] = { ...x, perms: x.perms || [], secs: x.secs || [], pin: x.pin || '', phone: x.phone || '', on: x.on !== false }; });
     const login = { gm: 'gm', m1: 'm1', m2: 'm2', hall: 'hall' };
     const me = U[login[st.acc]];
     const has = (p) => me.perms.indexOf(p) >= 0;
@@ -903,6 +965,7 @@ class Component extends DCLogic {
     const accounts = Object.keys(login).map((k) => ({ label: ROLES[U[login[k]].role] + (k === 'm1' ? ' 1' : k === 'm2' ? ' 2' : ''), style: pill(st.acc === k, '#3A4058'), pick: () => {
       if (k === st.acc) return;
       const nu = U[login[k]];
+      if (!nu.on) { this._toast('هذا الحساب موقوف من المدير العام، ما يكدر يدخل.'); return; }
       const log = [{ who: nu.name, what: 'دخل · حاسبة الإدارة', when: 'الآن' }, { who: me.name, what: 'خرج · حاسبة الإدارة', when: 'الآن' }].concat(st.log).slice(0, 6);
       this.setState({ acc: k, log, toast: '', kp: null, branch: nu.br === 'both' ? st.branch : nu.br });
     } }));
@@ -1120,20 +1183,50 @@ class Component extends DCLogic {
     const vouchers = st.vouchers.map((v) => ({ ...v, typeStyle: 'padding: 10px 12px; font-weight: 800; color: ' + (v.type === 'صرف' ? '#FF8FA1' : '#4ADE80') }));
 
     // الموظفون والصلاحيات
-    const users = Object.keys(U).map((k) => ({ name: U[k].name, role: ROLES[U[k].role], branch: BR[U[k].br], initial: U[k].name.replace(/[\[\]]/g, '').replace('اسم ', '').charAt(0) || '؟',
+    const users = Object.keys(U).map((k) => ({ name: U[k].name || 'حساب جديد', role: (U[k].draft ? 'مسودة · ' : '') + (U[k].on ? '' : 'موقوف · ') + (ROLES[U[k].role] || 'الدور ما محدد'), branch: BR[U[k].br], initial: (U[k].name || '+').replace(/[\[\]]/g, '').replace('اسم ', '').charAt(0) || '؟',
       avatar: 'width: 40px; height: 40px; border-radius: 50%; background: ' + U[k].color + '; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 16px; color: #FFFFFF; flex-shrink: 0; box-shadow: 0 0 12px ' + U[k].color + '88',
       style: 'display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 14px; cursor: pointer; font-family: inherit; color: #FFFFFF; text-align: right; ' + (st.selUser === k ? 'background: #1C2030; border: 1px solid ' + accent + ';' : 'background: transparent; border: 1px solid transparent;'),
       pick: () => this.setState({ selUser: k }) }));
     const sk = U[st.selUser] ? st.selUser : 'gm';
     const S = U[sk];
-    const canEdit = has('perm') && sk !== 'gm';
-    const upd = (patch) => { if (!canEdit) { this._toast(sk === 'gm' ? 'صلاحيات المدير العام كاملة وما تتغير.' : 'تغيير الصلاحيات للمدير العام فقط.'); return; } const nu = { ...U, [sk]: { ...S, ...patch } }; this.setState({ users: nu, log: [{ who: me.name, what: 'غيّر صلاحيات ' + S.name, when: 'الآن' }].concat(st.log).slice(0, 6) }); };
-    const roleOpts = Object.keys(ROLES).filter((r) => r !== 'gm' || sk === 'gm').map((r) => ({ name: ROLES[r], style: chip(S.role === r), pick: () => upd({ role: r, perms: ROLE_P[r].slice() }) }));
-    const branchOpts = brKeys.map((b) => ({ name: BR[b], style: chip(S.br === b), pick: () => upd({ br: b }) }));
-    const perms = PERMS.map((p) => { const on = S.perms.indexOf(p[0]) >= 0; return { name: p[1], mark: on ? '✓' : '',
+    const canEdit = isGM && sk !== 'gm';
+    const logIt = (what) => [{ who: me.name, what: what, when: 'الآن' }].concat(st.log).slice(0, 6);
+    const sLogAdd = (what) => [{ who: me.name, what: what, when: 'الآن' }].concat(st.sLog || []).slice(0, 30);
+    const upd = (patch, what) => { if (!canEdit) { this._toast(sk === 'gm' ? 'صلاحيات المدير العام كاملة وما تتغير.' : 'الصلاحيات يحددها المدير العام فقط.'); return; } const nu = { ...U, [sk]: { ...S, ...patch } }; this.setState(what && !S.draft ? { users: nu, log: logIt(what), sLog: sLogAdd(what) } : { users: nu }); };
+    const roleOpts = Object.keys(ROLES).filter((r) => r !== 'gm' || sk === 'gm').map((r) => ({ name: ROLES[r], style: chip(S.role === r), pick: () => upd({ role: r }, 'غيّر دور ' + S.name + ' إلى ' + ROLES[r]) }));
+    const branchOpts = brKeys.map((b) => ({ name: BR[b], style: chip(S.br === b), pick: () => upd({ br: b }, 'غيّر فرع ' + S.name + ' إلى ' + BR[b]) }));
+    const secOpts = SECS.map((s2) => { const on = S.secs.indexOf(s2) >= 0; return { name: (on ? '✓ ' : '') + s2, style: chip(on), pick: () => upd({ secs: on ? S.secs.filter((x) => x !== s2) : S.secs.concat([s2]) }, (on ? 'شال قسم ' : 'أضاف قسم ') + s2 + ' لـ' + S.name) }; });
+    const pItem = (p) => { const on = S.perms.indexOf(p[0]) >= 0; return { name: p[1], mark: on ? '✓' : '',
       box: 'width: 24px; height: 24px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-weight: 900; flex-shrink: 0; ' + (on ? 'background: #22C55E; color: #0B0D12; box-shadow: 0 0 10px #22C55E88;' : 'background: #10131A; border: 1px solid #343A4E; color: transparent;'),
       style: 'min-height: 46px; display: flex; align-items: center; gap: 10px; padding: 0 12px; border-radius: 12px; font-size: 14px; font-weight: 700; font-family: inherit; color: #FFFFFF; cursor: ' + (canEdit ? 'pointer' : 'default') + '; ' + (on ? 'background: #12251A; border: 1px solid #22C55E55;' : 'background: #10131A; border: 1px solid #232838;'),
-      toggle: () => upd({ perms: on ? S.perms.filter((x) => x !== p[0]) : S.perms.concat([p[0]]) }) }; });
+      toggle: () => upd({ perms: on ? S.perms.filter((x) => x !== p[0]) : S.perms.concat([p[0]]) }, (on ? 'شال صلاحية «' : 'أعطى صلاحية «') + p[1] + '» لـ' + S.name) }; };
+    const pgroups = PGROUPS.map((g) => { const keys = g[1].map((p) => p[0]); const n = keys.filter((x) => S.perms.indexOf(x) >= 0).length; return { title: g[0], count: n + ' من ' + keys.length, items: g[1].map(pItem),
+      all: () => upd({ perms: S.perms.filter((x) => keys.indexOf(x) < 0).concat(keys) }, 'أعطى كل صلاحيات «' + g[0] + '» لـ' + S.name),
+      none: () => upd({ perms: S.perms.filter((x) => keys.indexOf(x) < 0) }, 'شال كل صلاحيات «' + g[0] + '» من ' + S.name) }; });
+    const perms = PERMS.map(pItem);
+    const permCount = S.perms.length;
+    const pinOk = /^[0-9]{4}$/.test(S.pin);
+    const acct = {
+      isDraft: !!S.draft, notDraft: !S.draft, editable: canEdit, locked: !canEdit,
+      name: S.name, phone: S.phone, pin: S.pin, pinShown: S.pin ? '••••' : 'ما محدد',
+      roleText: S.role ? ROLES[S.role] : 'ما محدد', noRole: !S.role,
+      permText: permCount ? permCount + ' صلاحية من ' + ALLP.length : 'بدون أي صلاحية',
+      secText: S.secs.length ? S.secs.join('، ') : 'ما محدد',
+      isOn: S.on, isOff: !S.on, canToggle: canEdit && !S.draft,
+      setName: (e) => upd({ name: e.target.value }), setPhone: (e) => upd({ phone: e.target.value.replace(/[^0-9]/g, '').slice(0, 11) }), setPin: (e) => upd({ pin: e.target.value.replace(/[^0-9]/g, '').slice(0, 4) }),
+      save: () => {
+        const nm = (S.name || '').trim();
+        if (!nm) { this._toast('اكتب اسم الموظف أولًا.'); return; }
+        if (!S.role) { this._toast('اختار دوره (كابتن، كاشير، مسؤول الفرع، مدير...).'); return; }
+        if (!pinOk) { this._toast('رمز الدخول لازم 4 أرقام.'); return; }
+        const nu = { ...U, [sk]: { ...S, name: nm, draft: false } };
+        const w = 'سوّى حساب ' + nm + ' (' + ROLES[S.role] + ') بـ' + permCount + ' صلاحية';
+        this.setState({ users: nu, log: logIt(w), sLog: sLogAdd(w) }); this._toast('تمت: انحفظ حساب ' + nm + '. يدخل برمز الدخول اللي حددته.');
+      },
+      discard: () => { const nu = { ...U }; delete nu[sk]; this.setState({ users: nu, selUser: 'gm' }); this._toast('انلغت المسودة، ما انحفظ شي.'); },
+      toggleOn: () => upd({ on: !S.on }, (S.on ? 'أوقف حساب ' : 'رجّع تفعيل حساب ') + S.name)
+    };
+    const sLog = (st.sLog || []).map((x) => ({ who: x.who, what: x.what, when: x.when }));
 
     return {
       live, accent, tabs, accounts, branches, cashiers, alerts, statCards, secCards, bars, ch, money, reports, ranges, cols, rows, gridHead, tableNote, fullBlocks,
@@ -1177,9 +1270,10 @@ class Component extends DCLogic {
         this.setState({ vouchers: [v].concat(st.vouchers), vNo: st.vNo + 1, vAmt: '', vFor: null, vSub: null, vDet: '' });
         this._toast('تم تسجيل السند ' + v.no + ' باسمك ✓');
       },
-      su: { name: S.name, role: ROLES[S.role] + ' · ' + BR[S.br], initial: S.name.replace(/[\[\]]/g, '').replace('اسم ', '').charAt(0) || '؟', avatar: 'width: 60px; height: 60px; border-radius: 50%; background: ' + S.color + '; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 24px; color: #FFFFFF; box-shadow: 0 0 20px ' + S.color + '88' },
+      su: { name: S.name || 'حساب جديد', role: (S.role ? ROLES[S.role] : 'الدور ما محدد') + ' · ' + BR[S.br] + (S.on ? '' : ' · موقوف'), initial: (S.name || '+').replace(/[\[\]]/g, '').replace('اسم ', '').charAt(0) || '؟', avatar: 'width: 60px; height: 60px; border-radius: 50%; background: ' + S.color + '; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 24px; color: #FFFFFF; box-shadow: 0 0 20px ' + S.color + '88' },
       readOnlyPerms: !canEdit,
-      addUser: () => { const id = 'n' + Date.now(); const nu = { ...U, [id]: { name: '[اسم الموظف الجديد]', role: 'captain', br: 'nl1', color: '#EC4899', perms: [] } }; this.setState({ users: nu, selUser: id }); this._toast('تمت: انضاف حساب جديد. حدد دوره وفرعه وصلاحياته.'); },
+      addUser: () => { const dr = Object.keys(U).find((k) => U[k].draft); if (dr) { this.setState({ selUser: dr }); this._toast('عندك حساب جديد ما مكمّل، كمّله أو ألغيه.'); return; } const cols = ['#EC4899', '#06B6D4', '#84CC16', '#F97316', '#A855F7']; const id = 'n' + Date.now(); const nu = { ...U, [id]: { name: '', role: '', br: 'nl1', color: cols[Object.keys(U).length % cols.length], perms: [], secs: [], pin: '', phone: '', on: true, draft: true } }; this.setState({ users: nu, selUser: id }); },
+      acct, pgroups, secOpts, sLog, hasSLog: sLog.length > 0, isCaptainLike: S.role === 'captain' || S.role === 'sec' || S.role === 'cashier' || S.role === 'hall' || S.role === 'brm',
       me: { name: me.name, role: ROLES[me.role], avatarStyle: 'width: 42px; height: 42px; border-radius: 50%; background: ' + me.color + '; display: flex; align-items: center; justify-content: center; border: 2px solid #FFFFFF; box-shadow: 0 0 14px ' + me.color },
       log: st.log, toast: st.toast,
       changePhoto: () => this._toast('في النظام الحقيقي: تفتح الكاميرا أو المعرض، وكل شخص يرفع صورته ويغيّرها بنفسه.')
