@@ -653,6 +653,74 @@ button{font-family:inherit}
     </sc-if>
 
     <!-- ===== الموظفون والصلاحيات ===== -->
+    <sc-if value="{{isMenu}}" hint-placeholder-val="{{false}}">
+      <div style="display: flex; flex-direction: column; gap: 16px; animation: nlin .35s ease">
+        <section style="background: #151821; border: 1px solid #232838; border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap">
+            <h2 style="margin: 0; font-size: 20px; font-weight: 900">المنيو والأسعار</h2>
+            <span style="font-size: 13px; color: #9AA0B4">أي تغيير ينطبق فورًا على الكاشير والتاب، وينسجل باسمك.</span>
+          </div>
+          <sc-if value="{{menuV.cantEdit}}" hint-placeholder-val="{{false}}">
+            <div style="background: #2A1219; border: 1px solid #6A2436; color: #FF8A9C; border-radius: 12px; padding: 10px 14px; font-size: 14px; font-weight: 700">تشوف المنيو بس. التعديل يحتاج صلاحية «يضيف ويعدّل الأصناف والأسعار».</div>
+          </sc-if>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap">
+            <sc-for list="{{menuV.cats}}" as="c" hint-placeholder-count="7"><button onClick="{{c.pick}}" style="{{c.style}}">{{c.name}}</button></sc-for>
+          </div>
+        </section>
+        <sc-if value="{{menuV.notDev}}" hint-placeholder-val="{{true}}">
+          <section style="background: #151821; border: 1px solid #232838; border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px">
+            <h3 style="margin: 0 0 6px; font-size: 17px; font-weight: 900">{{menuV.catName}}</h3>
+            <div style="display: grid; grid-template-columns: minmax(0, 1fr) 130px 120px 90px; gap: 8px; font-size: 12px; font-weight: 800; color: #9AA0B4; padding-bottom: 4px; border-bottom: 1px solid #2A2F40">
+              <span>اسم الصنف</span><span>السعر (د.ع)</span><span>الحالة</span><span></span>
+            </div>
+            <sc-for list="{{menuV.items}}" as="it" hint-placeholder-count="6">
+              <div style="{{it.rowStyle}}">
+                <input value="{{it.name}}" onInput="{{it.setName}}" readOnly="{{it.readOnly}}" aria-label="اسم الصنف" style="{{it.inStyle}}"/>
+                <input value="{{it.price}}" onInput="{{it.setPrice}}" readOnly="{{it.readOnly}}" aria-label="السعر" inputmode="numeric" style="{{it.inStyle}}"/>
+                <button onClick="{{it.toggle}}" style="{{it.stStyle}}">{{it.statusText}}</button>
+                <button onClick="{{it.save}}" style="{{it.saveStyle}}">حفظ</button>
+              </div>
+            </sc-for>
+            <sc-if value="{{menuV.canEdit}}" hint-placeholder-val="{{true}}">
+              <div style="display: grid; grid-template-columns: minmax(0, 1fr) 130px 210px; gap: 8px; align-items: center; margin-top: 10px; padding: 10px; border: 2px dashed #343A50; border-radius: 12px">
+                <input value="{{menuV.newName}}" onInput="{{menuV.setNewName}}" placeholder="اسم الصنف الجديد" style="{{menuV.inStyle}}"/>
+                <input value="{{menuV.newPrice}}" onInput="{{menuV.setNewPrice}}" placeholder="السعر" inputmode="numeric" style="{{menuV.inStyle}}"/>
+                <button onClick="{{menuV.addItem}}" style="height: 42px; border-radius: 10px; border: none; background: #22C55E; color: #0B0D12; font-size: 14px; font-weight: 900; cursor: pointer; font-family: inherit">+ إضافة صنف لهذا القسم</button>
+              </div>
+            </sc-if>
+            <sc-if value="{{menuV.isHookah}}" hint-placeholder-val="{{false}}">
+              <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 10px; padding: 10px 12px; background: #1C1A2E; border: 1px solid #5B4FB5; border-radius: 12px">
+                <span style="font-size: 14px; font-weight: 800">نوع النرجيلة: ألماني وبابلي بسعر النكهة، والخشب بسعر ثابت</span>
+                <input value="{{menuV.wood}}" onInput="{{menuV.setWood}}" aria-label="سعر الخشب" inputmode="numeric" style="{{menuV.inStyle}}; width: 120px"/>
+                <button onClick="{{menuV.saveWood}}" style="height: 42px; padding: 0 16px; border-radius: 10px; border: none; background: #5B4FB5; color: #FFFFFF; font-size: 14px; font-weight: 900; cursor: pointer; font-family: inherit">حفظ سعر الخشب</button>
+              </div>
+            </sc-if>
+          </section>
+        </sc-if>
+        <sc-if value="{{menuV.isDev}}" hint-placeholder-val="{{false}}">
+          <section style="background: #151821; border: 1px solid #232838; border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px">
+            <h3 style="margin: 0 0 6px; font-size: 17px; font-weight: 900">أسعار الأجهزة والألعاب (د.ع)</h3>
+            <div style="display: grid; grid-template-columns: 180px repeat(4, minmax(0, 1fr)); gap: 8px; font-size: 12px; font-weight: 800; color: #9AA0B4">
+              <span>الجهاز</span><sc-for list="{{menuV.devHead}}" as="h" hint-placeholder-count="4"><span style="text-align: center">{{h}}</span></sc-for>
+            </div>
+            <sc-for list="{{menuV.devRows}}" as="dr" hint-placeholder-count="7">
+              <div style="display: grid; grid-template-columns: 180px repeat(4, minmax(0, 1fr)); gap: 8px; align-items: center; padding: 4px 0; border-bottom: 1px dashed #2A2F40">
+                <strong style="font-size: 15px">{{dr.name}}</strong>
+                <sc-for list="{{dr.cells}}" as="ce" hint-placeholder-count="4"><input value="{{ce.val}}" onInput="{{ce.set}}" inputmode="numeric" style="{{ce.inStyle}}"/></sc-for>
+              </div>
+            </sc-for>
+            <div style="display: flex; justify-content: flex-end; margin-top: 8px"><button onClick="{{menuV.saveDev}}" style="{{menuV.saveDevStyle}}">حفظ أسعار الأجهزة</button></div>
+          </section>
+        </sc-if>
+        <sc-if value="{{menuV.hasLog}}" hint-placeholder-val="{{false}}">
+          <section style="background: #151821; border: 1px solid #232838; border-radius: 18px; padding: 14px 18px; display: flex; flex-direction: column; gap: 6px">
+            <h3 style="margin: 0; font-size: 16px; font-weight: 900">سجل التعديلات</h3>
+            <sc-for list="{{menuV.log}}" as="lg" hint-placeholder-count="2"><div style="font-size: 13px; color: #C3C8D6; padding: 4px 0; border-bottom: 1px dashed #2A2F40"><strong style="color: #F2F3F7">{{lg.who}}</strong> · {{lg.what}} · {{lg.when}}</div></sc-for>
+          </section>
+        </sc-if>
+      </div>
+    </sc-if>
+
     <sc-if value="{{isStaff}}" hint-placeholder-val="{{false}}">
       <div style="display: grid; grid-template-columns: 360px minmax(0, 1fr); gap: 18px; align-items: start; animation: nlin .35s ease">
         <section style="background: #151821; border: 1px solid #232838; border-radius: 18px; padding: 12px; display: flex; flex-direction: column; gap: 8px">
@@ -736,7 +804,7 @@ class Component extends DCLogic {
         { who: '[اسم الموظف]', what: 'دخل · تاب الكابتن', when: '[الوقت]' }
       ]
     };
-    if (window.NLDemo) { window.NLDemo.init(); window.NLDemo.sub((s2) => this.setState({ demoRev: s2.rev })); }
+    if (window.NLDemo) { const D = window.NLDemo; const s0 = D.init(); if (s0 && s0.menu) this.state.menu = s0.menu; const base = this.setState.bind(this); this.setState = (o, cb) => { base(o, cb); if (o && o.menu) D.patch({ menu: o.menu }); }; D.sub((s2) => base({ demoRev: s2.rev, menu: s2.menu || this.state.menu })); }
   }
   _toast(t) { clearTimeout(this._tt); this.setState({ toast: t }); this._tt = setTimeout(() => this.setState({ toast: '' }), 5000); }
   renderVals() {
@@ -771,7 +839,65 @@ class Component extends DCLogic {
     const branchKey = me.br === 'both' ? st.branch : me.br;
     const pill = (on, c) => 'min-height: 40px; padding: 0 14px; border-radius: 22px; font-size: 13px; font-weight: 800; cursor: pointer; font-family: inherit; transition: all .15s; ' + (on ? 'background: ' + (c || accent) + '; color: #FFFFFF; border: 1px solid ' + (c || accent) + '; box-shadow: 0 0 16px ' + (c || accent) + '66;' : 'background: #151821; color: #C9CEDC; border: 1px solid #2A2F40;');
 
-    const tabsDef = [['dash', 'لوحة التحكم'], ['cash', 'المحاسبة'], ['rep', 'التقارير'], ['acc', 'الحسابات والسندات'], ['staff', 'الموظفون والصلاحيات']];
+    // المنيو والأسعار
+    const MENU0 = {
+      cats: {
+        mojito: { name: 'موهيتو', items: [['موهيتو رمان', 4000], ['موهيتو مانغو', 4000], ['موهيتو بلوبيري', 4000], ['بلو كراسو', 4000], ['روزبيري', 4000], ['موهيتو اناناس', 4000], ['موهيتو علكة', 4000], ['موهيتو نكست لفل', 5000]] },
+        cold: { name: 'بارد', items: [['ايس لاتيه كراميل', 4500], ['ايس سبانش لاتيه', 4500], ['ايس موكا', 4500], ['ايس امريكانو', 4000], ['ايس كابتشينو', 3500], ['ميلك شيك اوريو', 4000], ['سموذي مانغو', 4000], ['عصير برتقال', 3000], ['ماء', 500], ['قدح ثلج', 500]] },
+        hot: { name: 'ساخن', items: [['شاي عراقي', 1000], ['شاي اخضر', 1000], ['تركية', 2000], ['كابتشينو عادي', 2000], ['كابتشينو نيكست لفل', 4000], ['نسكافيه', 3000], ['هوت شوكليت', 4000], ['موكا لاتيه', 5000]] },
+        sweet: { name: 'حلويات', items: [['كريب نوتيلا', 5000], ['كريب لوتس', 5000], ['وافل نوتيلا', 5000], ['إليت كوب', 4000], ['براونيز', 5000], ['اوريو بولز', 4000]] },
+        play: { name: 'العبها صح', items: [['مكسيكي ريدبول', 4000], ['ريدبول مكس', 4000], ['مكسيكي نكست لفل', 5000], ['كرزات', 3000], ['شامية', 1000]] },
+        hookah: { name: 'النراجيل', items: [['تفاحتين', 7000], ['انكليزي', 7000], ['ليمون ونعناع', 7000], ['علج ونعناع', 7000], ['عنب ونعناع', 7000], ['نكست لفل', 7000], ['إليت زون', 7000], ['علج فراولة', 7000], ['تغيير رأس', 4000]] }
+      },
+      wood: 5000,
+      price: { single: [1500, 2500, 4000, 5000], double: [2500, 5000, 7500, 10000], elite: [1000, 1500, 2000, 2500], master: [1500, 2000, 2500, 3500], wheel: [2500, 5000, 7500, 10000], cinema: [2500, 5000, 7500, 10000], pool: [1500, 2500, 4000, 5000] }
+    };
+    const MENU = st.menu || MENU0;
+    const PRICE_N = { single: 'بلاي ستيشن فردي', double: 'بلاي ستيشن زوجي', wheel: 'دركسون', elite: 'حاسبات إليت', master: 'ماستر', pool: 'بلياردو', cinema: 'سينما' };
+    const canMenu = has('menu');
+    const mCat = st.mCat || 'mojito';
+    const fN = (n) => Number(n || 0).toLocaleString('en-US');
+    const toNum = (v) => parseInt(String(v || '').replace(/[٠-٩]/g, (d) => d.charCodeAt(0) - 1632).replace(/[^0-9]/g, ''), 10) || 0;
+    const mDraft = st.mDraft || {};
+    const logM = (what) => [{ who: me.name, what, when: 'الآن' }].concat(st.mLog || []).slice(0, 30);
+    const setMenu = (m, what) => { if (!canMenu) { this._toast('تعديل المنيو والأسعار يحتاج صلاحية «يضيف ويعدّل الأصناف والأسعار».'); return; } this.setState({ menu: m, mDraft: {}, mLog: logM(what), toast: '' }); this._toast('انحفظ: ' + what + '. ينطبق فورًا على الكاشير والتاب.'); };
+    const clone = (o) => JSON.parse(JSON.stringify(o));
+    const mChip = (on) => 'min-height: 42px; padding: 0 16px; border-radius: 12px; font-size: 14px; font-weight: 800; cursor: pointer; font-family: inherit; ' + (on ? 'background: ' + accent + '; color: #FFFFFF; border: 1px solid ' + accent + ';' : 'background: #151821; color: #F2F3F7; border: 1px solid #343A50;');
+    const mCats = Object.keys(MENU.cats).map((k) => ({ name: MENU.cats[k].name, style: mChip(mCat === k), pick: () => this.setState({ mCat: k, mDraft: {} }) })).concat([{ name: 'أسعار الأجهزة', style: mChip(mCat === 'dev'), pick: () => this.setState({ mCat: 'dev', mDraft: {} }) }]);
+    const isDev = mCat === 'dev';
+    const mInput = 'height: 42px; border-radius: 10px; border: 1px solid #343A50; background: #0B0D12; color: #F2F3F7; padding: 0 10px; font-size: 15px; font-family: inherit; min-width: 0';
+    const mItems = isDev ? [] : MENU.cats[mCat].items.map((it, i) => {
+      const key = mCat + ':' + i; const d = mDraft[key] || {}; const nm = d.name !== undefined ? d.name : it[0]; const pr = d.price !== undefined ? d.price : String(it[1]); const off = !!it[2];
+      const dirty = nm.trim() !== it[0] || toNum(pr) !== it[1];
+      return { name: nm, price: pr, off, statusText: off ? 'موقوف (نفد)' : 'متوفر',
+        rowStyle: 'display: grid; grid-template-columns: minmax(0, 1fr) 130px 120px 90px; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px dashed #2A2F40;' + (off ? ' opacity: .55;' : ''),
+        inStyle: mInput + (canMenu ? '' : '; opacity: .7'), readOnly: !canMenu,
+        setName: (e) => this.setState({ mDraft: { ...mDraft, [key]: { ...d, name: e.target.value } } }),
+        setPrice: (e) => this.setState({ mDraft: { ...mDraft, [key]: { ...d, price: e.target.value } } }),
+        stStyle: 'height: 42px; border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; font-family: inherit; ' + (off ? 'background: #2A1219; color: #FF5A72; border: 1px solid #6A2436;' : 'background: #0F2A1A; color: #4ADE80; border: 1px solid #1E8A4C;'),
+        toggle: () => { const m = clone(MENU); m.cats[mCat].items[i][2] = !off; setMenu(m, (off ? 'رجّع ' : 'أوقف ') + it[0] + (off ? ' للمنيو' : ' (نفد)')); },
+        saveStyle: 'height: 42px; border-radius: 10px; border: none; font-size: 14px; font-weight: 900; font-family: inherit; ' + (dirty ? 'background: #FA2949; color: #FFFFFF; cursor: pointer;' : 'background: #1C2030; color: #5A6178; cursor: default;'),
+        save: () => { if (!dirty) return; const np = toNum(pr); if (!nm.trim() || !np) { this._toast('الاسم والسعر لازم يكونون مكتوبين.'); return; } const m = clone(MENU); m.cats[mCat].items[i][0] = nm.trim(); m.cats[mCat].items[i][1] = np; const parts = []; if (nm.trim() !== it[0]) parts.push('غيّر اسم «' + it[0] + '» إلى «' + nm.trim() + '»'); if (np !== it[1]) parts.push('غيّر سعر «' + nm.trim() + '» من ' + fN(it[1]) + ' إلى ' + fN(np)); setMenu(m, parts.join(' و')); } };
+    });
+    const nw = st.mNew || { name: '', price: '' };
+    const devRows = !isDev ? [] : Object.keys(PRICE_N).map((k) => ({ name: PRICE_N[k], cells: [0, 1, 2, 3].map((j) => { const key = 'dev:' + k + ':' + j; const v = mDraft[key] !== undefined ? mDraft[key] : String(MENU.price[k][j]); return { val: v, set: (e) => this.setState({ mDraft: { ...mDraft, [key]: e.target.value } }), inStyle: mInput + '; width: 100%; text-align: center' + (toNum(v) !== MENU.price[k][j] ? '; border-color: #FA2949' : '') }; }) }));
+    const devDirty = isDev && Object.keys(mDraft).some((k) => k.indexOf('dev:') === 0);
+    const menuV = {
+      cats: mCats, isDev, notDev: !isDev, items: mItems, canEdit: canMenu, cantEdit: !canMenu,
+      catName: isDev ? 'أسعار الأجهزة' : MENU.cats[mCat].name, isHookah: mCat === 'hookah',
+      newName: nw.name, newPrice: nw.price, inStyle: mInput,
+      setNewName: (e) => this.setState({ mNew: { ...nw, name: e.target.value } }),
+      setNewPrice: (e) => this.setState({ mNew: { ...nw, price: e.target.value } }),
+      addItem: () => { const np = toNum(nw.price); if (!nw.name.trim() || !np) { this._toast('اكتب اسم الصنف وسعره.'); return; } const m = clone(MENU); m.cats[mCat].items.push([nw.name.trim(), np]); this.setState({ mNew: { name: '', price: '' } }); setMenu(m, 'أضاف «' + nw.name.trim() + '» بسعر ' + fN(np) + ' إلى ' + MENU.cats[mCat].name); },
+      wood: mDraft.wood !== undefined ? mDraft.wood : String(MENU.wood),
+      setWood: (e) => this.setState({ mDraft: { ...mDraft, wood: e.target.value } }),
+      saveWood: () => { const np = toNum(mDraft.wood); if (!np || np === MENU.wood) return; const m = clone(MENU); m.wood = np; setMenu(m, 'غيّر سعر النرجيلة الخشب من ' + fN(MENU.wood) + ' إلى ' + fN(np)); },
+      devRows, devHead: ['ربع ساعة', 'نص ساعة', '45 دقيقة', 'ساعة'],
+      saveDevStyle: 'height: 46px; padding: 0 22px; border-radius: 12px; border: none; font-size: 15px; font-weight: 900; font-family: inherit; ' + (devDirty ? 'background: #FA2949; color: #FFFFFF; cursor: pointer;' : 'background: #1C2030; color: #5A6178; cursor: default;'),
+      saveDev: () => { if (!devDirty) return; const m = clone(MENU); const ch = []; Object.keys(mDraft).filter((k) => k.indexOf('dev:') === 0).forEach((k) => { const [, t, j] = k.split(':'); const np = toNum(mDraft[k]); if (np && np !== m.price[t][+j]) { ch.push(PRICE_N[t] + ' (' + ['ربع', 'نص', '45 د', 'ساعة'][+j] + ') من ' + fN(m.price[t][+j]) + ' إلى ' + fN(np)); m.price[t][+j] = np; } }); if (!ch.length) { this.setState({ mDraft: {} }); return; } setMenu(m, 'غيّر سعر ' + ch.join('، ')); },
+      log: (st.mLog || []), hasLog: (st.mLog || []).length > 0
+    };
+    const tabsDef = [['dash', 'لوحة التحكم'], ['cash', 'المحاسبة'], ['rep', 'التقارير'], ['acc', 'الحسابات والسندات'], ['menu', 'المنيو والأسعار'], ['staff', 'الموظفون والصلاحيات']];
     const tabs = tabsDef.map((t) => ({ name: t[1], style: 'height: 42px; padding: 0 16px; border-radius: 12px; font-size: 14px; font-weight: 800; cursor: pointer; font-family: inherit; ' + (st.tab === t[0] ? 'background: linear-gradient(135deg, ' + accent + ', #B3122F); color: #FFFFFF; border: none; box-shadow: 0 0 18px ' + accent + '77;' : 'background: transparent; color: #C9CEDC; border: 1px solid #2A2F40;'), pick: () => this.setState({ tab: t[0], kp: null }) }));
 
     const accounts = Object.keys(login).map((k) => ({ label: ROLES[U[login[k]].role] + (k === 'm1' ? ' 1' : k === 'm2' ? ' 2' : ''), style: pill(st.acc === k, '#3A4058'), pick: () => {
@@ -1027,7 +1153,7 @@ class Component extends DCLogic {
       vQ1: isOut ? 'من أي صندوق يخرج المبلغ؟' : 'إلى أي صندوق يدخل المبلغ؟',
       vQ2: isOut ? 'لأي غرض؟' : 'من أين جاء المبلغ؟', vQ3: curFor ? curFor[2] : '', vQAmt: (vHasQ3 ? '4' : '3') + '. المبلغ', vQDet: (vHasQ3 ? '3' : '2') + '. التفاصيل' + (detNeed ? ' (مطلوبة)' : ' (اختيارية)'),
       vDet: st.vDet || '', vDetPh: curFor && curFor[0] === 'xfer' ? 'مثال: حوالة إلى فلان، والسبب' : curFor && curFor[0] === 'proj' ? 'اسم المشروع، وعلى ماذا صُرف المبلغ' : curFor && curFor[0] === 'home' ? 'مثال: مراجعة طبيب أطفال' : 'اكتب التفاصيل هنا', setVDet: (e) => this.setState({ vDet: e.target.value }), users, roleOpts, branchOpts, perms,
-      isDash: st.tab === 'dash', isCash: st.tab === 'cash', isRep: st.tab === 'rep', isAcc: st.tab === 'acc', isStaff: st.tab === 'staff',
+      isDash: st.tab === 'dash', isCash: st.tab === 'cash', isRep: st.tab === 'rep', isAcc: st.tab === 'acc', isStaff: st.tab === 'staff', isMenu: st.tab === 'menu', menuV,
       isGM, canSwitchBranch: me.br === 'both', lockedBranch: me.br !== 'both',
       branchName: BR[branchKey], scopeText: 'تشوف: ' + BR[branchKey],
       countsNote: branchKey === 'nl1' ? 'أعداد فرع 1 من النموذج، والعلوي مؤقتة' : 'أعداد فرع 2 تنضاف من الإعدادات',

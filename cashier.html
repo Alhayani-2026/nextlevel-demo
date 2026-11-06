@@ -352,18 +352,9 @@ button{font-family:inherit;color:inherit}
                 <div style="background: #1C2030; border-radius: 10px; padding: 3px"><div style="font-size: 11px; color: #9AA0B4; font-weight: 700">مضى</div><div style="font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums">{{sel.elapsed}}</div></div>
               </div>
               <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
-                <span style="font-size: 13px; font-weight: 700; color: #C3C8D6">{{sel.modeText}}</span>
                 <sc-if value="{{sel.canSwitch}}" hint-placeholder-val="{{false}}">
                   <button onClick="{{sel.switchMode}}" style="height: 30px; padding: 0 10px; border-radius: 8px; border: 1px solid #343A50; background: #151821; font-size: 12px; font-weight: 800; cursor: pointer; font-family: inherit">{{sel.switchText}}</button>
                 </sc-if>
-              </div>
-            </sc-if>
-            <sc-if value="{{sel.hasPath}}" hint-placeholder-val="{{true}}">
-              <div style="border: 1px solid #2E3448; border-radius: 10px; padding: 4px 10px; display: flex; flex-direction: column; gap: 0">
-                <span style="font-size: 11px; font-weight: 800; color: #9AA0B4">من وين جاي الزبون</span>
-                <sc-for list="{{sel.path}}" as="h" hint-placeholder-count="2">
-                  <span style="font-size: 13px"><strong>{{h.t}}</strong> · {{h.text}}</span>
-                </sc-for>
               </div>
             </sc-if>
             <span style="font-size: 13px; font-weight: 800; color: #9AA0B4">الحساب</span>
@@ -388,9 +379,9 @@ button{font-family:inherit;color:inherit}
           </div>
           <sc-if value="{{sel.canAct}}" hint-placeholder-val="{{true}}">
             <div style="padding: 8px 16px; border-top: 2px solid #6A2436; display: flex; flex-direction: column; gap: 6px; background: #1E1218">
-              <div style="display: flex; justify-content: space-between; align-items: baseline">
-                <span style="font-size: 15px; font-weight: 800">المجموع</span>
-                <span style="font-size: 22px; font-weight: 800; color: #FF5A72; font-variant-numeric: tabular-nums">{{sel.totalText}}</span>
+              <div style="display: flex; justify-content: space-between; align-items: center; background: #FFD27A; color: #0B0D12; border-radius: 12px; padding: 6px 14px">
+                <span style="font-size: 17px; font-weight: 900">المجموع</span>
+                <span style="font-size: 30px; font-weight: 900; font-variant-numeric: tabular-nums">{{sel.totalText}}</span>
               </div>
               <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px">
                 <button onClick="{{openAdd}}" style="height: 42px; border-radius: 10px; border: 1px solid #343A50; background: #151821; font-size: 14px; font-weight: 700; cursor: pointer">إضافة طلب</button>
@@ -735,7 +726,7 @@ button{font-family:inherit;color:inherit}
           <sc-if value="{{pay.useCredit}}" hint-placeholder-val="{{false}}">
             <div style="display: flex; justify-content: space-between; color: #FFD27A; font-weight: 700"><span>تعويض رصيده</span><span>− {{pay.useCrText}}</span></div>
           </sc-if>
-          <div style="display: flex; justify-content: space-between; border-top: 1px solid #262B3B; padding-top: 6px; margin-top: 2px"><span style="font-weight: 800">المطلوب</span><span style="font-size: 28px; font-weight: 800; color: #FF5A72">{{pay.netText}}</span></div>
+          <div style="display: flex; justify-content: space-between; border-top: 1px solid #262B3B; padding-top: 6px; margin-top: 2px"><span style="font-weight: 900; font-size: 18px; align-self: center">المطلوب</span><span style="font-size: 32px; font-weight: 900; color: #0B0D12; background: #FFD27A; border-radius: 10px; padding: 2px 16px; font-variant-numeric: tabular-nums">{{pay.netText}}</span></div>
         </div>
         <span style="font-size: 14px; font-weight: 800; color: #C3C8D6">طريقة الدفع</span>
         <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
@@ -838,6 +829,7 @@ class Component extends DCLogic {
     const pad = (n) => String(n).padStart(2, '0');
     const hms = (ms) => { const t = Math.max(0, Math.floor(ms / 1000)); return pad(Math.floor(t / 3600)) + ':' + pad(Math.floor(t / 60) % 60) + ':' + pad(t % 60); };
     const PRICE = { single: [1500, 2500, 4000, 5000], double: [2500, 5000, 7500, 10000], elite: [1000, 1500, 2000, 2500], master: [1500, 2000, 2500, 3500], wheel: [2500, 5000, 7500, 10000], cinema: [2500, 5000, 7500, 10000], pool: [1500, 2500, 4000, 5000] };
+    { const MO2 = window.NLDemo ? (window.NLDemo.get() || {}).menu : null; if (MO2 && MO2.price) Object.keys(MO2.price).forEach((k) => { PRICE[k] = MO2.price[k]; }); }
     const secOfU = (u) => Object.keys(S).find((k) => S[k].units.indexOf(u) >= 0);
     const tableOf = (u) => { const k = secOfU(u); const d = st.units[u] || {}; if (k === 'play') { if (u.indexOf('دركسون') === 0) return ['wheel', 'دركسون']; return d.mode === 'زوجي' ? ['double', 'بلاي زوجي'] : ['single', 'بلاي فردي']; } if (k === 'elite') return ['elite', 'إليت']; if (k === 'master') return ['master', 'ماستر']; if (k === 'cinema') return ['cinema', 'سينما']; if (k === 'pool') return ['pool', 'بلياردو بالساعة']; return null; };
     const billMin = (min) => { let h = Math.floor(min / 60); const rem = min - h * 60; let q = Math.floor(rem / 15); if (rem - q * 15 >= 8) q++; if (q === 4) { h++; q = 0; } if (h === 0 && q === 0) q = 1; return [h, q]; };
@@ -1029,6 +1021,7 @@ class Component extends DCLogic {
       play: { name: 'العبها صح', icon: 'cold', tint: '#FBF3DC', items: [['مكسيكي ريدبول', 4000], ['ريدبول مكس', 4000], ['مكسيكي نكست لفل', 5000], ['كرزات', 3000], ['شامية', 1000]] }
     };
     const hookah = { name: 'النراجيل', icon: 'hookah', tint: '#ECEAF6', items: [['تفاحتين', 7000], ['انكليزي', 7000], ['ليمون ونعناع', 7000], ['علج ونعناع', 7000], ['عنب ونعناع', 7000], ['نكست لفل', 7000], ['إليت زون', 7000], ['علج فراولة', 7000], ['تغيير رأس', 4000]] };
+    const MO = window.NLDemo ? (window.NLDemo.get() || {}).menu : null; if (MO && MO.cats) { Object.keys(bar).forEach((k) => { if (MO.cats[k]) bar[k].items = MO.cats[k].items.filter((x) => !x[2]).map((x) => [x[0], x[1]]); }); if (MO.cats.hookah) hookah.items = MO.cats.hookah.items.filter((x) => !x[2]).map((x) => [x[0], x[1]]); }
     const catColor = { mojito: '#1E8A4C', cold: '#2B5FD9', hot: '#B5651D', sweet: '#B8327A', play: '#C79100' };
     const priceOf = {}; const printerOf = {};
     Object.keys(bar).forEach((k) => bar[k].items.forEach((i) => { priceOf[i[0]] = i[1]; printerOf[i[0]] = 'البارستا'; }));
@@ -1042,7 +1035,7 @@ class Component extends DCLogic {
       const setQty = (n, d) => { const q = { ...qty }; q[n] = Math.max(0, (q[n] || 0) + d); if (!q[n]) delete q[n]; upd({ qty: q }); };
 const FLAV = { 'تفاحتين': '#2E9E4F', 'انكليزي': '#8D5524', 'ليمون ونعناع': '#7DA41F', 'علج ونعناع': '#0F8F7A', 'عنب ونعناع': '#6A3FC1', 'نكست لفل': '#C8102E', 'إليت زون': '#2B5FD9', 'علج فراولة': '#D6336C', 'تغيير رأس': '#4A4A4A' };
       const group = ad.dept === 'hookah' ? hookah: bar[ad.cat]; const isHk = ad.dept === 'hookah';
-      const WOOD = 5000; const pp = (n) => (printerOf[n] === 'النراجيل' && n !== 'تغيير رأس' && ad.hookType === 'خشب') ? WOOD : priceOf[n];
+      const WOOD = ((window.NLDemo && (window.NLDemo.get() || {}).menu) || {}).wood || 5000; const pp = (n) => (printerOf[n] === 'النراجيل' && n !== 'تغيير رأس' && ad.hookType === 'خشب') ? WOOD : priceOf[n];
       const names = Object.keys(qty);
       add = {
         show: true, unit: ad.unit,
@@ -1155,7 +1148,7 @@ const FLAV = { 'تفاحتين': '#2E9E4F', 'انكليزي': '#8D5524', 'ليم
     }));
     return {
       accent, pay, op, grp, groupPay, mySecs, otherSecs, tiles, readOnly, move, methods, alerts,
-      filts: [['all', 'الكل'], ['free', 'فارغ'], ['run', 'مفتوح'], ['over', 'انتهى / لم يُحاسَب'], ['booked', 'محجوز'], ['oos', 'خارج الخدمة']].map((f) => ({ name: f[1], style: 'min-height: 36px; padding: 0 12px; border-radius: 18px; font-size: 13px; font-weight: 800; cursor: pointer; font-family: inherit; ' + ((st.filt || 'all') === f[0] ? 'background: #262B3B; color: #FFFFFF; border: 1px solid #8A92AB;' : 'background: #151821; color: #F2F3F7; border: 1px solid #343A50;'), pick: () => this.setState({ filt: f[0] }) })), hasAlerts: alerts.length > 0, alertCount: alerts.length,
+      filts: [['all', 'الكل'], ['free', 'فارغ'], ['run', 'مفتوح'], ['over', 'انتهى / لم يُحاسَب'], ['booked', 'محجوز'], ['oos', 'خارج الخدمة']].map((f) => ({ name: f[1], style: 'min-height: 36px; padding: 0 12px; border-radius: 18px; font-size: 13px; font-weight: 800; cursor: pointer; font-family: inherit; ' + ((st.filt || 'all') === f[0] ? 'background: #262B3B; color: #FFFFFF; border: 1px solid #8A92AB;' : 'background: #151821; color: #F2F3F7; border: 1px solid #343A50;'), pick: () => this.setState({ filt: f[0] }) })), hasAlerts: alerts.length > 0 && !st.showPay, alertCount: alerts.length,
       myCards, otherCards, isHome: st.screen === 'home', isSec: st.screen === 'sec',
       goHome: () => this.setState({ screen: 'home', selected: null, toast: '' }),
       secColor: colors[st.sec],

@@ -625,6 +625,7 @@ class Component extends DCLogic {
       play: { name: 'العبها صح', icon: 'cold', tint: '#FBF3DC', items: [['مكسيكي ريدبول', 4000], ['ريدبول مكس', 4000], ['مكسيكي نكست لفل', 5000], ['كرزات', 3000], ['شامية', 1000]] }
     };
     const hookah = { name: 'النراجيل', icon: 'hookah', tint: '#ECEAF6', items: [['تفاحتين', 7000], ['انكليزي', 7000], ['ليمون ونعناع', 7000], ['علج ونعناع', 7000], ['عنب ونعناع', 7000], ['نكست لفل', 7000], ['إليت زون', 7000], ['علج فراولة', 7000], ['تغيير رأس', 4000]] };
+    const MO = window.NLDemo ? (window.NLDemo.get() || {}).menu : null; if (MO && MO.cats) { Object.keys(bar).forEach((k) => { if (MO.cats[k]) bar[k].items = MO.cats[k].items.filter((x) => !x[2]).map((x) => [x[0], x[1]]); }); if (MO.cats.hookah) hookah.items = MO.cats.hookah.items.filter((x) => !x[2]).map((x) => [x[0], x[1]]); }
     const priceOf = {}; const printerOf = {}; const kindOf = {};
     Object.keys(bar).forEach((k) => bar[k].items.forEach((i) => { priceOf[i[0]] = i[1]; printerOf[i[0]] = 'البارستا'; kindOf[i[0]] = k; }));
     hookah.items.forEach((i) => { priceOf[i[0]] = i[1]; printerOf[i[0]] = 'النراجيل'; kindOf[i[0]] = 'hookah'; });
@@ -694,6 +695,7 @@ class Component extends DCLogic {
       pick: () => this.setState({ unit: x.u, screen: 'unit', toast: '' })
     })) : [];
     const PRICE = { single: [1500, 2500, 4000, 5000], double: [2500, 5000, 7500, 10000], elite: [1000, 1500, 2000, 2500], master: [1500, 2000, 2500, 3500], wheel: [2500, 5000, 7500, 10000], cinema: [2500, 5000, 7500, 10000], pool: [1500, 2500, 4000, 5000] };
+    { const MO2 = window.NLDemo ? (window.NLDemo.get() || {}).menu : null; if (MO2 && MO2.price) Object.keys(MO2.price).forEach((k) => { PRICE[k] = MO2.price[k]; }); }
     const clk = (ts) => { const d = new Date(ts); let h = d.getHours(); const ap = h >= 12 ? 'م' : 'ص'; h = h % 12 || 12; return h + ':' + pad(d.getMinutes()) + ' ' + ap; };
     const billMin = (min) => { let h = Math.floor(min / 60); const rem = min - h * 60; let q = Math.floor(rem / 15); if (rem - q * 15 >= 8) q++; if (q === 4) { h++; q = 0; } if (h === 0 && q === 0) q = 1; return [h, q]; };
     const durText = (h, q) => (h ? (h === 1 ? 'ساعة' : h === 2 ? 'ساعتين' : h + ' ساعات') : '') + (h && q ? ' و' : '') + ['', 'ربع ساعة', 'نصف ساعة', '45 دقيقة'][q];
@@ -758,7 +760,7 @@ class Component extends DCLogic {
     const setQty = (name, d) => { const q = { ...st.qty }; q[name] = Math.max(0, (q[name] || 0) + d); if (!q[name]) delete q[name]; this.setState({ qty: q, toast: '' }); };
 const FLAV = { 'تفاحتين': '#2E9E4F', 'انكليزي': '#8D5524', 'ليمون ونعناع': '#7DA41F', 'علج ونعناع': '#0F8F7A', 'عنب ونعناع': '#6A3FC1', 'نكست لفل': '#C8102E', 'إليت زون': '#2B5FD9', 'علج فراولة': '#D6336C', 'تغيير رأس': '#4A4A4A' };
     const isHk = st.dept === 'hookah';
-    const WOOD = 5000; const pp = (n, t) => (printerOf[n] === 'النراجيل' && n !== 'تغيير رأس' && t === 'خشب') ? WOOD : priceOf[n];
+    const WOOD = ((window.NLDemo && (window.NLDemo.get() || {}).menu) || {}).wood || 5000; const pp = (n, t) => (printerOf[n] === 'النراجيل' && n !== 'تغيير رأس' && t === 'خشب') ? WOOD : priceOf[n];
     const items = group.items.map((i) => ({
       name: i[0], priceText: fmt(isHk ? pp(i[0], st.hookType) : i[1]), qty: st.qty[i[0]] || 0,
       imgStyle: 'height: 56px; background: ' + (isHk ? FLAV[i[0]] + '33' : catColor[st.cat] + '22') + '; display: flex; align-items: center; justify-content: center;' + (isHk ? ' border-bottom: 6px solid ' + FLAV[i[0]] + ';' : ''),
