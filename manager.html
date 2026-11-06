@@ -882,7 +882,7 @@ class Component extends DCLogic {
     ];
     const PERMS = [].concat(...PGROUPS.map((g) => g[1]));
     const ALLP = PERMS.map((p) => p[0]);
-    const ROLES = { gm: 'المدير العام', mgr: 'مدير', brm: 'مسؤول الفرع', hall: 'مسؤول القاعة', cashier: 'كاشير', captain: 'كابتن', sec: 'مسؤول قسم (بارستا/نراجيل)' };
+    const ROLES = { gm: 'المدير العام', mgr: 'مدير', hall: 'مسؤول القاعة', cashier: 'كاشير', captain: 'كابتن', sec: 'مسؤول قسم (بارستا/نراجيل)' };
     const SECS = ['بلاي ستيشن', 'إليت', 'البلياردو', 'الصالة', 'النراجيل', 'البارستا'];
     const seedUsers = {
       gm: { name: '[اسمك]', role: 'gm', br: 'both', color: accent, perms: ALLP.slice(), secs: SECS.slice(), pin: '', phone: '', on: true },
@@ -1273,7 +1273,7 @@ class Component extends DCLogic {
       su: { name: S.name || 'حساب جديد', role: (S.role ? ROLES[S.role] : 'الدور ما محدد') + ' · ' + BR[S.br] + (S.on ? '' : ' · موقوف'), initial: (S.name || '+').replace(/[\[\]]/g, '').replace('اسم ', '').charAt(0) || '؟', avatar: 'width: 60px; height: 60px; border-radius: 50%; background: ' + S.color + '; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 24px; color: #FFFFFF; box-shadow: 0 0 20px ' + S.color + '88' },
       readOnlyPerms: !canEdit,
       addUser: () => { const dr = Object.keys(U).find((k) => U[k].draft); if (dr) { this.setState({ selUser: dr }); this._toast('عندك حساب جديد ما مكمّل، كمّله أو ألغيه.'); return; } const cols = ['#EC4899', '#06B6D4', '#84CC16', '#F97316', '#A855F7']; const id = 'n' + Date.now(); const nu = { ...U, [id]: { name: '', role: '', br: 'nl1', color: cols[Object.keys(U).length % cols.length], perms: [], secs: [], pin: '', phone: '', on: true, draft: true } }; this.setState({ users: nu, selUser: id }); },
-      acct, pgroups, secOpts, sLog, hasSLog: sLog.length > 0, isCaptainLike: S.role === 'captain' || S.role === 'sec' || S.role === 'cashier' || S.role === 'hall' || S.role === 'brm',
+      acct, pgroups, secOpts, sLog, hasSLog: sLog.length > 0, isCaptainLike: S.role === 'captain' || S.role === 'sec' || S.role === 'cashier' || S.role === 'hall',
       me: { name: me.name, role: ROLES[me.role], avatarStyle: 'width: 42px; height: 42px; border-radius: 50%; background: ' + me.color + '; display: flex; align-items: center; justify-content: center; border: 2px solid #FFFFFF; box-shadow: 0 0 14px ' + me.color },
       log: st.log, toast: st.toast,
       changePhoto: () => this._toast('في النظام الحقيقي: تفتح الكاميرا أو المعرض، وكل شخص يرفع صورته ويغيّرها بنفسه.')
