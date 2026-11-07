@@ -800,12 +800,12 @@ class Component extends DCLogic {
     const mk = (prefix, n) => Array.from({ length: n }, (_, i) => prefix + (i + 1));
     this.secs = {
       play: { name: 'بلاي ستيشن', floor: 'g', units: mk('PS', 20).concat(['دركسون 21']) },
-      elite: { name: 'حاسبات إليت', floor: 'g', units: mk('إليت ', 12) },
-      hall: { name: 'الصالة', floor: 'g', units: mk('طاولة ', 12) },
-      pool: { name: 'بلياردو', floor: 'u', units: mk('بلياردو ', 4) },
-      master: { name: 'حاسبات ماستر', floor: 'u', units: mk('ماستر ', 8) },
+      elite: { name: 'حاسبات إليت', floor: 'g', units: mk('إليت ', 20) },
+      hall: { name: 'الصالة', floor: 'g', units: mk('طاولة ', 15) },
+      pool: { name: 'بلياردو', floor: 'u', units: mk('بلياردو ', 10) },
+      master: { name: 'حاسبات ماستر', floor: 'u', units: mk('ماستر ', 10) },
       cinema: { name: 'سينما', floor: 'u', units: mk('سينما ', 2) },
-      uhall: { name: 'صالة علوية', floor: 'u', units: mk('طاولة ع', 8) }
+      uhall: { name: 'صالة علوية', floor: 'u', units: mk('طاولة ع', 10) }
     };
     this.state = {
       now: Date.now(),
