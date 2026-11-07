@@ -182,7 +182,7 @@ window.NLDemo = (function () {
 <style>
 body{margin:0;font-family:'Cairo',system-ui,sans-serif;color:#F2F3F7;background:#2E3548}
 button,input{font-family:inherit;color:inherit}
-@media (orientation: portrait), (max-width: 1000px){.nl-add{flex-direction:column !important}.nl-add-main{flex:1 1 auto !important;min-height:0 !important}.nl-add-aside{width:auto !important;flex-shrink:0 !important;max-height:26vh;border-right:none !important;border-top:2px solid #FA2949 !important}.nl-add-head{display:none !important}.nl-cart-line{padding:5px 0 !important}.nl-cart-line button{min-height:34px !important}.nl-cart-pr{display:none}.nl-add-foot{padding:10px 20px !important}.nl-add-foot>button{height:52px !important}.nl-add-foot{flex-direction:row !important;flex-wrap:wrap;align-items:center}.nl-add-foot>button{flex:1 1 240px}.nl-add-foot>div{gap:12px}.nl-unit{flex-direction:column !important;gap:14px !important;padding:16px 20px !important;overflow-y:auto}.nl-unit-sec{flex:0 0 auto !important;max-height:none}.nl-unit-aside{width:auto !important}.nl-units{grid-template-columns:repeat(4,minmax(0,1fr)) !important;gap:14px !important}.nl-units>button{min-height:150px !important}.nl-units>button>span:nth-last-of-type(2){font-size:28px !important}.nl-units>button>span:last-of-type{font-size:17px !important;font-weight:700}.nl-units svg{width:52px;height:52px}}
+@media (orientation: portrait), (max-width: 1000px){.nl-add{flex-direction:column !important}.nl-add-main{flex:1 1 auto !important;min-height:0 !important}.nl-add-aside{width:auto !important;flex-shrink:0 !important;max-height:26vh;border-right:none !important;border-top:2px solid #FA2949 !important}.nl-add-head{display:none !important}.nl-cart-line{padding:5px 0 !important}.nl-cart-line button{min-height:34px !important}.nl-cart-pr{display:none}.nl-add-foot{padding:10px 20px !important}.nl-add-foot>button{height:52px !important}.nl-add-foot{flex-direction:row !important;flex-wrap:wrap;align-items:center}.nl-add-foot>button{flex:1 1 240px}.nl-add-foot>div{gap:12px}.nl-unit{flex-direction:column !important;gap:14px !important;padding:16px 20px !important;overflow-y:auto}.nl-unit-sec{flex:0 0 auto !important;max-height:none}.nl-unit-aside{width:auto !important}.nl-units{grid-template-columns:repeat(4,minmax(0,1fr)) !important;gap:14px !important}.nl-units>button{min-height:150px !important}.nl-units>button>span:nth-last-of-type(2){font-size:28px !important}.nl-units>button>span:last-of-type{font-size:17px !important;font-weight:700}.nl-units svg{width:52px;height:52px}.nl-logins{grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:18px !important}.nl-logins>button{height:230px !important}.nl-logins>button>span:nth-last-of-type(2){font-size:24px !important}}
 @keyframes nlpulse{0%,100%{box-shadow:0 0 0 0 rgba(200,16,46,0.7)}50%{box-shadow:0 0 0 8px rgba(200,16,46,0)}}
 </style>
 </helmet>
@@ -219,10 +219,16 @@ button,input{font-family:inherit;color:inherit}
       </sc-if>
 
       <sc-if value="{{stepAccount}}" hint-placeholder-val="{{false}}">
-        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px">
+        <div class="nl-logins" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px">
           <sc-for list="{{logins}}" as="l" hint-placeholder-count="3">
             <button onClick="{{l.pick}}" style="{{l.style}}">
-              <span style="{{l.avatarStyle}}">{{l.initial}}</span>
+              <span style="{{l.avatarStyle}}">
+              <sc-if value="{{l.isPlay}}" hint-placeholder-val="{{false}}"><svg width="54" height="54" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" aria-hidden="true"><path d="M18 20h28c8 0 12 8 14 20 1 8-3 12-7 12-4 0-6-4-9-8H20c-3 4-5 8-9 8-4 0-8-4-7-12 2-12 6-20 14-20z"></path><path d="M20 28v10M15 33h10"></path><circle cx="42" cy="30" r="2"></circle><circle cx="48" cy="36" r="2"></circle></svg></sc-if>
+              <sc-if value="{{l.isPc}}" hint-placeholder-val="{{false}}"><svg width="54" height="54" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="10" width="48" height="32" rx="3"></rect><path d="M24 54h16M32 42v12"></path></svg></sc-if>
+              <sc-if value="{{l.isTable}}" hint-placeholder-val="{{false}}"><svg width="54" height="54" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" aria-hidden="true"><path d="M8 24h48"></path><path d="M14 24v26M50 24v26"></path><path d="M10 18h44"></path></svg></sc-if>
+              <sc-if value="{{l.isPool}}" hint-placeholder-val="{{false}}"><svg width="54" height="54" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="6" y="16" width="52" height="32" rx="5"></rect><rect x="12" y="22" width="40" height="20" rx="2"></rect><circle cx="8" cy="18" r="2.5" fill="currentColor"></circle><circle cx="56" cy="18" r="2.5" fill="currentColor"></circle><circle cx="8" cy="46" r="2.5" fill="currentColor"></circle><circle cx="56" cy="46" r="2.5" fill="currentColor"></circle><circle cx="27" cy="32" r="3.5"></circle><circle cx="35" cy="29" r="3.5"></circle><circle cx="35" cy="36" r="3.5"></circle><path d="M4 58L28 34"></path></svg></sc-if>
+              <sc-if value="{{l.isRoom}}" hint-placeholder-val="{{false}}"><svg width="54" height="54" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="6" y="12" width="52" height="32" rx="3"></rect><path d="M27 21v14l12-7z" fill="currentColor"></path><path d="M14 52h36"></path><path d="M20 58h24"></path></svg></sc-if>
+              </span>
               <span style="font-size: 20px; font-weight: 800">{{l.name}}</span>
               <span style="font-size: 14px; font-weight: 700">{{l.status}}</span>
             </button>
@@ -277,15 +283,11 @@ button,input{font-family:inherit;color:inherit}
       <div class="nl-units" style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px">
         <sc-for list="{{units}}" as="u" hint-placeholder-count="10">
           <button onClick="{{u.pick}}" style="{{u.style}}">
-            <sc-if value="{{u.isPlay}}" hint-placeholder-val="{{true}}">
-              <svg width="40" height="40" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" aria-hidden="true"><path d="M18 20h28c8 0 12 8 14 20 1 8-3 12-7 12-4 0-6-4-9-8H20c-3 4-5 8-9 8-4 0-8-4-7-12 2-12 6-20 14-20z"></path><path d="M20 28v10M15 33h10"></path><circle cx="42" cy="30" r="2"></circle><circle cx="48" cy="36" r="2"></circle></svg>
-            </sc-if>
-            <sc-if value="{{u.isPc}}" hint-placeholder-val="{{false}}">
-              <svg width="40" height="40" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="10" width="48" height="32" rx="3"></rect><path d="M24 54h16M32 42v12"></path></svg>
-            </sc-if>
-            <sc-if value="{{u.isTable}}" hint-placeholder-val="{{false}}">
-              <svg width="40" height="40" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" aria-hidden="true"><path d="M8 24h48"></path><path d="M14 24v26M50 24v26"></path><path d="M10 18h44"></path></svg>
-            </sc-if>
+            <sc-if value="{{u.isPlay}}" hint-placeholder-val="{{false}}"><svg width="40" height="40" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" aria-hidden="true"><path d="M18 20h28c8 0 12 8 14 20 1 8-3 12-7 12-4 0-6-4-9-8H20c-3 4-5 8-9 8-4 0-8-4-7-12 2-12 6-20 14-20z"></path><path d="M20 28v10M15 33h10"></path><circle cx="42" cy="30" r="2"></circle><circle cx="48" cy="36" r="2"></circle></svg></sc-if>
+              <sc-if value="{{u.isPc}}" hint-placeholder-val="{{false}}"><svg width="40" height="40" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="10" width="48" height="32" rx="3"></rect><path d="M24 54h16M32 42v12"></path></svg></sc-if>
+              <sc-if value="{{u.isTable}}" hint-placeholder-val="{{false}}"><svg width="40" height="40" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" aria-hidden="true"><path d="M8 24h48"></path><path d="M14 24v26M50 24v26"></path><path d="M10 18h44"></path></svg></sc-if>
+              <sc-if value="{{u.isPool}}" hint-placeholder-val="{{false}}"><svg width="40" height="40" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="6" y="16" width="52" height="32" rx="5"></rect><rect x="12" y="22" width="40" height="20" rx="2"></rect><circle cx="8" cy="18" r="2.5" fill="currentColor"></circle><circle cx="56" cy="18" r="2.5" fill="currentColor"></circle><circle cx="8" cy="46" r="2.5" fill="currentColor"></circle><circle cx="56" cy="46" r="2.5" fill="currentColor"></circle><circle cx="27" cy="32" r="3.5"></circle><circle cx="35" cy="29" r="3.5"></circle><circle cx="35" cy="36" r="3.5"></circle><path d="M4 58L28 34"></path></svg></sc-if>
+              <sc-if value="{{u.isRoom}}" hint-placeholder-val="{{false}}"><svg width="40" height="40" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="6" y="12" width="52" height="32" rx="3"></rect><path d="M27 21v14l12-7z" fill="currentColor"></path><path d="M14 52h36"></path><path d="M20 58h24"></path></svg></sc-if>
             <span style="font-size: 20px; font-weight: 800">{{u.name}}</span>
             <span style="font-size: 13px">{{u.sub}}</span>
           </button>
@@ -643,8 +645,9 @@ class Component extends DCLogic {
     const floorBtns = [['g', 'الطابق الأرضي', '↓'], ['u', 'الطابق العلوي', '↑']].map(([f, n, ic]) => ({ name: n, icon: ic, list: Object.keys(S).filter((k) => S[k].floor === f).map((k) => S[k].name).join(' · '), pick: () => this.setState({ floor: f, loginSec: null, pin: '' }) }));
     const logins = st.floor ? Object.keys(S).filter((k) => S[k].floor === st.floor).map((k) => {
       const busy = false;
-      return { name: 'كابتن ' + S[k].name, initial: S[k].name.charAt(0), status: busy ? 'مفتوح على تاب آخر' : 'متاح',
-        avatarStyle: 'width: 76px; height: 76px; border-radius: 38px; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 800; ' + (busy ? 'background: #262B3B; color: #8A90A4;' : 'background: linear-gradient(145deg, #E0193A, #A80D24); color: #FFFFFF;'),
+      const kd = S[k].kind;
+      return { name: 'كابتن ' + S[k].name, initial: S[k].name.charAt(0), isPlay: kd === 'play', isPc: kd === 'pc', isTable: kd === 'table', isPool: kd === 'pool', isRoom: kd === 'room', status: busy ? 'مفتوح على تاب آخر' : 'متاح',
+        avatarStyle: 'width: 96px; height: 96px; border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 800; ' + (busy ? 'background: #262B3B; color: #8A90A4;' : 'background: linear-gradient(145deg, #E0193A, #A80D24); color: #FFFFFF;'),
         style: 'height: 210px; border-radius: 20px; cursor: pointer; font-family: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; ' + (busy ? 'background: #0B0D12; color: #8A90A4; border: 2px dashed #343A50;' : 'background: #151821; color: #F2F3F7; border: 2px solid #6A2436; border-top: 8px solid #C8102E; box-shadow: 0 6px 16px rgba(168,13,36,0.10);'),
         pick: () => (busy ? this.setState({ toast: 'الحساب مفتوح على تاب آخر. ما ينفتح مرتين.' }) : this.setState({ loginSec: k, pin: '', toast: '' })) };
     }) : [];
@@ -684,7 +687,7 @@ class Component extends DCLogic {
         if (ti.state === 'unpaid') look = 'background: #262B3B; color: #FFFFFF; border: 3px solid #C8102E; animation: nlpulse 1.2s infinite;';
       }
       return {
-        name: u, isPlay: sec.kind === 'play', isPc: sec.kind === 'pc' || sec.kind === 'room', isTable: sec.kind === 'table' || sec.kind === 'pool',
+        name: u, isPlay: sec.kind === 'play', isPc: sec.kind === 'pc', isTable: sec.kind === 'table', isPool: sec.kind === 'pool', isRoom: sec.kind === 'room',
         sub,
         style: 'height: 118px; border-radius: 14px; cursor: pointer; font-family: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-variant-numeric: tabular-nums; ' + look,
         pick: () => { if (sec.kind === 'table' && st.open[u] === undefined) { this.setState({ open: { ...st.open, [u]: [] }, unit: u, screen: 'add', dept: 'bar', qty: {}, lineNotes: {}, toast: 'انفتحت ' + u + '. اختر البارستا أو النراجيل.' }); return; } this.setState({ unit: u, screen: 'unit', toast: '', custEdit: false, custDraft: { name: '', phone: '' } }); }
