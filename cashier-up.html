@@ -597,6 +597,7 @@ button{font-family:inherit;color:inherit}
           <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: max-content; gap: 14px; align-content: start; overflow-y: auto; flex: 1; min-height: 0; padding: 4px 4px 8px">
             <sc-for list="{{add.items}}" as="it" hint-placeholder-count="8">
             <div style="{{it.cardStyle}}">
+              <button onClick="{{it.plus}}" aria-label="أضف واحد" style="display: flex; flex-direction: column; padding: 0; margin: 0; border: none; background: transparent; cursor: pointer; width: 100%; font-family: inherit; color: inherit; touch-action: manipulation">
               <div style="{{it.imgStyle}}">
                 <sc-if value="{{it.isCold}}" hint-placeholder-val="{{true}}">
                   <svg width="52" height="52" viewBox="0 0 64 64" fill="none" stroke="#F2F3F7" stroke-width="2.5" stroke-linejoin="round" aria-hidden="true"><path d="M18 20h28l-4 36H22z"></path><path d="M20 30h24"></path><path d="M36 20l6-14h6"></path></svg>
@@ -615,10 +616,10 @@ button{font-family:inherit;color:inherit}
                 <span style="font-size: 19px; font-weight: 800; line-height: 1.25; text-align: center; color: #F2F3F7">{{it.name}}</span>
                 <span style="font-size: 13px; font-weight: 600; color: #9AA0B4">{{it.priceText}}</span>
               </div>
-              <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px 10px; gap: 6px">
-                <button onClick="{{it.minus}}" aria-label="إنقاص" style="width: 48px; height: 44px; border-radius: 10px; border: 1px solid #343A50; background: #151821; font-size: 22px; font-weight: 800; cursor: pointer">−</button>
-                <span style="font-size: 20px; font-weight: 800; min-width: 28px; text-align: center">{{it.qty}}</span>
-                <button onClick="{{it.plus}}" aria-label="زيادة" style="width: 48px; height: 44px; border-radius: 10px; border: none; background: #262B3B; color: #FFFFFF; font-size: 22px; font-weight: 800; cursor: pointer">+</button>
+              </button>
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 10px 10px; gap: 6px">
+                <span style="font-size: 24px; font-weight: 800; min-width: 28px; text-align: center">{{it.qty}}</span>
+                <button onClick="{{it.minus}}" aria-label="إنقاص" style="width: 56px; height: 44px; border-radius: 10px; border: 1px solid #343A50; background: #151821; font-size: 24px; font-weight: 800; cursor: pointer; touch-action: manipulation">−</button>
               </div>
             </div>
           </sc-for>
@@ -631,7 +632,7 @@ button{font-family:inherit;color:inherit}
           </div>
           <div style="flex: 1; overflow-y: auto; padding: 6px 20px; display: flex; flex-direction: column">
             <sc-if value="{{add.empty}}" hint-placeholder-val="{{false}}">
-              <span style="font-size: 14px; color: #9AA0B4; padding-top: 8px">اختر البارستا أو النراجيل، ثم زِد العدد بزر +.</span>
+              <span style="font-size: 14px; color: #9AA0B4; padding-top: 8px">اختر البارستا أو النراجيل، ثم اضغط على الصنف: كل ضغطة تزيد واحد، وزر − يقلّل.</span>
             </sc-if>
             <sc-for list="{{add.cart}}" as="l" hint-placeholder-count="3">
               <div style="display: flex; flex-direction: column; padding: 10px 0; border-bottom: 1px dashed #2E3448">
