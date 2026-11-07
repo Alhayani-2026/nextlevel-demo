@@ -182,7 +182,7 @@ window.NLDemo = (function () {
 <style>
 body{margin:0;font-family:'Cairo',system-ui,sans-serif;color:#F2F3F7;background:#2E3548}
 button,input{font-family:inherit;color:inherit}
-@media (orientation: portrait), (max-width: 1000px){.nl-add{flex-direction:column !important}.nl-add-main{flex:1 1 auto !important;min-height:0 !important}.nl-add-aside{width:auto !important;flex-shrink:0 !important;max-height:34%;border-right:none !important;border-top:2px solid #FA2949 !important}.nl-add-head{display:none !important}.nl-add-foot{flex-direction:row !important;flex-wrap:wrap;align-items:center}.nl-add-foot>button{flex:1 1 240px}.nl-add-foot>div{gap:12px}.nl-unit{flex-direction:column !important;gap:14px !important;padding:16px 20px !important;overflow-y:auto}.nl-unit-sec{flex:0 0 auto !important;max-height:none}.nl-unit-aside{width:auto !important}}
+@media (orientation: portrait), (max-width: 1000px){.nl-add{flex-direction:column !important}.nl-add-main{flex:1 1 auto !important;min-height:0 !important}.nl-add-aside{width:auto !important;flex-shrink:0 !important;max-height:34%;border-right:none !important;border-top:2px solid #FA2949 !important}.nl-add-head{display:none !important}.nl-add-foot{flex-direction:row !important;flex-wrap:wrap;align-items:center}.nl-add-foot>button{flex:1 1 240px}.nl-add-foot>div{gap:12px}.nl-unit{flex-direction:column !important;gap:14px !important;padding:16px 20px !important;overflow-y:auto}.nl-unit-sec{flex:0 0 auto !important;max-height:none}.nl-unit-aside{width:auto !important}.nl-units{grid-template-columns:repeat(4,minmax(0,1fr)) !important;gap:14px !important}.nl-units>button{min-height:150px !important}.nl-units>button>span:nth-last-of-type(2){font-size:28px !important}.nl-units>button>span:last-of-type{font-size:17px !important;font-weight:700}.nl-units svg{width:52px;height:52px}}
 @keyframes nlpulse{0%,100%{box-shadow:0 0 0 0 rgba(200,16,46,0.7)}50%{box-shadow:0 0 0 8px rgba(200,16,46,0)}}
 </style>
 </helmet>
@@ -274,7 +274,7 @@ button,input{font-family:inherit;color:inherit}
         <span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 14px; height: 14px; border-radius: 4px; background: #151821; border: 1px solid #343A50"></span>متاح</span>
         <span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 14px; height: 14px; border-radius: 4px; background: #C8102E"></span>مفتوح</span>
       </div>
-      <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px">
+      <div class="nl-units" style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px">
         <sc-for list="{{units}}" as="u" hint-placeholder-count="10">
           <button onClick="{{u.pick}}" style="{{u.style}}">
             <sc-if value="{{u.isPlay}}" hint-placeholder-val="{{true}}">
