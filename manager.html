@@ -1065,7 +1065,7 @@ class Component extends DCLogic {
       saveDev: () => { if (!devDirty) return; const m = clone(MENU); const ch = []; Object.keys(mDraft).filter((k) => k.indexOf('dev:') === 0).forEach((k) => { const [, t, j] = k.split(':'); const np = toNum(mDraft[k]); if (np && np !== m.price[t][+j]) { ch.push(PRICE_N[t] + ' (' + ['ربع', 'نص', '45 د', 'ساعة'][+j] + ') من ' + fN(m.price[t][+j]) + ' إلى ' + fN(np)); m.price[t][+j] = np; } }); if (!ch.length) { this.setState({ mDraft: {} }); return; } setMenu(m, 'غيّر سعر ' + ch.join('، ')); },
       log: (st.mLog || []), hasLog: (st.mLog || []).length > 0
     };
-    const tabsDef = [['dash', 'لوحة التحكم'], ['cash', 'المحاسبة'], ['rep', 'التقارير'], ['acc', 'الحسابات والسندات'], ['menu', 'المنيو والأسعار'], ['debt', 'ديون الزبائن'], ['staff', 'الموظفون والصلاحيات']];
+    const tabsDef = [['dash', 'لوحة التحكم'], ['cash', 'المحاسبة'], ['rep', 'التقارير'], ['acc', 'الحسابات والسندات'], ['menu', 'المنيو والأسعار'], ['staff', 'الموظفون والصلاحيات']];
     const tabs = tabsDef.map((t) => ({ name: t[1], style: 'height: 42px; padding: 0 16px; border-radius: 12px; font-size: 14px; font-weight: 800; cursor: pointer; font-family: inherit; ' + (st.tab === t[0] ? 'background: linear-gradient(135deg, ' + accent + ', #B3122F); color: #FFFFFF; border: none; box-shadow: 0 0 18px ' + accent + '77;' : 'background: transparent; color: #C9CEDC; border: 1px solid #2A2F40;'), pick: () => this.setState({ tab: t[0], kp: null }) }));
 
     const accounts = Object.keys(login).map((k) => ({ label: ROLES[U[login[k]].role] + (k === 'm1' ? ' 1' : k === 'm2' ? ' 2' : ''), style: pill(st.acc === k, '#3A4058'), pick: () => {
@@ -1197,7 +1197,7 @@ class Component extends DCLogic {
       };
     });
 
-    const DBS = (window.NLDemo ? (window.NLDemo.get() || {}).debts : st.debts) || {};
+    const DBS = {}; // لا ديون على الزبائن (قرار المدير العام)
     const dbKeys = Object.keys(DBS).filter((k) => DBS[k] && DBS[k].amt > 0);
     const fmtD = (n) => Number(n || 0).toLocaleString('en-US') + ' د.ع';
     const tStr = (t) => { if (!t) return '[التاريخ]'; const d = new Date(t); return d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0'); };
@@ -1307,7 +1307,7 @@ class Component extends DCLogic {
     const fullBlocks = [
       { title: 'وقت الأجهزة حسب القسم', color: '#FA2949', rows: secList.filter((s) => s[4] !== 'food').map((s) => s[1] + (s[6] ? ' · ' + s[6] : '')) },
       { title: 'الطلبات حسب الطابعة', color: '#F59E0B', rows: ['البارستا', 'النراجيل'].concat(branchKey !== 'nl1' ? ['المطبخ (فرع 2)'] : []) },
-      { title: 'طرق الدفع', color: '#22C55E', rows: ['نقد', 'POS', 'زين كاش', 'ديون (آجل)'] }
+      { title: 'طرق الدفع', color: '#22C55E', rows: ['نقد', 'POS', 'زين كاش'] }
     ];
 
     // الحسابات والسندات
@@ -1330,7 +1330,7 @@ class Component extends DCLogic {
          ['sup', 'تسديد مورد', 'أي مورد؟', ['أقداح', 'مونين', '[مورد آخر]'], false],
          ['sal', 'رواتب الموظفين', 'لمن؟', ['رواتب كل موظفي الفرع', '[اسم الموظف 1]', '[اسم الموظف 2]', '[اسم الموظف 3]'], false],
          ['adv', 'سلفة موظف', 'أي موظف؟', ['[اسم الموظف 1]', '[اسم الموظف 2]', '[اسم الموظف 3]'], false]]
-      : [['own', 'إيداع من المالك', '', [], false], ['debt', 'زبون سدّد دينه', 'أي زبون؟', ['[اسم الزبون 1]', '[اسم الزبون 2]'], false], ['oth', 'إيراد آخر', '', [], true]];
+      : [['own', 'إيداع من المالك', '', [], false], ['oth', 'إيراد آخر', '', [], true]];
     const curFor = FORS.find((f) => f[0] === st.vFor) || null;
     const vFors = FORS.map((f) => ({ name: f[1], style: chip(st.vFor === f[0]), pick: () => this.setState({ vFor: f[0], vSub: null, vDet: '' }) }));
     const vHasQ3 = !!(curFor && curFor[3].length);
