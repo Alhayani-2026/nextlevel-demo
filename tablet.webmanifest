@@ -1,0 +1,16 @@
+{
+  "name": "نيكست لفل · تاب الكابتن",
+  "short_name": "تاب الكابتن",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./tablet.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#2E3548",
+  "theme_color": "#171A23",
+  "icons": [
+    { "src": "tablet-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "tablet-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

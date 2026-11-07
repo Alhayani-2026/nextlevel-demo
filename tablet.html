@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
-<title>نيكست لفل · تاب الكابتن</title><meta name="viewport" content="width=1280">
+<title>نيكست لفل · تاب الكابتن</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="manifest" href="tablet.webmanifest"><meta name="theme-color" content="#171A23"><meta name="mobile-web-app-capable" content="yes"><link rel="apple-touch-icon" href="tablet-icon-192.png">
 <script>
 window.NLDemo = (function () {
   var DB = 'https://nextlevel-demo-default-rtdb.europe-west1.firebasedatabase.app'; var REMOTE = DB.indexOf('https://') === 0;
@@ -185,7 +185,7 @@ button,input{font-family:inherit;color:inherit}
 @keyframes nlpulse{0%,100%{box-shadow:0 0 0 0 rgba(200,16,46,0.7)}50%{box-shadow:0 0 0 8px rgba(200,16,46,0)}}
 </style>
 </helmet>
-<div dir="rtl" style="width: 1280px; height: 800px; box-sizing: border-box; background: #2E3548; display: flex; flex-direction: column; font-family: 'Cairo', system-ui, sans-serif; position: relative; overflow: hidden">
+<div dir="rtl" style="width: 100vw; height: 100dvh; box-sizing: border-box; background: #2E3548; display: flex; flex-direction: column; font-family: 'Cairo', system-ui, sans-serif; position: relative; overflow: hidden">
   <header style="height: 64px; background: linear-gradient(90deg, #171A23, #0B0D12 60%, #1A0B10); border-bottom: 2px solid #FA2949; box-shadow: 0 4px 22px rgba(250,41,73,0.35); color: #FFFFFF; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; flex-shrink: 0; gap: 16px">
     <div style="display: flex; align-items: center; gap: 14px; min-width: 0">
       <sc-if value="{{canBack}}" hint-placeholder-val="{{true}}">
@@ -916,5 +916,6 @@ const FLAV = { 'تفاحتين': '#2E9E4F', 'انكليزي': '#8D5524', 'ليم
   }
 }
 </script>
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () {});</script>
 </body>
 </html>
