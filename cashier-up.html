@@ -394,6 +394,7 @@ button{font-family:inherit;color:inherit}
                 <button onClick="{{openMove}}" style="height: 42px; border-radius: 10px; border: 2px solid #8A92AB; background: #151821; font-size: 14px; font-weight: 800; cursor: pointer">نقل</button>
                 <button onClick="{{openPay}}" style="height: 42px; border-radius: 10px; border: none; background: {{accent}}; color: #FFFFFF; font-size: 16px; font-weight: 800; cursor: pointer">محاسبة</button>
               </div>
+              <button onClick="{{openCb}}" style="height: 38px; border-radius: 10px; border: 1px solid #343A50; background: #151821; color: #C3C8D6; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit">إلغاء الحساب ({{sel.totalText}})</button>
             </div>
           </sc-if>
           <sc-if value="{{sel.readInfo}}" hint-placeholder-val="{{false}}">
@@ -583,6 +584,25 @@ button{font-family:inherit;color:inherit}
           </div>
         </sc-if>
         <div style="background: #2A1219; border-radius: 10px; padding: 10px 14px; font-size: 14px; color: #FF8597; font-weight: 600">النقل داخل الطابق فقط. للطابق الآخر يحاسب الزبون أولًا.</div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{cb}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; inset: 0; background: rgba(3,4,8,0.72); display: flex; align-items: center; justify-content: center">
+      <div role="dialog" aria-label="إلغاء الحساب" style="width: 560px; background: #151821; border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 14px">
+        <h2 style="margin: 0; font-size: 22px; font-weight: 800">{{cb.title}}</h2>
+        <div style="font-size: 15px; color: #C3C8D6; line-height: 1.7">{{cb.text}}</div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap">
+          <sc-for list="{{cb.reasons}}" as="r" hint-placeholder-count="3">
+            <button onClick="{{r.pick}}" style="{{r.style}}">{{r.name}}</button>
+          </sc-for>
+        </div>
+        <div style="background: #2A1219; border-radius: 10px; padding: 10px 14px; font-size: 13px; color: #FF8597; font-weight: 600">صلاحية منفصلة يحددها المدير العام لكل حساب، وإلها حد مبلغ. فوق الحد يحتاج رمز مدير.</div>
+        <div style="display: flex; gap: 10px">
+          <button onClick="{{cb.go}}" style="flex: 1; height: 56px; border-radius: 12px; border: none; background: #C8102E; color: #FFFFFF; font-size: 17px; font-weight: 800; cursor: pointer; font-family: inherit">تأكيد إلغاء الحساب</button>
+          <button onClick="{{cb.back}}" style="width: 140px; height: 56px; border-radius: 12px; border: 1px solid #343A50; background: #151821; color: #F2F3F7; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit">رجوع</button>
+        </div>
       </div>
     </div>
   </sc-if>
@@ -1088,6 +1108,22 @@ class Component extends DCLogic {
         })
       };
     }
+    let cb = null;
+    if (st.cb && sel) {
+      const u = st.selected; const chipCb = (on) => 'min-height: 44px; padding: 0 16px; border-radius: 22px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; ' + (on ? 'background: #262B3B; color: #FFFFFF; border: 1px solid #8A92AB;' : 'background: #151821; color: #F2F3F7; border: 1px solid #343A50;');
+      cb = {
+        title: 'إلغاء حساب ' + u + ' كامل',
+        text: 'يُلغى الوقت والطلبات مرة وحدة (' + sel.totalText + ')، و' + u + ' يصير فارغ. العملية تنسجل باسمك وتطلع بتقرير الإلغاءات. اختار السبب:',
+        reasons: ['انفتح بالغلط', 'الزبون طلع بدون ما يلعب', 'جهاز عطلان أثناء اللعب'].map((r) => ({ name: r, style: chipCb(st.cbReason === r), pick: () => this.setState({ cbReason: r }) })),
+        back: () => this.setState({ cb: null, cbReason: null }),
+        go: () => {
+          if (!st.cbReason) { this.setState({ toast: 'اختار سبب الإلغاء أول.' }); return; }
+          const nx = { ...st.units }; delete nx[u]; const tx = { ...st.timers }; delete tx[u]; const hx = { ...st.hist }; delete hx[u];
+          const gx = {}; Object.keys(st.groups).forEach((g) => { gx[g] = { ...st.groups[g], units: st.groups[g].units.filter((x) => x !== u) }; });
+          this.setState({ units: nx, timers: tx, hist: hx, groups: gx, cb: null, cbReason: null, selected: null, toast: 'أُلغي حساب ' + u + ' (' + sel.totalText + ') بسبب «' + st.cbReason + '»، وانسجل باسم الكاشير بتقرير الإلغاءات.' });
+        }
+      };
+    }
     let adv = null;
     if (st.adv) {
       const a = st.adv;
@@ -1277,7 +1313,7 @@ const FLAV = { 'تفاحتين': '#2E9E4F', 'انكليزي': '#8D5524', 'ليم
     }));
     return {
       floorTitle: myFloor === 'g' ? 'كاشير الأرضي' : 'كاشير العلوي', myFloorName: FLN[myFloor], otherFloorName: FLN[myFloor === 'g' ? 'u' : 'g'],
-      accent, pay, op, grp, groupPay, mySecs, otherSecs, tiles, readOnly, move, methods, alerts,
+      accent, pay, op, grp, groupPay, mySecs, otherSecs, tiles, readOnly, move, cb, methods, alerts,
       filts: [['all', 'الكل'], ['free', 'فارغ'], ['run', 'مفتوح'], ['over', 'انتهى / لم يُحاسَب'], ['booked', 'محجوز'], ['oos', 'خارج الخدمة']].map((f) => ({ name: f[1], style: 'min-height: 36px; padding: 0 12px; border-radius: 18px; font-size: 13px; font-weight: 800; cursor: pointer; font-family: inherit; ' + ((st.filt || 'all') === f[0] ? 'background: #262B3B; color: #FFFFFF; border: 1px solid #8A92AB;' : 'background: #151821; color: #F2F3F7; border: 1px solid #343A50;'), pick: () => this.setState({ filt: f[0] }) })), hasAlerts: alerts.length > 0 && !st.showPay, alertCount: alerts.length,
       myCards, otherCards, isHome: st.screen === 'home', isSec: st.screen === 'sec',
       goHome: () => this.setState({ screen: 'home', selected: null, toast: '' }),
@@ -1293,6 +1329,7 @@ const FLAV = { 'تفاحتين': '#2E9E4F', 'انكليزي': '#8D5524', 'ليم
       closeAdv: () => this.setState({ adv: null }),
       confirmAdv: () => { if (!adv || !adv._ready) return; const a = st.adv; this.setState({ adv: null, toast: 'تمت: صُرفت سلفة ' + fmt(adv._amt) + ' لـ' + a.person + ' باسمك، وانخصمت من درج هذا الكاشير ونزلت على حسابه.' }); },
       add, openAdd: () => this.setState({ addOrd: { unit: st.selected, dept: 'bar', cat: 'mojito', qty: {} }, toast: '' }),
+      openCb: () => this.setState({ cb: true, cbReason: null, toast: '' }),
       openMove: () => this.setState({ move: true, moveTab: null, movePick: null, moveMode: null, moveLim: undefined, toast: '' }),
       closeMove: () => this.setState({ move: null, movePick: null, moveMode: null, moveLim: undefined }),
       openUnit: () => this.setState({ units: { ...st.units, [st.selected]: { status: 'run', start: 'الآن', time: '00:00', orders: [] } }, timers: { ...st.timers, [st.selected]: { start: Date.now(), limit: null } }, toast: 'فُتح ' + st.selected + '.' }),
