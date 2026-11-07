@@ -69,18 +69,19 @@ window.NLDemo = (function () {
       , sales: [], credits: { '07801234567': 2500 } }; }
   var ACTIVE = function (d) { return d && d.status !== 'booked' && d.status !== 'oos'; };
   function toCap(s) {
-    var open = {}, modes = {}, timers = {}, segs = {}, cust = {};
+    var open = {}, modes = {}, timers = {}, segs = {}, cust = {}, games = {};
     Object.keys(s.units || {}).forEach(function (u) {
       var d = s.units[u]; if (!ACTIVE(d)) return;
       var g = {}, order = [];
       (d.orders || []).forEach(function (o) { var k = o[0] + '|' + (o[2] || ''); if (!g[k]) { g[k] = { name: o[0], qty: 0, price: o[1], extra: '' }; if (o[2]) g[k].src = o[2]; order.push(k); } g[k].qty++; });
       open[u] = order.map(function (k) { return g[k]; });
-      if (d.mode === 'فردي' || d.mode === 'زوجي') modes[u] = d.mode;
+      if (d.mode === 'فردي' || d.mode === 'زوجي' || d.mode === 'بالجيم') modes[u] = d.mode;
+      if (d.mode === 'بالجيم') games[u] = d.games || 0;
       if (d.segs && d.segs.length > 1) segs[u] = d.segs;
       if (d.cust) cust[u] = d.cust;
       if (s.timers && s.timers[u]) timers[u] = s.timers[u];
     });
-    return { open: open, modes: modes, timers: timers, segs: segs, cust: cust, credits: s.credits || {} };
+    return { open: open, modes: modes, timers: timers, segs: segs, cust: cust, games: games, credits: s.credits || {} };
   }
   function fromCap(c, s) {
     s = s || seed(); var now = Date.now();
@@ -94,6 +95,7 @@ window.NLDemo = (function () {
       var mode = c.modes[u] || (prev && prev.mode);
       var nu = Object.assign({}, ACTIVE(prev) ? prev : { status: 'run', start: 'الآن', time: '' }, { orders: orders });
       if (mode) nu.mode = mode;
+      if (mode === 'بالجيم') nu.games = (c.games && c.games[u] != null) ? c.games[u] : (nu.games || 0);
       if (c.cust && c.cust[u]) nu.cust = c.cust[u]; else delete nu.cust;
       if (c.segs && c.segs[u] && c.segs[u].length > 1) nu.segs = c.segs[u];
       else       if (ACTIVE(prev) && prev.mode && c.modes[u] && c.modes[u] !== prev.mode) { var t0 = (s.timers[u] || {}).start || now; nu.segs = (prev.segs || [{ mode: prev.mode, start: t0 }]).concat([{ mode: c.modes[u], start: now }]); }
@@ -356,7 +358,10 @@ button{font-family:inherit;color:inherit}
                 <sc-if value="{{sel.canSwitch}}" hint-placeholder-val="{{false}}">
                   <button onClick="{{sel.switchMode}}" style="height: 30px; padding: 0 10px; border-radius: 8px; border: 1px solid #343A50; background: #151821; font-size: 12px; font-weight: 800; cursor: pointer; font-family: inherit">{{sel.switchText}}</button>
                 </sc-if>
+                <sc-if value="{{sel.canExtend}}" hint-placeholder-val="{{false}}"><sc-if value="{{sel.extClosed}}" hint-placeholder-val="{{true}}"><button onClick="{{sel.openExt}}" style="height: 30px; padding: 0 10px; border-radius: 8px; border: 2px dashed #5A6178; background: #151821; color: #C3C8D6; font-size: 12px; font-weight: 800; cursor: pointer; font-family: inherit">⏱ تمديد الوقت…</button></sc-if></sc-if>
               </div>
+              <sc-if value="{{sel.extOpen}}" hint-placeholder-val="{{false}}"><div style="display: flex; flex-direction: column; gap: 6px; border: 2px solid #C79100; background: #221D0F; border-radius: 10px; padding: 8px"><div style="display: flex; justify-content: space-between; align-items: center"><span style="font-size: 13px; font-weight: 800; color: #FFD27A">كم تمدد؟ العدّاد ما يرجع للصفر.</span><button onClick="{{sel.closeExt}}" style="height: 28px; padding: 0 10px; border-radius: 8px; border: 1px solid #343A50; background: #151821; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit">إلغاء</button></div><div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px"><sc-for list="{{sel.extends}}" as="x" hint-placeholder-count="4"><button onClick="{{x.pick}}" style="height: 40px; border-radius: 8px; border: 2px solid #8A92AB; background: #151821; color: #F2F3F7; font-size: 14px; font-weight: 800; cursor: pointer; font-family: inherit">{{x.name}}</button></sc-for></div></div></sc-if>
+              <sc-if value="{{sel.isGames}}" hint-placeholder-val="{{false}}"><div style="display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 10px; background: #0F2A24; border: 1px solid #0F7B6C"><span style="font-size: 20px; font-weight: 900; flex: 1">{{sel.gamesText}}</span><button onClick="{{sel.addGame}}" style="height: 44px; padding: 0 16px; border-radius: 10px; border: none; background: #C8102E; color: #FFFFFF; font-size: 16px; font-weight: 900; cursor: pointer; font-family: inherit">+ جيم</button><button onClick="{{sel.subGame}}" style="height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #343A50; background: #151821; color: #F2F3F7; font-size: 16px; font-weight: 800; cursor: pointer; font-family: inherit">− جيم</button></div></sc-if>
             </sc-if>
             <span style="font-size: 13px; font-weight: 800; color: #9AA0B4">الحساب</span>
             <sc-if value="{{sel.hasTimeCost}}" hint-placeholder-val="{{true}}">
@@ -408,8 +413,8 @@ button{font-family:inherit;color:inherit}
                 <div style="display: flex; flex-direction: column; gap: 8px">
                   <span style="font-size: 15px; font-weight: 800">1. نوع اللعب</span>
                   <div style="display: flex; gap: 8px">
-                    <button onClick="{{op.single}}" style="flex: 1; height: 64px; border-radius: 12px; border: none; background: {{accent}}; color: #FFFFFF; font-size: 20px; font-weight: 800; cursor: pointer">فردي</button>
-                    <button onClick="{{op.double}}" style="flex: 1; height: 64px; border-radius: 12px; border: none; background: #262B3B; color: #FFFFFF; font-size: 20px; font-weight: 800; cursor: pointer">زوجي</button>
+                    <button onClick="{{op.single}}" style="flex: 1; height: 64px; border-radius: 12px; border: none; background: {{accent}}; color: #FFFFFF; font-size: 20px; font-weight: 800; cursor: pointer">{{op.singleName}}</button>
+                    <button onClick="{{op.double}}" style="flex: 1; height: 64px; border-radius: 12px; border: none; background: #262B3B; color: #FFFFFF; font-size: 20px; font-weight: 800; cursor: pointer">{{op.doubleName}}</button>
                   </div>
                 </div>
               </sc-if>
@@ -855,6 +860,7 @@ class Component extends DCLogic {
     const hms = (ms) => { const t = Math.max(0, Math.floor(ms / 1000)); return pad(Math.floor(t / 3600)) + ':' + pad(Math.floor(t / 60) % 60) + ':' + pad(t % 60); };
     const PRICE = { single: [1500, 2500, 4000, 5000], double: [2500, 5000, 7500, 10000], elite: [1000, 1500, 2000, 2500], master: [1500, 2000, 2500, 3500], wheel: [2500, 5000, 7500, 10000], cinema: [2500, 5000, 7500, 10000], pool: [1500, 2500, 4000, 5000] };
     { const MO2 = window.NLDemo ? (window.NLDemo.get() || {}).menu : null; if (MO2 && MO2.price) Object.keys(MO2.price).forEach((k) => { PRICE[k] = MO2.price[k]; }); }
+    const GAME = ((window.NLDemo && (window.NLDemo.get() || {}).menu) || {}).gamePrice || 1000;
     const secOfU = (u) => Object.keys(S).find((k) => S[k].units.indexOf(u) >= 0);
     const tableOf = (u) => { const k = secOfU(u); const d = st.units[u] || {}; if (k === 'play') { if (u.indexOf('دركسون') === 0) return ['wheel', 'دركسون']; return d.mode === 'زوجي' ? ['double', 'بلاي زوجي'] : ['single', 'بلاي فردي']; } if (k === 'elite') return ['elite', 'إليت']; if (k === 'master') return ['master', 'ماستر']; if (k === 'cinema') return ['cinema', 'سينما']; if (k === 'pool') return ['pool', 'بلياردو بالساعة']; return null; };
     const billMin = (min) => { let h = Math.floor(min / 60); const rem = min - h * 60; let q = Math.floor(rem / 15); if (rem - q * 15 >= 8) q++; if (q === 4) { h++; q = 0; } if (h === 0 && q === 0) q = 1; return [h, q]; };
@@ -862,6 +868,7 @@ class Component extends DCLogic {
     const partCost = (key, min) => { const [h, q] = billMin(min); const P = PRICE[key]; return [h * P[3] + (q ? P[q - 1] : 0), durText(h, q)]; };
     const timeCost = (u) => {
       const t = st.timers[u]; const tb = tableOf(u); const d = st.units[u]; if (!t || !tb || !d) return { cost: 0, text: '', has: false, parts: [] };
+      if (d.mode === 'بالجيم') { const g = d.games || 0; return { cost: g * GAME, has: true, text: g + ' جيم × ' + fmt(GAME), costText: fmt(g * GAME), parts: [], multi: false }; }
       const end = st.payAt || st.now;
       const segs = (d.segs && d.segs.length > 1 && secOfU(u) === 'play') ? d.segs: null;
       if (!segs) { const [cost, dur] = partCost(tb[0], Math.floor((end - t.start) / 60000)); return { cost, has: true, text: tb[1] + ' · ' + dur, costText: fmt(cost), parts: [], multi: false }; }
@@ -906,7 +913,7 @@ class Component extends DCLogic {
       const sum = d && d.orders ? d.orders.reduce((a, o) => a + o[1], 0) : 0;
       let info = '—';
       const ti = tinfo(u);
-      if (s === 'run' || s === 'warn' || s === 'over') info = readOnly ? '' : (ti ? (ti.left !== null ? (s === 'over' ? 'انتهى' : 'باقي ' + hms(ti.left)) : hms(ti.el)) : fmt(sum));
+      if (s === 'run' || s === 'warn' || s === 'over') info = readOnly ? '' : (d.mode === 'بالجيم' ? (d.games || 0) + ' جيم · ' + hms(ti ? ti.el : 0) : ti ? (ti.left !== null ? (s === 'over' ? 'انتهى' : 'باقي ' + hms(ti.left)) : hms(ti.el)) : fmt(sum));
       if (s === 'booked') info = d.time;
       if (s === 'oos') info = '🛠 ' + (d.reason || 'عطل');
       const al = readOnly ? null: alertOf(u);
@@ -966,6 +973,12 @@ class Component extends DCLogic {
         canSwitch: !readOnly && active && secOfU(u) === 'play' && u.indexOf('دركسون') !== 0,
         switchText: 'تحويل إلى ' + ((d.mode || 'فردي') === 'زوجي' ? 'فردي' : 'زوجي'),
         switchMode: () => { const cur = d.mode || 'فردي'; const nm = cur === 'زوجي' ? 'فردي' : 'زوجي'; const t = st.timers[u]; const sg = (d.segs || (t ? [{ mode: cur, start: t.start }] : [])).concat([{ mode: nm, start: Date.now() }]); this.setState({ units: { ...st.units, [u]: { ...d, mode: nm, segs: sg } }, toast: u + ': انتهى جزء ' + cur + ' وبدأ ' + nm + ' من الآن، وكل جزء بسعر نوعه.' }); },
+        isGames: !readOnly && active && d.mode === 'بالجيم', gamesText: (d.games || 0) + ' جيم',
+        addGame: () => this.setState({ units: { ...st.units, [u]: { ...d, games: (d.games || 0) + 1 } }, toast: u + ': ' + ((d.games || 0) + 1) + ' جيم' }),
+        subGame: () => { if (!(d.games > 0)) return; this.setState({ units: { ...st.units, [u]: { ...d, games: d.games - 1 } }, toast: u + ': ' + (d.games - 1) + ' جيم' }); },
+        canExtend: !readOnly && active && !!tm && d.mode !== 'بالجيم', extOpen: !!st.extOpen && d.mode !== 'بالجيم', extClosed: !st.extOpen,
+        openExt: () => this.setState({ extOpen: true }), closeExt: () => this.setState({ extOpen: false }),
+        extends: [['+15', 15], ['+30', 30], ['+60', 60], ['مفتوح', null]].map(([n, m]) => ({ name: n, pick: () => { const t = st.timers[u]; if (!t) return; const nl = m === null ? null : Math.max(t.limit || 0, Math.ceil((st.now - t.start) / 60000)) + m; const base = m === null ? null : (t.limit && t.limit * 60000 > st.now - t.start ? t.limit + m : nl); this.setState({ timers: { ...st.timers, [u]: { ...t, limit: base } }, extOpen: false, toast: m === null ? u + ': صار وقت مفتوح، والعدّاد مستمر.' : u + ': تمدد ' + m + ' دقيقة. المدة الكلية صارت ' + base + ' دقيقة، والعدّاد ما يرجع من الصفر.' }); } })),
         tc: timeCost(u), hasTimeCost: !readOnly && active && timeCost(u).has,
         total: (d.orders || []).reduce((a, o) => a + o[1], 0) + timeCost(u).cost,
         totalText: fmt((d.orders || []).reduce((a, o) => a + o[1], 0) + timeCost(u).cost)
@@ -1044,13 +1057,14 @@ class Component extends DCLogic {
       cold: { name: 'بارد', icon: 'cold', tint: '#E9F1FB', items: [['ايس لاتيه كراميل', 4500], ['ايس سبانش لاتيه', 4500], ['ايس موكا', 4500], ['ايس امريكانو', 4000], ['ايس كابتشينو', 3500], ['ميلك شيك اوريو', 4000], ['سموذي مانغو', 4000], ['عصير برتقال', 3000], ['ماء', 500], ['قدح ثلج', 500]] },
       hot: { name: 'ساخن', icon: 'hot', tint: '#F6EDE2', items: [['شاي عراقي', 1000], ['شاي اخضر', 1000], ['تركية', 2000], ['كابتشينو عادي', 2000], ['كابتشينو نيكست لفل', 4000], ['نسكافيه', 3000], ['هوت شوكليت', 4000], ['موكا لاتيه', 5000]] },
       sweet: { name: 'حلويات', icon: 'sweet', tint: '#F7E8F1', items: [['كريب نوتيلا', 5000], ['كريب لوتس', 5000], ['وافل نوتيلا', 5000], ['إليت كوب', 4000], ['براونيز', 5000], ['اوريو بولز', 4000]] },
-      play: { name: 'العبها صح', icon: 'cold', tint: '#FBF3DC', items: [['مكسيكي ريدبول', 4000], ['ريدبول مكس', 4000], ['مكسيكي نكست لفل', 5000], ['كرزات', 3000], ['شامية', 1000]] }
+      play: { name: 'العبها صح', icon: 'cold', tint: '#FBF3DC', items: [['مكسيكي ريدبول', 4000], ['ريدبول مكس', 4000], ['مكسيكي نكست لفل', 5000], ['كرزات', 3000], ['شامية', 1000]] },
+      offers: { name: 'العروض', icon: 'sweet', tint: '#FDE8EC', items: [] }
     };
     const hookah = { name: 'النراجيل', icon: 'hookah', tint: '#ECEAF6', items: [['تفاحتين', 7000], ['انكليزي', 7000], ['ليمون ونعناع', 7000], ['علج ونعناع', 7000], ['عنب ونعناع', 7000], ['نكست لفل', 7000], ['إليت زون', 7000], ['علج فراولة', 7000], ['تغيير رأس', 4000]] };
-    const MO = window.NLDemo ? (window.NLDemo.get() || {}).menu : null; if (MO && MO.cats) { Object.keys(bar).forEach((k) => { if (MO.cats[k]) bar[k].items = MO.cats[k].items.filter((x) => !x[2]).map((x) => [x[0], x[1]]); }); if (MO.cats.hookah) hookah.items = MO.cats.hookah.items.filter((x) => !x[2]).map((x) => [x[0], x[1]]); }
-    const catColor = { mojito: '#1E8A4C', cold: '#2B5FD9', hot: '#B5651D', sweet: '#B8327A', play: '#C79100' };
+    const MO = window.NLDemo ? (window.NLDemo.get() || {}).menu : null; if (MO && MO.cats) { Object.keys(bar).forEach((k) => { if (MO.cats[k]) bar[k].items = MO.cats[k].items.filter((x) => !x[2]).map((x) => [x[0], x[1], x[3] || '']); }); if (MO.cats.hookah) hookah.items = MO.cats.hookah.items.filter((x) => !x[2]).map((x) => [x[0], x[1]]); }
+    const catColor = { mojito: '#1E8A4C', cold: '#2B5FD9', hot: '#B5651D', sweet: '#B8327A', play: '#C79100', offers: '#FA2949' };
     const priceOf = {}; const printerOf = {};
-    Object.keys(bar).forEach((k) => bar[k].items.forEach((i) => { priceOf[i[0]] = i[1]; printerOf[i[0]] = 'البارستا'; }));
+    Object.keys(bar).forEach((k) => bar[k].items.forEach((i) => { priceOf[i[0]] = i[1]; printerOf[i[0]] = k === 'offers' && hookah.items.some((hk) => String(i[2] || '').indexOf(hk[0]) >= 0) ? 'البارستا والنراجيل' : 'البارستا'; }));
     hookah.items.forEach((i) => { priceOf[i[0]] = i[1]; printerOf[i[0]] = 'النراجيل'; });
     const bigTab = (on) => 'flex: 1; height: 56px; border-radius: 12px; font-size: 19px; font-weight: 800; cursor: pointer; font-family: inherit; ' + (on ? 'background: #262B3B; color: #FFFFFF; border: 2px solid #8A92AB;' : 'background: #151821; color: #F2F3F7; border: 2px solid #343A50;');
     const ad = st.addOrd;
@@ -1071,7 +1085,7 @@ const FLAV = { 'تفاحتين': '#2E9E4F', 'انكليزي': '#8D5524', 'ليم
         groupBar: 'display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-radius: 12px; background: ' + (ad.dept === 'hookah' ? '#5B4FB5' : catColor[ad.cat]) + '22; border-right: 8px solid ' + (ad.dept === 'hookah' ? '#5B4FB5' : catColor[ad.cat]) + ';',
         groupTitle: ad.dept === 'hookah' ? 'النراجيل' : 'البارستا / ' + bar[ad.cat].name,
         groupPrinter: ad.dept === 'hookah' ? 'النراجيل' : 'البارستا',
-        items: group.items.map((i) => ({ name: i[0], priceText: fmt(isHk ? pp(i[0]) : i[1]), qty: qty[i[0]] || 0,
+        items: group.items.map((i) => ({ name: i[0] + (i[2] ? ' · يشمل: ' + i[2] : ''), priceText: fmt(isHk ? pp(i[0]) : i[1]), qty: qty[i[0]] || 0,
           imgStyle: 'height: 56px; background: ' + (isHk ? FLAV[i[0]] + '33' : catColor[ad.cat] + '22') + '; display: flex; align-items: center; justify-content: center;' + (isHk ? ' border-bottom: 6px solid ' + FLAV[i[0]] + ';' : ''),
           cardStyle: 'border-radius: 14px; background: #151821; overflow: hidden; display: flex; flex-direction: column; ' + ((qty[i[0]] || 0) > 0 ? 'border: 3px solid #8A92AB; box-shadow: 0 0 0 3px #C8102E;' : 'border: 1px solid #2E3448;'),
           isCold: group.icon === 'cold', isHot: group.icon === 'hot', isSweet: group.icon === 'sweet', isHookah: group.icon === 'hookah',
@@ -1163,19 +1177,22 @@ const FLAV = { 'تفاحتين': '#2E9E4F', 'انكليزي': '#8D5524', 'ليم
       people: (dk === 'admin' ? ['[إداري 1]', '[إداري 2]', '[إداري 3]'] : ['[موظف 1]', '[موظف 2]', '[موظف 3]']).map((n) => ({ name: n, style: pill2(st.discPerson === n), pick: () => this.setState({ discPerson: n }) }))
     };
     const isPsSel = st.sec === 'play' && !!st.selected && st.selected.indexOf('دركسون') !== 0;
+    const isPoolSel = st.sec === 'pool' && !!st.selected;
     const timedSel = ['play', 'elite', 'pool', 'master', 'cinema'].indexOf(st.sec) >= 0;
-    const startOpen = (m) => {
-      const u = st.selected; const mode = isPsSel ? st.opMode: (u && u.indexOf('دركسون') === 0 ? 'دركسون 10,000 د.ع للساعة' : null);
-      this.setState({ units: { ...st.units, [u]: { status: 'run', mode, start: '', time: '', orders: [] } }, timers: { ...st.timers, [u]: { start: Date.now(), limit: m } }, opMode: null, opMin: '', toast: 'فُتح ' + u + (isPsSel ? ' ' + st.opMode: '') + (m ? ' لمدة ' + m + ' دقيقة.' : ' وقت مفتوح.') });
+    const startOpen = (m, modeArg) => {
+      const u = st.selected; const mode = modeArg !== undefined ? modeArg : ((isPsSel || isPoolSel) ? st.opMode: (u && u.indexOf('دركسون') === 0 ? 'دركسون 10,000 د.ع للساعة' : null));
+      const nu = { status: 'run', mode, start: '', time: '', orders: [] }; if (mode === 'بالجيم') nu.games = 0;
+      this.setState({ units: { ...st.units, [u]: nu }, timers: { ...st.timers, [u]: { start: Date.now(), limit: mode === 'بالجيم' ? null : m } }, opMode: null, opMin: '', toast: 'فُتح ' + u + ((isPsSel || isPoolSel) && mode ? ' ' + mode: '') + (mode === 'بالجيم' ? '. بعد كل جيم اضغط «+ جيم»، والحساب = الجيمات × ' + fmt(GAME) + '.' : m ? ' لمدة ' + m + ' دقيقة.' : ' وقت مفتوح.') });
     };
     const opMin = st.opMin || '';
     const op = {
-      askMode: isPsSel && !st.opMode,
-      askDur: timedSel && (!isPsSel || !!st.opMode),
+      askMode: (isPsSel || isPoolSel) && !st.opMode,
+      askDur: timedSel && (!(isPsSel || isPoolSel) || !!st.opMode),
       plain: !timedSel,
-      durTitle: isPsSel ? '2. المدة (' + (st.opMode || '') + ')' : 'المدة',
-      single: () => this.setState({ opMode: 'فردي' }),
-      double: () => this.setState({ opMode: 'زوجي' }),
+      durTitle: (isPsSel || isPoolSel) ? '2. المدة (' + (st.opMode || '') + ')' : 'المدة',
+      singleName: isPoolSel ? 'بالساعة' : 'فردي', doubleName: isPoolSel ? 'بالجيم · ' + fmt(GAME) + ' للجيم' : 'زوجي',
+      single: () => this.setState({ opMode: isPoolSel ? 'بالساعة' : 'فردي' }),
+      double: () => { if (isPoolSel) startOpen(null, 'بالجيم'); else this.setState({ opMode: 'زوجي' }); },
       durs: [['مفتوح', null], ['15 د', 15], ['30 د', 30], ['45 د', 45], ['ساعة', 60], ['ساعتين', 120]].map(([n, m]) => ({ name: n, pick: () => startOpen(m) })),
       custom: opMin || '—',
       keys: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'مسح', 'ابدأ'].map((k) => ({

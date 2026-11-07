@@ -69,18 +69,19 @@ window.NLDemo = (function () {
       , sales: [], credits: { '07801234567': 2500 } }; }
   var ACTIVE = function (d) { return d && d.status !== 'booked' && d.status !== 'oos'; };
   function toCap(s) {
-    var open = {}, modes = {}, timers = {}, segs = {}, cust = {};
+    var open = {}, modes = {}, timers = {}, segs = {}, cust = {}, games = {};
     Object.keys(s.units || {}).forEach(function (u) {
       var d = s.units[u]; if (!ACTIVE(d)) return;
       var g = {}, order = [];
       (d.orders || []).forEach(function (o) { var k = o[0] + '|' + (o[2] || ''); if (!g[k]) { g[k] = { name: o[0], qty: 0, price: o[1], extra: '' }; if (o[2]) g[k].src = o[2]; order.push(k); } g[k].qty++; });
       open[u] = order.map(function (k) { return g[k]; });
-      if (d.mode === 'فردي' || d.mode === 'زوجي') modes[u] = d.mode;
+      if (d.mode === 'فردي' || d.mode === 'زوجي' || d.mode === 'بالجيم') modes[u] = d.mode;
+      if (d.mode === 'بالجيم') games[u] = d.games || 0;
       if (d.segs && d.segs.length > 1) segs[u] = d.segs;
       if (d.cust) cust[u] = d.cust;
       if (s.timers && s.timers[u]) timers[u] = s.timers[u];
     });
-    return { open: open, modes: modes, timers: timers, segs: segs, cust: cust, credits: s.credits || {} };
+    return { open: open, modes: modes, timers: timers, segs: segs, cust: cust, games: games, credits: s.credits || {} };
   }
   function fromCap(c, s) {
     s = s || seed(); var now = Date.now();
@@ -94,6 +95,7 @@ window.NLDemo = (function () {
       var mode = c.modes[u] || (prev && prev.mode);
       var nu = Object.assign({}, ACTIVE(prev) ? prev : { status: 'run', start: 'الآن', time: '' }, { orders: orders });
       if (mode) nu.mode = mode;
+      if (mode === 'بالجيم') nu.games = (c.games && c.games[u] != null) ? c.games[u] : (nu.games || 0);
       if (c.cust && c.cust[u]) nu.cust = c.cust[u]; else delete nu.cust;
       if (c.segs && c.segs[u] && c.segs[u].length > 1) nu.segs = c.segs[u];
       else       if (ACTIVE(prev) && prev.mode && c.modes[u] && c.modes[u] !== prev.mode) { var t0 = (s.timers[u] || {}).start || now; nu.segs = (prev.segs || [{ mode: prev.mode, start: t0 }]).concat([{ mode: c.modes[u], start: now }]); }
@@ -719,20 +721,23 @@ button{font-family:inherit}
         <sc-if value="{{menuV.notDev}}" hint-placeholder-val="{{true}}">
           <section style="background: #151821; border: 1px solid #3A4258; border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px">
             <h3 style="margin: 0 0 6px; font-size: 17px; font-weight: 900">{{menuV.catName}}</h3>
-            <div style="display: grid; grid-template-columns: minmax(0, 1fr) 130px 120px 90px; gap: 8px; font-size: 12px; font-weight: 800; color: #9AA0B4; padding-bottom: 4px; border-bottom: 1px solid #2A2F40">
-              <span>اسم الصنف</span><span>السعر (د.ع)</span><span>الحالة</span><span></span>
+            <sc-if value="{{menuV.isOffers}}" hint-placeholder-val="{{false}}"><div style="background: #2A1219; border: 1px solid #6A2436; border-radius: 12px; padding: 10px 14px; font-size: 14px; font-weight: 700; color: #FFB3C0">العرض يُباع بسعر الباقة سعرًا واحدًا، ومكوّناته تنطبع لأقسامها. اكتب الاسم والسعر وما يشمله.</div></sc-if>
+            <div style="{{menuV.headStyle}}">
+              <span>اسم الصنف</span><sc-if value="{{menuV.isOffers}}" hint-placeholder-val="{{false}}"><span>يشمل</span></sc-if><span>السعر (د.ع)</span><span>الحالة</span><span></span>
             </div>
             <sc-for list="{{menuV.items}}" as="it" hint-placeholder-count="6">
               <div style="{{it.rowStyle}}">
                 <input value="{{it.name}}" onInput="{{it.setName}}" readOnly="{{it.readOnly}}" aria-label="اسم الصنف" style="{{it.inStyle}}"/>
+                <sc-if value="{{it.isOffers}}" hint-placeholder-val="{{false}}"><input value="{{it.parts}}" onInput="{{it.setParts}}" readOnly="{{it.readOnly}}" aria-label="يشمل" placeholder="مثلًا: 2 موهيتو + نرجيلة" style="{{it.inStyle}}"/></sc-if>
                 <input value="{{it.price}}" onInput="{{it.setPrice}}" readOnly="{{it.readOnly}}" aria-label="السعر" inputmode="numeric" style="{{it.inStyle}}"/>
                 <button onClick="{{it.toggle}}" style="{{it.stStyle}}">{{it.statusText}}</button>
                 <button onClick="{{it.save}}" style="{{it.saveStyle}}">حفظ</button>
               </div>
             </sc-for>
             <sc-if value="{{menuV.canEdit}}" hint-placeholder-val="{{true}}">
-              <div style="display: grid; grid-template-columns: minmax(0, 1fr) 130px 210px; gap: 8px; align-items: center; margin-top: 10px; padding: 10px; border: 2px dashed #343A50; border-radius: 12px">
+              <div style="{{menuV.newStyle}}">
                 <input value="{{menuV.newName}}" onInput="{{menuV.setNewName}}" placeholder="اسم الصنف الجديد" style="{{menuV.inStyle}}"/>
+                <sc-if value="{{menuV.isOffers}}" hint-placeholder-val="{{false}}"><input value="{{menuV.newParts}}" onInput="{{menuV.setNewParts}}" placeholder="يشمل: …" style="{{menuV.inStyle}}"/></sc-if>
                 <input value="{{menuV.newPrice}}" onInput="{{menuV.setNewPrice}}" placeholder="السعر" inputmode="numeric" style="{{menuV.inStyle}}"/>
                 <button onClick="{{menuV.addItem}}" style="height: 42px; border-radius: 10px; border: none; background: #22C55E; color: #0B0D12; font-size: 14px; font-weight: 900; cursor: pointer; font-family: inherit">+ إضافة صنف لهذا القسم</button>
               </div>
@@ -759,6 +764,11 @@ button{font-family:inherit}
               </div>
             </sc-for>
             <div style="display: flex; justify-content: flex-end; margin-top: 8px"><button onClick="{{menuV.saveDev}}" style="{{menuV.saveDevStyle}}">حفظ أسعار الأجهزة</button></div>
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 10px; padding: 10px 12px; background: #0F2A24; border: 1px solid #0F7B6C; border-radius: 12px">
+              <span style="font-size: 14px; font-weight: 800">البلياردو بالجيم: سعر الجيم الواحد (الطاولة تفتح بالساعة أو بالجيم)</span>
+              <input value="{{menuV.gamePrice}}" onInput="{{menuV.setGamePrice}}" aria-label="سعر الجيم" inputmode="numeric" style="{{menuV.inStyle}}; width: 120px"/>
+              <button onClick="{{menuV.saveGamePrice}}" style="height: 42px; padding: 0 16px; border-radius: 10px; border: none; background: #0F7B6C; color: #FFFFFF; font-size: 14px; font-weight: 900; cursor: pointer; font-family: inherit">حفظ سعر الجيم</button>
+            </div>
           </section>
         </sc-if>
         <sc-if value="{{menuV.hasLog}}" hint-placeholder-val="{{false}}">
@@ -1015,13 +1025,14 @@ class Component extends DCLogic {
         hot: { name: 'ساخن', items: [['شاي عراقي', 1000], ['شاي اخضر', 1000], ['تركية', 2000], ['كابتشينو عادي', 2000], ['كابتشينو نيكست لفل', 4000], ['نسكافيه', 3000], ['هوت شوكليت', 4000], ['موكا لاتيه', 5000]] },
         sweet: { name: 'حلويات', items: [['كريب نوتيلا', 5000], ['كريب لوتس', 5000], ['وافل نوتيلا', 5000], ['إليت كوب', 4000], ['براونيز', 5000], ['اوريو بولز', 4000]] },
         play: { name: 'العبها صح', items: [['مكسيكي ريدبول', 4000], ['ريدبول مكس', 4000], ['مكسيكي نكست لفل', 5000], ['كرزات', 3000], ['شامية', 1000]] },
-        hookah: { name: 'النراجيل', items: [['تفاحتين', 7000], ['انكليزي', 7000], ['ليمون ونعناع', 7000], ['علج ونعناع', 7000], ['عنب ونعناع', 7000], ['نكست لفل', 7000], ['إليت زون', 7000], ['علج فراولة', 7000], ['تغيير رأس', 4000]] }
+        hookah: { name: 'النراجيل', items: [['تفاحتين', 7000], ['انكليزي', 7000], ['ليمون ونعناع', 7000], ['علج ونعناع', 7000], ['عنب ونعناع', 7000], ['نكست لفل', 7000], ['إليت زون', 7000], ['علج فراولة', 7000], ['تغيير رأس', 4000]] },
+        offers: { name: 'العروض', items: [] }
       },
-      wood: 5000,
+      wood: 5000, gamePrice: 1000,
       price: { single: [1500, 2500, 4000, 5000], double: [2500, 5000, 7500, 10000], elite: [1000, 1500, 2000, 2500], master: [1500, 2000, 2500, 3500], wheel: [2500, 5000, 7500, 10000], cinema: [2500, 5000, 7500, 10000], pool: [1500, 2500, 4000, 5000] }
     };
-    const MENU = st.menu || MENU0;
-    const PRICE_N = { single: 'بلاي ستيشن فردي', double: 'بلاي ستيشن زوجي', wheel: 'دركسون', elite: 'حاسبات إليت', master: 'ماستر', pool: 'بلياردو', cinema: 'سينما' };
+    const MENU = Object.assign({}, MENU0, st.menu || {}, { cats: Object.assign({}, MENU0.cats, (st.menu || {}).cats || {}) });
+    const PRICE_N = { single: 'بلاي ستيشن فردي', double: 'بلاي ستيشن زوجي', wheel: 'دركسون', elite: 'حاسبات إليت', master: 'ماستر', pool: 'بلياردو بالساعة', cinema: 'سينما' };
     const canMenu = has('menu');
     const mCat = st.mCat || 'mojito';
     const fN = (n) => Number(n || 0).toLocaleString('en-US');
@@ -1035,28 +1046,35 @@ class Component extends DCLogic {
     const isDev = mCat === 'dev';
     const mInput = 'height: 42px; border-radius: 10px; border: 1px solid #343A50; background: #0B0D12; color: #F2F3F7; padding: 0 10px; font-size: 15px; font-family: inherit; min-width: 0';
     const mItems = isDev ? [] : MENU.cats[mCat].items.map((it, i) => {
-      const key = mCat + ':' + i; const d = mDraft[key] || {}; const nm = d.name !== undefined ? d.name : it[0]; const pr = d.price !== undefined ? d.price : String(it[1]); const off = !!it[2];
-      const dirty = nm.trim() !== it[0] || toNum(pr) !== it[1];
-      return { name: nm, price: pr, off, statusText: off ? 'موقوف (نفد)' : 'متوفر',
-        rowStyle: 'display: grid; grid-template-columns: minmax(0, 1fr) 130px 120px 90px; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px dashed #2A2F40;' + (off ? ' opacity: .55;' : ''),
+      const key = mCat + ':' + i; const d = mDraft[key] || {}; const nm = d.name !== undefined ? d.name : it[0]; const pr = d.price !== undefined ? d.price : String(it[1]); const off = !!it[2]; const isOffers = mCat === 'offers'; const pt = d.parts !== undefined ? d.parts : (it[3] || '');
+      const dirty = nm.trim() !== it[0] || toNum(pr) !== it[1] || (isOffers && pt.trim() !== (it[3] || ''));
+      return { name: nm, price: pr, off, statusText: off ? 'موقوف (نفد)' : 'متوفر', isOffers, parts: pt,
+        setParts: (e) => this.setState({ mDraft: { ...mDraft, [key]: { ...d, parts: e.target.value } } }),
+        rowStyle: 'display: grid; grid-template-columns: ' + (isOffers ? 'minmax(0, 1fr) minmax(0, 1fr) 130px 120px 90px' : 'minmax(0, 1fr) 130px 120px 90px') + '; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px dashed #2A2F40;' + (off ? ' opacity: .55;' : ''),
         inStyle: mInput + (canMenu ? '' : '; opacity: .7'), readOnly: !canMenu,
         setName: (e) => this.setState({ mDraft: { ...mDraft, [key]: { ...d, name: e.target.value } } }),
         setPrice: (e) => this.setState({ mDraft: { ...mDraft, [key]: { ...d, price: e.target.value } } }),
         stStyle: 'height: 42px; border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; font-family: inherit; ' + (off ? 'background: #2A1219; color: #FF5A72; border: 1px solid #6A2436;' : 'background: #0F2A1A; color: #4ADE80; border: 1px solid #1E8A4C;'),
         toggle: () => { const m = clone(MENU); m.cats[mCat].items[i][2] = !off; setMenu(m, (off ? 'رجّع ' : 'أوقف ') + it[0] + (off ? ' للمنيو' : ' (نفد)')); },
         saveStyle: 'height: 42px; border-radius: 10px; border: none; font-size: 14px; font-weight: 900; font-family: inherit; ' + (dirty ? 'background: #FA2949; color: #FFFFFF; cursor: pointer;' : 'background: #1C2030; color: #5A6178; cursor: default;'),
-        save: () => { if (!dirty) return; const np = toNum(pr); if (!nm.trim() || !np) { this._toast('الاسم والسعر لازم يكونون مكتوبين.'); return; } const m = clone(MENU); m.cats[mCat].items[i][0] = nm.trim(); m.cats[mCat].items[i][1] = np; const parts = []; if (nm.trim() !== it[0]) parts.push('غيّر اسم «' + it[0] + '» إلى «' + nm.trim() + '»'); if (np !== it[1]) parts.push('غيّر سعر «' + nm.trim() + '» من ' + fN(it[1]) + ' إلى ' + fN(np)); setMenu(m, parts.join(' و')); } };
+        save: () => { if (!dirty) return; const np = toNum(pr); if (!nm.trim() || !np) { this._toast('الاسم والسعر لازم يكونون مكتوبين.'); return; } const m = clone(MENU); m.cats[mCat].items[i][0] = nm.trim(); m.cats[mCat].items[i][1] = np; if (isOffers) { m.cats[mCat].items[i][2] = !!m.cats[mCat].items[i][2]; m.cats[mCat].items[i][3] = pt.trim(); } const parts = []; if (nm.trim() !== it[0]) parts.push('غيّر اسم «' + it[0] + '» إلى «' + nm.trim() + '»'); if (np !== it[1]) parts.push('غيّر سعر «' + nm.trim() + '» من ' + fN(it[1]) + ' إلى ' + fN(np)); if (isOffers && pt.trim() !== (it[3] || '')) parts.push('غيّر مكوّنات عرض «' + nm.trim() + '»'); setMenu(m, parts.join(' و')); } };
     });
-    const nw = st.mNew || { name: '', price: '' };
+    const nw = st.mNew || { name: '', price: '', parts: '' };
     const devRows = !isDev ? [] : Object.keys(PRICE_N).map((k) => ({ name: PRICE_N[k], cells: [0, 1, 2, 3].map((j) => { const key = 'dev:' + k + ':' + j; const v = mDraft[key] !== undefined ? mDraft[key] : String(MENU.price[k][j]); return { val: v, set: (e) => this.setState({ mDraft: { ...mDraft, [key]: e.target.value } }), inStyle: mInput + '; width: 100%; text-align: center' + (toNum(v) !== MENU.price[k][j] ? '; border-color: #FA2949' : '') }; }) }));
     const devDirty = isDev && Object.keys(mDraft).some((k) => k.indexOf('dev:') === 0);
     const menuV = {
       cats: mCats, isDev, notDev: !isDev, items: mItems, canEdit: canMenu, cantEdit: !canMenu,
-      catName: isDev ? 'أسعار الأجهزة' : MENU.cats[mCat].name, isHookah: mCat === 'hookah',
+      catName: isDev ? 'أسعار الأجهزة' : MENU.cats[mCat].name, isHookah: mCat === 'hookah', isOffers: mCat === 'offers',
+      headStyle: 'display: grid; grid-template-columns: ' + (mCat === 'offers' ? 'minmax(0, 1fr) minmax(0, 1fr) 130px 120px 90px' : 'minmax(0, 1fr) 130px 120px 90px') + '; gap: 8px; font-size: 12px; font-weight: 800; color: #9AA0B4; padding-bottom: 4px; border-bottom: 1px solid #2A2F40',
+      newStyle: 'display: grid; grid-template-columns: ' + (mCat === 'offers' ? 'minmax(0, 1fr) minmax(0, 1fr) 130px 210px' : 'minmax(0, 1fr) 130px 210px') + '; gap: 8px; align-items: center; margin-top: 10px; padding: 10px; border: 2px dashed #343A50; border-radius: 12px',
+      newParts: nw.parts || '', setNewParts: (e) => this.setState({ mNew: { ...nw, parts: e.target.value } }),
+      gamePrice: mDraft.gamePrice !== undefined ? mDraft.gamePrice : String(MENU.gamePrice || 1000),
+      setGamePrice: (e) => this.setState({ mDraft: { ...mDraft, gamePrice: e.target.value } }),
+      saveGamePrice: () => { const np = toNum(mDraft.gamePrice); if (!np || np === MENU.gamePrice) return; const m = clone(MENU); m.gamePrice = np; setMenu(m, 'غيّر سعر جيم البلياردو من ' + fN(MENU.gamePrice) + ' إلى ' + fN(np)); },
       newName: nw.name, newPrice: nw.price, inStyle: mInput,
       setNewName: (e) => this.setState({ mNew: { ...nw, name: e.target.value } }),
       setNewPrice: (e) => this.setState({ mNew: { ...nw, price: e.target.value } }),
-      addItem: () => { const np = toNum(nw.price); if (!nw.name.trim() || !np) { this._toast('اكتب اسم الصنف وسعره.'); return; } const m = clone(MENU); m.cats[mCat].items.push([nw.name.trim(), np]); this.setState({ mNew: { name: '', price: '' } }); setMenu(m, 'أضاف «' + nw.name.trim() + '» بسعر ' + fN(np) + ' إلى ' + MENU.cats[mCat].name); },
+      addItem: () => { const np = toNum(nw.price); if (!nw.name.trim() || !np) { this._toast('اكتب اسم الصنف وسعره.'); return; } const m = clone(MENU); m.cats[mCat].items.push(mCat === 'offers' ? [nw.name.trim(), np, false, (nw.parts || '').trim()] : [nw.name.trim(), np]); this.setState({ mNew: { name: '', price: '', parts: '' } }); setMenu(m, 'أضاف «' + nw.name.trim() + '» بسعر ' + fN(np) + ' إلى ' + MENU.cats[mCat].name + (mCat === 'offers' && (nw.parts || '').trim() ? ' (يشمل: ' + nw.parts.trim() + ')' : '')); },
       wood: mDraft.wood !== undefined ? mDraft.wood : String(MENU.wood),
       setWood: (e) => this.setState({ mDraft: { ...mDraft, wood: e.target.value } }),
       saveWood: () => { const np = toNum(mDraft.wood); if (!np || np === MENU.wood) return; const m = clone(MENU); m.wood = np; setMenu(m, 'غيّر سعر النرجيلة الخشب من ' + fN(MENU.wood) + ' إلى ' + fN(np)); },

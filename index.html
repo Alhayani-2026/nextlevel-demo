@@ -90,18 +90,19 @@ window.NLDemo = (function () {
       , sales: [], credits: { '07801234567': 2500 } }; }
   var ACTIVE = function (d) { return d && d.status !== 'booked' && d.status !== 'oos'; };
   function toCap(s) {
-    var open = {}, modes = {}, timers = {}, segs = {}, cust = {};
+    var open = {}, modes = {}, timers = {}, segs = {}, cust = {}, games = {};
     Object.keys(s.units || {}).forEach(function (u) {
       var d = s.units[u]; if (!ACTIVE(d)) return;
       var g = {}, order = [];
       (d.orders || []).forEach(function (o) { var k = o[0] + '|' + (o[2] || ''); if (!g[k]) { g[k] = { name: o[0], qty: 0, price: o[1], extra: '' }; if (o[2]) g[k].src = o[2]; order.push(k); } g[k].qty++; });
       open[u] = order.map(function (k) { return g[k]; });
-      if (d.mode === 'فردي' || d.mode === 'زوجي') modes[u] = d.mode;
+      if (d.mode === 'فردي' || d.mode === 'زوجي' || d.mode === 'بالجيم') modes[u] = d.mode;
+      if (d.mode === 'بالجيم') games[u] = d.games || 0;
       if (d.segs && d.segs.length > 1) segs[u] = d.segs;
       if (d.cust) cust[u] = d.cust;
       if (s.timers && s.timers[u]) timers[u] = s.timers[u];
     });
-    return { open: open, modes: modes, timers: timers, segs: segs, cust: cust, credits: s.credits || {} };
+    return { open: open, modes: modes, timers: timers, segs: segs, cust: cust, games: games, credits: s.credits || {} };
   }
   function fromCap(c, s) {
     s = s || seed(); var now = Date.now();
@@ -115,6 +116,7 @@ window.NLDemo = (function () {
       var mode = c.modes[u] || (prev && prev.mode);
       var nu = Object.assign({}, ACTIVE(prev) ? prev : { status: 'run', start: 'الآن', time: '' }, { orders: orders });
       if (mode) nu.mode = mode;
+      if (mode === 'بالجيم') nu.games = (c.games && c.games[u] != null) ? c.games[u] : (nu.games || 0);
       if (c.cust && c.cust[u]) nu.cust = c.cust[u]; else delete nu.cust;
       if (c.segs && c.segs[u] && c.segs[u].length > 1) nu.segs = c.segs[u];
       else       if (ACTIVE(prev) && prev.mode && c.modes[u] && c.modes[u] !== prev.mode) { var t0 = (s.timers[u] || {}).start || now; nu.segs = (prev.segs || [{ mode: prev.mode, start: t0 }]).concat([{ mode: c.modes[u], start: now }]); }
