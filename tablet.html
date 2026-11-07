@@ -182,7 +182,7 @@ window.NLDemo = (function () {
 <style>
 body{margin:0;font-family:'Cairo',system-ui,sans-serif;color:#F2F3F7;background:#2E3548}
 button,input{font-family:inherit;color:inherit}
-@media (orientation: portrait), (max-width: 1000px){.nl-add{flex-direction:column !important}.nl-add-main{flex:1 1 auto !important;min-height:0 !important}.nl-add-aside{width:auto !important;flex-shrink:0 !important;max-height:34%;border-right:none !important;border-top:2px solid #FA2949 !important}.nl-add-head{display:none !important}.nl-add-foot{flex-direction:row !important;flex-wrap:wrap;align-items:center}.nl-add-foot>button{flex:1 1 240px}.nl-add-foot>div{gap:12px}.nl-unit{flex-direction:column !important;gap:14px !important;padding:16px 20px !important;overflow-y:auto}.nl-unit-sec{flex:0 0 auto !important;max-height:none}.nl-unit-aside{width:auto !important}.nl-units{grid-template-columns:repeat(4,minmax(0,1fr)) !important;gap:14px !important}.nl-units>button{min-height:150px !important}.nl-units>button>span:nth-last-of-type(2){font-size:28px !important}.nl-units>button>span:last-of-type{font-size:17px !important;font-weight:700}.nl-units svg{width:52px;height:52px}}
+@media (orientation: portrait), (max-width: 1000px){.nl-add{flex-direction:column !important}.nl-add-main{flex:1 1 auto !important;min-height:0 !important}.nl-add-aside{width:auto !important;flex-shrink:0 !important;max-height:26vh;border-right:none !important;border-top:2px solid #FA2949 !important}.nl-add-head{display:none !important}.nl-cart-line{padding:5px 0 !important}.nl-cart-line button{min-height:34px !important}.nl-cart-pr{display:none}.nl-add-foot{padding:10px 20px !important}.nl-add-foot>button{height:52px !important}.nl-add-foot{flex-direction:row !important;flex-wrap:wrap;align-items:center}.nl-add-foot>button{flex:1 1 240px}.nl-add-foot>div{gap:12px}.nl-unit{flex-direction:column !important;gap:14px !important;padding:16px 20px !important;overflow-y:auto}.nl-unit-sec{flex:0 0 auto !important;max-height:none}.nl-unit-aside{width:auto !important}.nl-units{grid-template-columns:repeat(4,minmax(0,1fr)) !important;gap:14px !important}.nl-units>button{min-height:150px !important}.nl-units>button>span:nth-last-of-type(2){font-size:28px !important}.nl-units>button>span:last-of-type{font-size:17px !important;font-weight:700}.nl-units svg{width:52px;height:52px}}
 @keyframes nlpulse{0%,100%{box-shadow:0 0 0 0 rgba(200,16,46,0.7)}50%{box-shadow:0 0 0 8px rgba(200,16,46,0)}}
 </style>
 </helmet>
@@ -509,11 +509,11 @@ button,input{font-family:inherit;color:inherit}
             <span style="font-size: 14px; color: #9AA0B4; padding-top: 8px">اختر البارستا أو النراجيل، ثم اضغط على الصنف: كل ضغطة تزيد واحد، وزر − يقلّل.</span>
           </sc-if>
           <sc-for list="{{cart}}" as="l" hint-placeholder-count="3">
-            <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #2E3448; gap: 8px">
+            <div class="nl-cart-line" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #2E3448; gap: 8px">
               <div style="display: flex; flex-direction: column; min-width: 0">
                 <span style="font-size: 15px; font-weight: 700">{{l.qty}} × {{l.name}}</span>
                 <span style="{{l.extraStyle}}">{{l.extra}}</span>
-                <span style="font-size: 12px; color: #C3C8D6">يُطبع على: طابعة {{l.printer}}</span>
+                <span class="nl-cart-pr" style="font-size: 12px; color: #C3C8D6">يُطبع على: طابعة {{l.printer}}</span>
               </div>
               <button onClick="{{l.edit}}" style="min-height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid #343A50; background: #151821; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap">ملاحظة</button>
             </div>
