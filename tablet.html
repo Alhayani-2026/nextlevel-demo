@@ -577,16 +577,45 @@ button,input{font-family:inherit;color:inherit}
           </div>
           <button onClick="{{closeMove}}" aria-label="إغلاق" style="width: 44px; height: 44px; border-radius: 10px; border: 1px solid #343A50; background: #151821; font-size: 20px; cursor: pointer">×</button>
         </div>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap">
-          <sc-for list="{{move.tabs}}" as="t" hint-placeholder-count="3">
-            <button onClick="{{t.pick}}" style="{{t.style}}">{{t.name}}</button>
-          </sc-for>
-        </div>
-        <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; overflow-y: auto">
-          <sc-for list="{{move.targets}}" as="m" hint-placeholder-count="8">
-            <button onClick="{{m.pick}}" style="{{m.style}}">{{m.name}}</button>
-          </sc-for>
-        </div>
+        <sc-if value="{{move.listing}}" hint-placeholder-val="{{true}}">
+          <div style="display: flex; flex-direction: column; gap: 14px; min-height: 0">
+            <div style="display: flex; gap: 8px; flex-wrap: wrap">
+              <sc-for list="{{move.tabs}}" as="t" hint-placeholder-count="3">
+                <button onClick="{{t.pick}}" style="{{t.style}}">{{t.name}}</button>
+              </sc-for>
+            </div>
+            <div style="font-size: 14px; color: #C3C8D6">الجهاز المفتوح: الزبون ينضم لجماعته ووقته يصير مبلغ ثابت على حسابهم. الجهاز الفارغ: ينفتح بسعره.</div>
+            <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; overflow-y: auto; max-height: 420px">
+              <sc-for list="{{move.targets}}" as="m" hint-placeholder-count="8">
+                <button onClick="{{m.pick}}" style="{{m.style}}">{{m.name}}</button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{move.confirm}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; flex-direction: column; gap: 14px">
+            <div style="font-size: 20px; font-weight: 800">{{move.cTitle}}</div>
+            <div style="font-size: 16px; color: #C3C8D6; line-height: 1.7">{{move.cText}}</div>
+            <sc-if value="{{move.cModes}}" hint-placeholder-val="{{false}}">
+              <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                <sc-for list="{{move.cModes}}" as="c" hint-placeholder-count="2">
+                  <button onClick="{{c.pick}}" style="{{c.style}}">{{c.name}}</button>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{move.cDurs}}" hint-placeholder-val="{{false}}">
+              <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                <sc-for list="{{move.cDurs}}" as="c" hint-placeholder-count="5">
+                  <button onClick="{{c.pick}}" style="{{c.style}}">{{c.name}}</button>
+                </sc-for>
+              </div>
+            </sc-if>
+            <div style="display: flex; gap: 10px">
+              <button onClick="{{move.cGo}}" style="flex: 1; height: 60px; border-radius: 12px; border: none; background: #C8102E; color: #FFFFFF; font-size: 18px; font-weight: 800; cursor: pointer; font-family: inherit">تأكيد النقل</button>
+              <button onClick="{{move.cBack}}" style="width: 160px; height: 60px; border-radius: 12px; border: 1px solid #343A50; background: #151821; color: #F2F3F7; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit">رجوع</button>
+            </div>
+          </div>
+        </sc-if>
         <div style="background: #2A1219; border-radius: 10px; padding: 10px 14px; font-size: 14px; color: #FF8597; font-weight: 600">لا نقل بين الطابق العلوي والأرضي. الزبون يحاسب أولًا عند كاشير طابقه.</div>
       </div>
     </div>
@@ -841,26 +870,60 @@ const FLAV = { 'تفاحتين': '#2E9E4F', 'انكليزي': '#8D5524', 'ليم
     if (st.move && sec) {
       const tabs = Object.keys(S).filter((k) => S[k].floor === sec.floor);
       const tabKey = st.moveTab && tabs.indexOf(st.moveTab) >= 0 ? st.moveTab: st.sec;
+      const from = st.unit; const fromT = st.timers[from]; const fromMode = (st.modes || {})[from];
+      const secOfK = (u) => Object.keys(S).find((k) => S[k].units.indexOf(u) >= 0);
+      const timedK = (k) => ['play', 'pc', 'pool', 'room'].indexOf(S[k].kind) >= 0;
+      const rateOfK = (k, u, mode) => { const kind = S[k].kind; if (kind === 'play') return u.indexOf('دركسون') === 0 ? 'wheel' : (mode === 'زوجي' ? 'double' : 'single'); if (k === 'elite') return 'elite'; if (k === 'master') return 'master'; if (kind === 'room') return 'cinema'; if (kind === 'pool') return 'pool'; return null; };
+      const fromRate = fromT ? (fromMode === 'بالجيم' ? 'games' : rateOfK(st.sec, from, fromMode)) : null;
+      const tc = timeCost(from); const money = tc.has && tc.cost ? tc.costText : '';
+      const oldLine = () => (tc.has && tc.cost ? [{ name: 'وقت سابق: ' + from + ' (' + tc.text + ') حتى ' + clk(Date.now()), qty: 1, price: tc.cost, extra: '' }] : []);
+      const left = fromT && fromT.limit ? Math.ceil(fromT.limit - (Date.now() - fromT.start) / 60000) : null;
+      const defLim = left && left > 0 ? left : null;
+      const howOf = (u) => { const k = secOfK(u); if (st.open[u] !== undefined) return 'join'; if (!timedK(k)) return 'table'; if (fromT && fromRate !== 'games' && rateOfK(k, u, fromMode) === fromRate) return 'carry'; return 'open'; };
+      const reset = { move: null, moveTab: null, movePick: null, moveMode: null, moveLim: undefined };
+      const commit = (u, how, mode, lim) => {
+        const k = secOfK(u); const now = Date.now();
+        const nx = { ...st.open }; const tx = { ...st.timers }; const mx = { ...st.modes }; const sx = { ...(st.segs || {}) }; const gmx = { ...(st.games || {}) }; const cx = { ...(st.cust || {}) };
+        const carried = (nx[from] || []).concat(how === 'carry' ? [] : oldLine());
+        if (how === 'join') nx[u] = (nx[u] || []).concat(carried);
+        else if (how === 'carry') { nx[u] = carried; tx[u] = fromT; if (mx[from]) mx[u] = mx[from]; if (sx[from]) sx[u] = sx[from]; if (gmx[from] !== undefined) gmx[u] = gmx[from]; }
+        else if (how === 'open') { nx[u] = carried; tx[u] = { start: now, limit: lim }; if (S[k].kind === 'play' && u.indexOf('دركسون') !== 0) mx[u] = mode || 'فردي'; }
+        else nx[u] = carried;
+        if (how !== 'join' && cx[from]) cx[u] = cx[from];
+        delete nx[from]; delete tx[from]; delete mx[from]; delete sx[from]; delete gmx[from]; delete cx[from];
+        const msg = how === 'join' ? from + ' انضم إلى ' + u + '. وقته وطلباته صارت على حساب ' + u + '، و' + from + ' صار فارغ.' : how === 'open' ? 'انفتح ' + u + ' هسه بسعره' + (mode ? ' ' + mode : '') + (lim ? ' لمدة ' + lim + ' دقيقة' : ' وقت مفتوح') + '، وحساب ' + from + ' انتقل وياه. صار بذمة كابتن ' + S[k].name + '.' : 'نُقل الزبون من ' + from + ' إلى ' + u + ' مع طلباته. صار بذمة كابتن ' + S[k].name + '.';
+        this.setState({ ...reset, cust: cx, open: nx, timers: tx, modes: mx, segs: sx, games: gmx, screen: 'units', unit: null, toast: msg });
+      };
+      let conf = null;
+      const pu = st.movePick; const phow = pu ? howOf(pu) : null;
+      if (pu && phow) {
+        const isPs = S[secOfK(pu)].kind === 'play' && pu.indexOf('دركسون') !== 0;
+        const mode = st.moveMode || (fromMode === 'زوجي' ? 'زوجي' : 'فردي');
+        const lim = st.moveLim === undefined ? defLim : st.moveLim;
+        const text = phow === 'join' ? (money ? 'وقت ' + from + ' لحد هسه (' + money + ') يصير مبلغ ثابت، وينضاف ويّا طلباته على حساب ' + pu + '. ' + from + ' يصير فارغ.' : 'طلبات ' + from + ' تنضاف على حساب ' + pu + '، و' + from + ' يصير فارغ.')
+          : phow === 'carry' ? 'نفس السعر: الجلسة تنتقل إلى ' + pu + ' كما هي والوقت مستمر.'
+          : phow === 'open' ? (money ? 'وقت ' + from + ' لحد هسه (' + money + ') يصير مبلغ ثابت على الحساب. ' : '') + pu + ' ينفتح هسه بسعره. ' + (isPs ? 'اختار فردي أو زوجي والمدة:' : 'اختار المدة:')
+          : (money ? 'وقت ' + from + ' لحد هسه (' + money + ') يصير مبلغ ثابت على حساب ' + pu + ' ويّا الطلبات.' : 'الطلبات تنتقل إلى ' + pu + '.');
+        const durs = (defLim && [30, 60, 90, 120].indexOf(defLim) < 0 ? [['باقي مدته ' + defLim + ' د', defLim]] : []).concat([['مفتوح', null], ['30 د', 30], ['60 د', 60], ['90 د', 90], ['120 د', 120]]);
+        conf = {
+          cTitle: phow === 'join' ? from + ' ينضم إلى ' + pu : 'نقل ' + from + ' إلى ' + pu,
+          cText: text,
+          cModes: phow === 'open' && isPs ? ['فردي', 'زوجي'].map((x) => ({ name: x, style: chip(mode === x), pick: () => this.setState({ moveMode: x }) })) : null,
+          cDurs: phow === 'open' ? durs.map(([n, v]) => ({ name: n, style: chip(lim === v), pick: () => this.setState({ moveLim: v }) })) : null,
+          cGo: () => commit(pu, phow, phow === 'open' && isPs ? mode : null, phow === 'open' ? lim : null),
+          cBack: () => this.setState({ movePick: null, moveMode: null, moveLim: undefined })
+        };
+      }
       move = {
+        listing: !conf, confirm: !!conf, ...(conf || {}),
         floorNote: sec.floor === 'g' ? 'تظهر أقسام الطابق الأرضي فقط.' : 'داخل الطابق العلوي فقط.',
         tabs: tabs.map((k) => ({ name: S[k].name, style: chip(tabKey === k), pick: () => this.setState({ moveTab: k }) })),
-        targets: S[tabKey].units.filter((u) => u !== st.unit).map((u) => {
-          const busy = st.open[u] !== undefined;
+        targets: S[tabKey].units.filter((u) => u !== from).map((u) => {
+          const how = howOf(u);
           return {
-            name: busy ? u + ' (مشغول)' : u,
-            style: 'height: 64px; border-radius: 12px; font-size: 16px; font-weight: 700; font-family: inherit; ' + (busy ? 'background: #0B0D12; color: #8A90A4; border: 1px solid #262B3B; cursor: not-allowed;' : 'background: #151821; color: #F2F3F7; border: 1px solid #343A50; cursor: pointer;'),
-            pick: () => {
-              if (busy) return;
-              const nx = { ...st.open }; nx[u] = (nx[st.unit] || []).slice(); delete nx[st.unit];
-              const toTimed = ['play', 'pc', 'pool', 'room'].indexOf(S[tabKey].kind) >= 0;
-              const tx = { ...st.timers }; const mx = { ...st.modes }; const sx = { ...(st.segs || {}) };
-              if (tx[st.unit]) { if (toTimed) { tx[u] = tx[st.unit]; } else { const tcm = timeCost(st.unit); if (tcm.has && tcm.cost) nx[u].push({ name: 'وقت ' + st.unit + ' (' + tcm.text + ')', qty: 1, price: tcm.cost, extra: '' }); } delete tx[st.unit]; }
-              else if (toTimed) tx[u] = { start: Date.now(), limit: null };
-              if (toTimed && S[tabKey].kind === 'play' && u.indexOf('دركسون') !== 0) { mx[u] = mx[st.unit] || 'فردي'; if (sx[st.unit]) sx[u] = sx[st.unit]; }
-              delete mx[st.unit]; delete sx[st.unit];
-              const cx = { ...(st.cust || {}) }; if (cx[st.unit]) { cx[u] = cx[st.unit]; delete cx[st.unit]; }
-              this.setState({ cust: cx, open: nx, timers: tx, modes: mx, segs: sx, move: null, moveTab: null, screen: 'units', unit: null, toast: 'نُقل الزبون من ' + st.unit + ' إلى ' + u + ' مع طلباته. صار بذمة كابتن ' + S[tabKey].name + '.' });
-            }
+            name: how === 'join' ? u + ' (مفتوح · انضمام)' : u,
+            style: 'height: 64px; border-radius: 12px; font-size: 16px; font-weight: 700; font-family: inherit; cursor: pointer; ' + (how === 'join' ? 'background: #1C2130; color: #FFFFFF; border: 2px solid #8A92AB;' : 'background: #151821; color: #F2F3F7; border: 1px solid #343A50;'),
+            pick: () => this.setState({ movePick: u, moveMode: null, moveLim: undefined })
           };
         })
       };
@@ -929,8 +992,8 @@ const FLAV = { 'تفاحتين': '#2E9E4F', 'انكليزي': '#8D5524', 'ليم
       startCustom: () => { const m = parseInt(String(st.customMin).replace(/[^0-9٠-٩]/g, '').replace(/[٠-٩]/g, (d) => d.charCodeAt(0) - 1632), 10); if (m > 0) startTimer(m); else this.setState({ toast: 'اكتب عدد الدقائق.' }); },
       switchMode: () => { const cur = st.modes[st.unit] || 'فردي'; const nm = cur === 'فردي' ? 'زوجي' : 'فردي'; const t = st.timers[st.unit]; const sg = ((st.segs || {})[st.unit] || (t ? [{ mode: cur, start: t.start }] : [])).concat([{ mode: nm, start: Date.now() }]); this.setState({ segs: { ...(st.segs || {}), [st.unit]: sg }, modes: { ...st.modes, [st.unit]: nm }, toast: st.unit + ': انتهى الجزء الأول وبدأ ' + nm + ' من الآن، وكل جزء بسعر نوعه.' }); },
       goAdd: () => this.setState({ screen: 'add', qty: {}, lineNotes: {}, toast: '' }),
-      openMove: () => this.setState({ move: true, moveTab: null, toast: '' }),
-      closeMove: () => this.setState({ move: null }),
+      openMove: () => this.setState({ move: true, moveTab: null, movePick: null, moveMode: null, moveLim: undefined, toast: '' }),
+      closeMove: () => this.setState({ move: null, movePick: null, moveMode: null, moveLim: undefined }),
       closeSheet: () => this.setState({ sheet: null }),
       who: st.who || '—',
       toast: (() => { if (st.toast !== this._lt) { this._lt = st.toast; this._tt = Date.now(); } return st.toast && (Date.now() - this._tt < 5000) ? st.toast: ''; })(), toastStyle: (/^(أُرسل|أُضيف|تمت|فُتح|انفتحت|سُجّلت|نُقل)/.test(st.toast || '') ? 'border: 3px solid #1E8A4C;' : 'border: 3px solid #F5A623;'),
