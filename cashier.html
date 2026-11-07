@@ -394,7 +394,12 @@ button{font-family:inherit;color:inherit}
                 <button onClick="{{openMove}}" style="height: 42px; border-radius: 10px; border: 2px solid #8A92AB; background: #151821; font-size: 14px; font-weight: 800; cursor: pointer">نقل</button>
                 <button onClick="{{openPay}}" style="height: 42px; border-radius: 10px; border: none; background: {{accent}}; color: #FFFFFF; font-size: 16px; font-weight: 800; cursor: pointer">محاسبة</button>
               </div>
-              <button onClick="{{openCb}}" style="height: 38px; border-radius: 10px; border: 1px solid #343A50; background: #151821; color: #C3C8D6; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit">إلغاء الحساب ({{sel.totalText}})</button>
+              <sc-if value="{{sel.note}}" hint-placeholder-val="{{false}}">
+                <div style="background: #3A2A10; border: 1px solid #F5A623; border-radius: 10px; padding: 8px 12px; font-size: 13px; color: #FFE2B0; line-height: 1.6"><b>ملاحظة مفتوحة:</b> {{sel.noteText}}</div>
+              </sc-if>
+              <sc-if value="{{sel.canNote}}" hint-placeholder-val="{{true}}">
+                <button onClick="{{openCb}}" style="height: 38px; border-radius: 10px; border: 1px solid #343A50; background: #151821; color: #C3C8D6; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit">بلّغ عن مشكلة بهذا الحساب</button>
+              </sc-if>
             </div>
           </sc-if>
           <sc-if value="{{sel.readInfo}}" hint-placeholder-val="{{false}}">
@@ -590,7 +595,7 @@ button{font-family:inherit;color:inherit}
 
   <sc-if value="{{cb}}" hint-placeholder-val="{{false}}">
     <div style="position: absolute; inset: 0; background: rgba(3,4,8,0.72); display: flex; align-items: center; justify-content: center">
-      <div role="dialog" aria-label="إلغاء الحساب" style="width: 560px; background: #151821; border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 14px">
+      <div role="dialog" aria-label="بلّغ عن مشكلة" style="width: 560px; background: #151821; border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 14px">
         <h2 style="margin: 0; font-size: 22px; font-weight: 800">{{cb.title}}</h2>
         <div style="font-size: 15px; color: #C3C8D6; line-height: 1.7">{{cb.text}}</div>
         <div style="display: flex; gap: 8px; flex-wrap: wrap">
@@ -598,9 +603,9 @@ button{font-family:inherit;color:inherit}
             <button onClick="{{r.pick}}" style="{{r.style}}">{{r.name}}</button>
           </sc-for>
         </div>
-        <div style="background: #2A1219; border-radius: 10px; padding: 10px 14px; font-size: 13px; color: #FF8597; font-weight: 600">صلاحية منفصلة يحددها المدير العام لكل حساب، وإلها حد مبلغ. فوق الحد يحتاج رمز مدير.</div>
+        <div style="background: #3A2A10; border-radius: 10px; padding: 10px 14px; font-size: 13px; color: #FFE2B0; font-weight: 600">الكاشير ما يلغي. الإلغاء أو التعديل بس للحسابات اللي يعطيها المدير العام الصلاحية، بنهاية اليوم حتى يطابق الرقم.</div>
         <div style="display: flex; gap: 10px">
-          <button onClick="{{cb.go}}" style="flex: 1; height: 56px; border-radius: 12px; border: none; background: #C8102E; color: #FFFFFF; font-size: 17px; font-weight: 800; cursor: pointer; font-family: inherit">تأكيد إلغاء الحساب</button>
+          <button onClick="{{cb.go}}" style="flex: 1; height: 56px; border-radius: 12px; border: none; background: #C8102E; color: #FFFFFF; font-size: 17px; font-weight: 800; cursor: pointer; font-family: inherit">إرسال الملاحظة</button>
           <button onClick="{{cb.back}}" style="width: 140px; height: 56px; border-radius: 12px; border: 1px solid #343A50; background: #151821; color: #F2F3F7; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit">رجوع</button>
         </div>
       </div>
@@ -957,6 +962,7 @@ class Component extends DCLogic {
     const ring = ' outline: 3px solid ' + accent + '; outline-offset: 3px;';
     const groupOf = (u) => { const k = Object.keys(st.groups).find((g) => st.groups[g].units.indexOf(u) >= 0); return k ? { id: k, ...st.groups[k] } : null; };
     const picking = !!st.grpSel;
+    const noteOf = (u) => { const n = st.notes && st.notes[u]; const d = st.units[u]; return n && d && (d.start || '') === n.start ? n : null; };
     const tiles = sec.units.map((u) => {
       const d = st.units[u]; const s = stat(u); const gq = groupOf(u);
       const sum = d && d.orders ? d.orders.reduce((a, o) => a + o[1], 0) : 0;
@@ -975,7 +981,7 @@ class Component extends DCLogic {
       if (chosen) lk = 'background: #2E2610; color: #F2F3F7; border: 3px solid #8A92AB;';
       const kind = st.sec === 'play' ? (u.indexOf('دركسون') === 0 ? 'wheel' : 'pad') : (st.sec === 'elite' || st.sec === 'master') ? 'pc' : (st.sec === 'hall' || st.sec === 'uhall') ? 'table' : st.sec === 'pool' ? 'pool' : 'film';
       const fs = st.filt && st.filt !== 'all' && (st.filt === 'run' ? ['run', 'warn', 'over'].indexOf(s) < 0 : (st.filt === 'over' ? al !== 'unpaid' && s !== 'over' : s !== st.filt));
-      return { name: u, label: chosen ? 'محددة ✓' : labels[s], info, hasGroup: !!gq && !readOnly, infoStyle: s === 'oos' ? 'font-size: 12px; font-weight: 700; line-height: 1.2; padding: 0 6px' : 'font-size: 16px; font-weight: 800', icPad: kind === 'pad', icWheel: kind === 'wheel', icPc: kind === 'pc', icTable: kind === 'table', icPool: kind === 'pool', icFilm: kind === 'film', groupName: gq ? gq.name : '', groupStyle: 'border-radius: 10px; padding: 1px 10px; font-size: 13px; font-weight: 800; color: #FFFFFF; border: 2px solid #FFFFFF; background: rgba(0,0,0,0.25);', style: 'height: 104px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; cursor: pointer; font-family: inherit; font-variant-numeric: tabular-nums; box-shadow: 0 3px 8px rgba(20,20,20,0.08); transition: opacity .2s; ' + lk + (u === st.selected ? ring: '') + (fs ? ' opacity: 0.22;' : ''), pick: () => {
+      return { name: u, label: chosen ? 'محددة ✓' : (noteOf(u) && !readOnly ? '⚠ ملاحظة' : labels[s]), info, hasGroup: !!gq && !readOnly, infoStyle: s === 'oos' ? 'font-size: 12px; font-weight: 700; line-height: 1.2; padding: 0 6px' : 'font-size: 16px; font-weight: 800', icPad: kind === 'pad', icWheel: kind === 'wheel', icPc: kind === 'pc', icTable: kind === 'table', icPool: kind === 'pool', icFilm: kind === 'film', groupName: gq ? gq.name : '', groupStyle: 'border-radius: 10px; padding: 1px 10px; font-size: 13px; font-weight: 800; color: #FFFFFF; border: 2px solid #FFFFFF; background: rgba(0,0,0,0.25);', style: 'height: 104px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; cursor: pointer; font-family: inherit; font-variant-numeric: tabular-nums; box-shadow: 0 3px 8px rgba(20,20,20,0.08); transition: opacity .2s; ' + lk + (u === st.selected ? ring: '') + (fs ? ' opacity: 0.22;' : ''), pick: () => {
         if (picking) { if (s !== 'free') return; const cur = st.grpSel.slice(); const i = cur.indexOf(u); if (i >= 0) cur.splice(i, 1); else cur.push(u); this.setState({ grpSel: cur }); return; }
         if (!readOnly && (st.sec === 'hall' || st.sec === 'uhall') && s === 'free') { this.setState({ selected: u, units: { ...st.units, [u]: { status: 'run', start: 'الآن', time: '', orders: [] } }, addOrd: { unit: u, dept: 'bar', cat: 'mojito', qty: {} }, toast: '' }); return; }
         this.setState({ selected: u, opMode: null, opMin: '', payScope: 'group', toast: '', oosAsk: false, oosReason: null });
@@ -998,7 +1004,7 @@ class Component extends DCLogic {
       const startTs = tm ? tm.start: null;
       const hist = (st.hist[u] || (startTs ? [[startTs, 'دخل على ' + u + ' (' + sec.name + ')']] : []));
       sel = {
-        name: u, label: labels[s2], detail, orders,
+        name: u, label: labels[s2], detail, orders, note: !readOnly && !!noteOf(u), noteText: noteOf(u) ? noteOf(u).text : '', canNote: !readOnly && !noteOf(u),
         place: (sec.floor === 'g' ? 'الطابق الأرضي' : 'الطابق العلوي') + ' · ' + sec.name + ' · ' + u,
         headStyle: 'padding: 8px 16px; display: flex; flex-direction: column; gap: 2px; color: #FFFFFF; background: linear-gradient(135deg, ' + (groupOf(u) && !readOnly ? (groupOf(u).color || '#7B2FBE') : colorsSel[st.sec]) + ', #141414 180%);',
         hasCust: !readOnly && !!d.cust, custText: d.cust ? [d.cust.name || 'بدون اسم', d.cust.phone || 'بدون رقم'].join(' · ') : '',
@@ -1112,15 +1118,14 @@ class Component extends DCLogic {
     if (st.cb && sel) {
       const u = st.selected; const chipCb = (on) => 'min-height: 44px; padding: 0 16px; border-radius: 22px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; ' + (on ? 'background: #262B3B; color: #FFFFFF; border: 1px solid #8A92AB;' : 'background: #151821; color: #F2F3F7; border: 1px solid #343A50;');
       cb = {
-        title: 'إلغاء حساب ' + u + ' كامل',
-        text: 'يُلغى الوقت والطلبات مرة وحدة (' + sel.totalText + ')، و' + u + ' يصير فارغ. العملية تنسجل باسمك وتطلع بتقرير الإلغاءات. اختار السبب:',
-        reasons: ['انفتح بالغلط', 'الزبون طلع بدون ما يلعب', 'جهاز عطلان أثناء اللعب'].map((r) => ({ name: r, style: chipCb(st.cbReason === r), pick: () => this.setState({ cbReason: r }) })),
+        title: 'ملاحظة على حساب ' + u,
+        text: 'الحساب يبقى مثل ما هو (' + sel.totalText + '). الملاحظة توصل للمسؤول، وهو يلغي أو يعدّل بنهاية اليوم. تنسجل باسمك. اختار المشكلة:',
+        reasons: ['انفتح بالغلط', 'الزبون طلع بدون ما يلعب', 'جهاز عطلان أثناء اللعب', 'طلب انكتب غلط'].map((r) => ({ name: r, style: chipCb(st.cbReason === r), pick: () => this.setState({ cbReason: r }) })),
         back: () => this.setState({ cb: null, cbReason: null }),
         go: () => {
-          if (!st.cbReason) { this.setState({ toast: 'اختار سبب الإلغاء أول.' }); return; }
-          const nx = { ...st.units }; delete nx[u]; const tx = { ...st.timers }; delete tx[u]; const hx = { ...st.hist }; delete hx[u];
-          const gx = {}; Object.keys(st.groups).forEach((g) => { gx[g] = { ...st.groups[g], units: st.groups[g].units.filter((x) => x !== u) }; });
-          this.setState({ units: nx, timers: tx, hist: hx, groups: gx, cb: null, cbReason: null, selected: null, toast: 'أُلغي حساب ' + u + ' (' + sel.totalText + ') بسبب «' + st.cbReason + '»، وانسجل باسم الكاشير بتقرير الإلغاءات.' });
+          if (!st.cbReason) { this.setState({ toast: 'اختار المشكلة أول.' }); return; }
+          const d0 = st.units[u] || {};
+          this.setState({ notes: { ...(st.notes || {}), [u]: { text: st.cbReason, start: d0.start || '' } }, cb: null, cbReason: null, toast: 'انرسلت الملاحظة على ' + u + ': «' + st.cbReason + '». الحساب باقي، والمسؤول يعالجها بنهاية اليوم.' });
         }
       };
     }
